@@ -4,6 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 import { catchError, lastValueFrom } from 'rxjs';
 import { APIResponse } from 'src/utils/common';
+
 @Injectable()
 export class WorkerService {
     private readonly logger = new Logger(WorkerService.name)
@@ -12,13 +13,13 @@ export class WorkerService {
         private readonly redis: RedisCacheService,
         private readonly httpService: HttpService
     ) { }
-    private ImagePages = ['100', '200', '300', '400', '500']
+    private ImagePages = ['100', '200', '300', '400', '500', '600', '700', '800', '900', '1000']
 
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    @Cron(CronExpression.EVERY_11_HOURS)
     async invalidateCache() {
         this.logger.log('Invalidating Cache');
-        for (let i = 0; i < this.ImagePages.length; i++) {
-            await this.getUnsplashimage('100')
+        for (let i = 0; i <= this.ImagePages.length; i++) {
+            // await this.getUnsplashimage(this.ImagePages[i] as '100' | '200')
         }
         this.logger.log('New images dumped');
     }

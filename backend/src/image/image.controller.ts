@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Res } from '@nestjs/common';
+import { Controller, Get, Query, Req, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { ImageService } from './image.service';
 
@@ -7,12 +7,14 @@ export class ImageController {
     constructor(
         private readonly imageService: ImageService
     ) { }
-    @Get('image')
+    @Get('')
     async getImages(
+        @Query('page') page: string,
         @Res() res: Response,
         @Req() req: Request
     ) {
-        const data = await this.imageService.getImages()
+        const data = await this.imageService.getImages(page)
         return res.status(data.statusCode).json(data)
+        // return res.status(data.statusCode).json(data)
     }
 }
