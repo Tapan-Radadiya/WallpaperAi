@@ -6,3 +6,10 @@ export interface APIResponseInterface {
     data?: any
     err?: any
 }
+
+export type UserDataType = {
+    id?: string
+    displayName: string
+    emailId: string
+    avatar: string
+}
