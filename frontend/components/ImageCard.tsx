@@ -1,9 +1,44 @@
 import Image from 'next/image';
 import { WallpaperImage } from '@/lib/data';
+import { Maximize2, Heart } from 'lucide-react';
+import { useState, useRef } from 'react';
 
-export default function ImageCard({ image }: { image: WallpaperImage }) {
+interface ImageCardProps {
+    image: WallpaperImage;
+    onClick?: () => void;
+    isLiked?: boolean;
+    onToggleLike?: () => void;
+}
+
+export default function ImageCard({ image, onClick, isLiked, onToggleLike }: ImageCardProps) {
+    const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+    const clickTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    const handleCardClick = () => {
+        if (clickTimeout.current) {
+            // Double click detected
+            clearTimeout(clickTimeout.current);
+            clickTimeout.current = null;
+
+            if (!isLiked) {
+                onToggleLike?.();
+            }
+            setShowHeartAnimation(true);
+            setTimeout(() => setShowHeartAnimation(false), 1000);
+        } else {
+            // Single click - wait for potential second click
+            clickTimeout.current = setTimeout(() => {
+                clickTimeout.current = null;
+                onClick?.();
+            }, 250);
+        }
+    };
+
     return (
-        <div className="group relative mb-4 break-inside-avoid rounded-xl overflow-hidden bg-card-bg shadow-sm hover:shadow-xl transition-all duration-300 border border-muted/10">
+        <div
+            className="group relative mb-4 break-inside-avoid rounded-xl overflow-hidden bg-card-bg shadow-sm hover:shadow-xl transition-all duration-300 border border-muted/10 cursor-pointer"
+            onClick={handleCardClick}
+        >
             <div className="relative w-full">
                 <Image
                     src={image.imageUrl.regular}
@@ -15,10 +50,41 @@ export default function ImageCard({ image }: { image: WallpaperImage }) {
                     placeholder="blur"
                     blurDataURL={image.imageUrl.small}
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+
+                {/* Overlay Actions */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="bg-black/50 rounded-full p-3 text-white backdrop-blur-sm transform scale-75 group-hover:scale-100 transition-all duration-300">
+                        <Maximize2 size={24} className="transform rotate-45" />
+                    </div>
+                </div>
+
+                {/* Heart Animation Overlay */}
+                {showHeartAnimation && (
+                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                        <Heart
+                            size={80}
+                            className="text-white fill-white animate-ping"
+                            style={{ animationDuration: '1s' }}
+                        />
+                    </div>
+                )}
+
+                {/* Like Button */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleLike?.();
+                    }}
+                    className="absolute top-3 right-3 p-2 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-sm transition-all duration-300 z-10 opacity-0 group-hover:opacity-100"
+                >
+                    <Heart
+                        size={20}
+                        className={`transition-colors duration-300 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`}
+                    />
+                </button>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/80 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
                 <p className="text-white text-sm font-medium truncate">
                     {image.alt_text || 'Untitled'}
                 </p>
