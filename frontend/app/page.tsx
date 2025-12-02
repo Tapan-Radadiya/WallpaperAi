@@ -1,9 +1,13 @@
 import { getImages } from '@/lib/data';
 import WallpaperGrid from '@/components/WallpaperGrid';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import { headers } from 'next/headers';
 
 export default async function Home() {
   const images = await getImages();
+  const headersList = await headers();
+  const userAgent = headersList.get('user-agent') || '';
+  const isMobile = /mobile|android|iphone|ipad|ipod/i.test(userAgent);
 
   return (
     <main className="min-h-screen pb-10">
@@ -17,7 +21,7 @@ export default async function Home() {
       </header>
 
       <div className="container mx-auto mt-6">
-        <WallpaperGrid initialImages={images} />
+        <WallpaperGrid initialImages={images} isMobile={isMobile} />
       </div>
     </main>
   );
