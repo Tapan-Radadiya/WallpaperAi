@@ -10,6 +10,7 @@ import { RedisCacheModule } from './redis_cache/redis_cache.module';
 import { ImageModule } from './image/image.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { WorkerModule } from './worker/worker.module';
+import { FileuploadModule } from './fileupload/fileupload.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { WorkerModule } from './worker/worker.module';
     RedisCacheModule,
     ImageModule,
     WorkerModule,
+    FileuploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
