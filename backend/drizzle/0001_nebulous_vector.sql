@@ -1,0 +1,2 @@
+ALTER TABLE "tbl_user" ADD CONSTRAINT "tbl_user_display_name_unique" UNIQUE("display_name");--> statement-breakpoint
+ALTER TABLE "tbl_user" ADD CONSTRAINT "tbl_user_email_id_unique" UNIQUE("email_id");

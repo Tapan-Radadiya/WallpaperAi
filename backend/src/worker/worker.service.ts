@@ -15,17 +15,17 @@ export class WorkerService {
     ) { }
     private ImagePages = ['100', '200', '300', '400', '500', '600', '700', '800', '900', '1000']
 
-    @Cron(CronExpression.EVERY_11_HOURS)
+    @Cron(CronExpression.EVERY_10_HOURS)
     async invalidateCache() {
         this.logger.log('Invalidating Cache');
-        for (let i = 0; i <= this.ImagePages.length; i++) {
+        for (let i = 0; i < this.ImagePages.length; i++) {
             await this.getUnsplashimage(this.ImagePages[i] as '100' | '200')
         }
         this.logger.log('New images dumped');
     }
 
     async getUnsplashimage(pages: '100' | '200' | '300' | '400' | '500') {
-        const unSplashimages = await lastValueFrom(this.httpService.get(`https://api.unsplash.com/photos/random?count=${1}`, {
+        const unSplashimages = await lastValueFrom(this.httpService.get(`https://api.unsplash.com/photos/random?count=${pages}`, {
             headers: {
                 Authorization: `${process.env.SPLASH_API_KEY}`
             }

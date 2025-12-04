@@ -7,6 +7,5 @@ export class RegisterUserDTO {
     @IsEmail()
     emailId: string
 
-    @IsUrl()
-    avatar: string
+    
 }
