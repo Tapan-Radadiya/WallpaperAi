@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsUrl } from 'class-validator';
+import { IsEmail, IsString, IsStrongPassword, IsUrl } from 'class-validator';
 
 export class RegisterUserDTO {
     @IsString({ message: "Invalid Display Name" })
@@ -7,5 +7,14 @@ export class RegisterUserDTO {
     @IsEmail()
     emailId: string
 
-    
+    @IsStrongPassword()
+    password: string
+}
+
+export class LoginUserDTO {
+    @IsEmail()
+    emailId: string
+
+    @IsString()
+    password: string
 }

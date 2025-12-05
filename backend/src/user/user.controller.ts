@@ -1,12 +1,12 @@
 import { Body, Controller, HttpStatus, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { RegisterUserDTO } from 'src/DTO/user.dto';
-import { APIResponse, craftResponseData } from 'src/utils/common';
+import { LoginUserDTO, RegisterUserDTO } from 'src/DTO/user.dto';
+import { APIResponse, compareHash, craftResponseData, hashText } from 'src/utils/common';
 import { UserService } from './user.service';
 import { FileInterceptor } from "@nestjs/platform-express"
 import type { Express } from 'express';
 import { FileuploadService } from 'src/fileupload/fileupload.service';
-import { UserDataType } from 'src/types/common.types';
+import { UserDataType, userLoginType } from 'src/types/common.types';
 
 @Controller('user')
 export class UserController {
@@ -19,6 +19,7 @@ export class UserController {
     @UseInterceptors(FileInterceptor('user_avatar'))
     async registerUser(
         @Body() body: RegisterUserDTO,
+        @Req() req: Request,
         @Res() res: Response,
         @UploadedFile() file: Express.Multer.File
     ) {
@@ -32,13 +33,38 @@ export class UserController {
         const userData: UserDataType = {
             avatar: filePath,
             displayName: body.displayName,
-            emailId: body.emailId
+            emailId: body.emailId,
+            password: await hashText(body.password)
         }
+
         try {
             const { message, statusCode, data } = await this.userService.registerUserService(userData)
             responseData.message = message
             responseData.statusCode = statusCode
             responseData.data = data ?? {}
+        } catch (error) {
+            responseData.err = error
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        return res.status(responseData.statusCode).json(responseData)
+    }
+
+    @Post('login')
+    async userLoginValidation(
+        @Body() body: LoginUserDTO,
+        @Res() res: Response,
+        @Req() req: Request
+    ) {
+        let responseData = craftResponseData()
+        const userData: userLoginType = {
+            emailId: body.emailId,
+            password: body.password
+        }
+        try {
+            const { message, statusCode, data } = await this.userService.userLoginService(userData, req)
+            responseData.message = message
+            responseData.statusCode = statusCode
+            responseData.data = data
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR

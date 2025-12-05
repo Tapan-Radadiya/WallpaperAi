@@ -1,10 +1,11 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { APIResponseInterface, UserDataType } from 'src/types/common.types';
+import { userLoginType, APIResponseInterface, UserDataType } from 'src/types/common.types';
 import * as schema from "../Schema/schema"
-import { APIResponse } from 'src/utils/common';
+import { APIResponse, compareHash } from 'src/utils/common';
 import { and, eq } from 'drizzle-orm';
+import { Request } from 'express';
 
 @Injectable()
 export class UserService {
@@ -14,7 +15,7 @@ export class UserService {
 
     async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
         // Insert User Data
-        const { avatar, displayName, emailId } = userData
+        const { avatar, displayName, emailId, password } = userData
         try {
 
             const userExists = await this.conn.query.tbl_user.findFirst({
@@ -29,7 +30,8 @@ export class UserService {
             const newUser = await this.conn.insert(schema.tbl_user).values({
                 avatar,
                 display_name: displayName,
-                email_id: emailId
+                email_id: emailId,
+                password
             })
             if (newUser) {
                 return APIResponse({ statusCode: HttpStatus.OK, message: "user register successfully", data: newUser })
@@ -38,6 +40,28 @@ export class UserService {
             }
         } catch (error) {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Registering User", err: error })
+        }
+    }
+
+    async userLoginService(userData: userLoginType, req: Request): Promise<APIResponseInterface> {
+        try {
+            const userExists = await this.conn.query.tbl_user.findFirst({
+                where: eq(schema.tbl_user.email_id, userData.emailId)
+            })
+            if (!userExists) {
+                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid email or password" })
+            }
+            const isValidPassword = await compareHash(userData.password, userExists.password)
+            if (!isValidPassword) {
+                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid email or password" })
+            }
+
+            req.session.userId = userExists.id
+            req.session.useremail = userExists.email_id
+
+            return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully" })
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
         }
     }
 }
