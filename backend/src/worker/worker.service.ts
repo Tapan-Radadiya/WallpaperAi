@@ -54,7 +54,7 @@ export class WorkerService {
                     created_at: ele.created_at
                 }
             })
-            await this.redis.invalidateCache(`page_${pages}`, JSON.stringify(updatedImageObj), 510)
+            await this.redis.invalidateCache(`page_${pages}`, JSON.stringify(updatedImageObj), 51000)
         }
     }
 }

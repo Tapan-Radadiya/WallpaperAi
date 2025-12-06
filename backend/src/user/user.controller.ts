@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { LoginUserDTO, RegisterUserDTO } from 'src/DTO/user.dto';
 import { APIResponse, compareHash, craftResponseData, hashText } from 'src/utils/common';
@@ -7,6 +7,7 @@ import { FileInterceptor } from "@nestjs/platform-express"
 import type { Express } from 'express';
 import { FileuploadService } from 'src/fileupload/fileupload.service';
 import { UserDataType, userLoginType } from 'src/types/common.types';
+import { isUUID } from 'class-validator';
 
 @Controller('user')
 export class UserController {
@@ -25,8 +26,7 @@ export class UserController {
     ) {
 
         let responseData = craftResponseData()
-        const filePath = await this.uploadService.uploadFile('test-user', file.buffer, file.mimetype)
-
+        const filePath = `${body.displayName}-${body.emailId.split('@')[0]}`
         if (!filePath) {
             return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error creating user try after sometime" }))
         }
@@ -38,10 +38,14 @@ export class UserController {
         }
 
         try {
-            const { message, statusCode, data } = await this.userService.registerUserService(userData)
+            const { message, statusCode, data, err } = await this.userService.registerUserService(userData)
             responseData.message = message
             responseData.statusCode = statusCode
             responseData.data = data ?? {}
+            responseData.err = err ?? {}
+
+            if (statusCode === HttpStatus.CREATED)
+                await this.uploadService.uploadFile(filePath, file.buffer, file.mimetype)
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
@@ -65,6 +69,31 @@ export class UserController {
             responseData.message = message
             responseData.statusCode = statusCode
             responseData.data = data
+        } catch (error) {
+            responseData.err = error
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        return res.status(responseData.statusCode).json(responseData)
+    }
+
+    @Get('profile')
+    async getUserProfile(
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
+        let responseData = craftResponseData()
+        if (!req?.session?.userId && !isUUID(req?.session?.userId)) {
+            return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Id" }))
+        }
+        try {
+            if (req.session.userId) {
+                const { message, statusCode, data } = await this.userService.getUserProfile(req?.session?.userId)
+                responseData.data = data
+                responseData.message = message
+                responseData.statusCode = statusCode
+            } else {
+                throw new Error("Invalid Id")
+            }
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
