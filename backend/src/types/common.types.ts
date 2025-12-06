@@ -12,4 +12,9 @@ export type UserDataType = {
     displayName: string
     emailId: string
     avatar: string
+    password: string
+}
+export type userLoginType = {
+    emailId: string
+    password: string
 }

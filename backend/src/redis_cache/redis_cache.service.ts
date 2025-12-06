@@ -1,16 +1,13 @@
-import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { RedisClientType } from 'redis';
+import { redisClient } from 'src/redis-client/redis-client';
 
 @Injectable()
 export class RedisCacheService implements OnModuleDestroy {
-    private readonly redisClient: Redis;
+    private readonly redisClient: RedisClientType;
 
-    constructor(private readonly configService: ConfigService) {
-        this.redisClient = new Redis({
-            host: this.configService.get<string>('REDIS_HOST'),
-            port: this.configService.get<number>('REDIS_PORT'),
-        });
+    constructor() {
+        this.redisClient = redisClient
     }
 
     async getRedisKeyValue(key: string): Promise<string> {
@@ -18,7 +15,7 @@ export class RedisCacheService implements OnModuleDestroy {
     }
 
     async setRedistKey(key: string, data: string, ttl: number): Promise<void> {
-        await this.redisClient.set(key, data, 'EX', 10000);
+        await this.redisClient.set(key, data, { EX: ttl })
     }
 
     async onModuleDestroy() {
