@@ -1,21 +1,17 @@
-import Redis from "ioredis";
-import { createClient, RedisClientType } from "redis"
-// export const redisClient = new Redis({
-//     host: '127.0.0.1',
-//     port: 6380,
-// })
-
+import { createClient, RedisClientType } from "redis";
+import * as dotenv from "dotenv"
+dotenv.config()
 
 export const redisClient: RedisClientType = createClient({
-    url: 'redis://0.0.0.0:6381', // your host/port
-});
+    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
+})
 
 redisClient.on('error', (err) => {
     console.error('Redis Client Error', err);
 })
 
 export async function initRedis() {
-    if (redisClient.isOpen) {
+    if (!redisClient.isOpen) {
         await redisClient.connect()
     }
 }
