@@ -17,7 +17,7 @@ export class UserService {
         // Insert User Data
         const { avatar, displayName, emailId, password } = userData
         try {
-
+            console.log('userData-->', userData);
             const userExists = await this.conn.query.tbl_user.findFirst({
                 where: and(
                     eq(schema.tbl_user.display_name, userData.displayName),
@@ -34,7 +34,7 @@ export class UserService {
                 password
             })
             if (newUser) {
-                return APIResponse({ statusCode: HttpStatus.OK, message: "user register successfully", data: newUser })
+                return APIResponse({ statusCode: HttpStatus.CREATED, message: "user register successfully", data: newUser })
             } else {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Creating User" })
             }
@@ -60,6 +60,23 @@ export class UserService {
             req.session.useremail = userExists.email_id
 
             return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully" })
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
+        }
+    }
+
+
+    async getUserProfile(userId: string): Promise<APIResponseInterface> {
+        try {
+            const userData = await this.conn.query.tbl_user.findFirst({
+                where: eq(schema.tbl_user.id, userId)
+            })
+
+            if (userData) {
+                return APIResponse({ statusCode: HttpStatus.OK, message: "", data: userData })
+            } else {
+                return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "unable to found user" })
+            }
         } catch (error) {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
         }

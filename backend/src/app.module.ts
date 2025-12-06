@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -11,6 +11,7 @@ import { ImageModule } from './image/image.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { WorkerModule } from './worker/worker.module';
 import { FileuploadModule } from './fileupload/fileupload.module';
+import { AuthMiddleware } from './middleware/auth/auth.middleware';
 
 @Module({
   imports: [
@@ -31,4 +32,10 @@ import { FileuploadModule } from './fileupload/fileupload.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(AuthMiddleware).forRoutes({
+      path: '/user/profile', method: RequestMethod.GET
+    })
+  }
+}
