@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1764416529591,
-      "tag": "0000_clear_sabretooth",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1764873475118,
-      "tag": "0001_nebulous_vector",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1764960501164,
-      "tag": "0002_lying_prima",
+      "when": 1765119112893,
+      "tag": "0000_needy_shooting_star",
       "breakpoints": true
     }
   ]
