@@ -48,7 +48,7 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
                     className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     placeholder="blur"
-                    blurDataURL={image.imageUrl.small}
+                    blurDataURL={image.imageUrl.small} // Using small as blur placeholder since thumb/small are similar
                 />
 
                 {/* Overlay Actions */}
@@ -88,9 +88,17 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
                 <p className="text-white text-sm font-medium truncate">
                     {image.alt_text || 'Untitled'}
                 </p>
-                <p className="text-white/80 text-xs mt-1">
-                    {image.source}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                    {image.userAvatar && (
+                        <div className="relative w-4 h-4 rounded-full overflow-hidden">
+                            {/* Optimized avatar could be here if needed, simple img for now or next/image */}
+                            <img src={image.userAvatar} alt={image.userName} className="w-full h-full object-cover" />
+                        </div>
+                    )}
+                    <p className="text-white/80 text-xs">
+                        {image.userName || 'Unknown Photographer'}
+                    </p>
+                </div>
             </div>
         </div>
     );

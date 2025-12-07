@@ -56,7 +56,9 @@ export default function RegisterPage() {
 
 
 
-        const res = await axios.post('http://192.168.1.31:3002/api/v1/user/register', formData)
+        const res = await axios.post('/api/v1/user/register', formData, {
+            withCredentials: true
+        })
         if (res.status === HttpStatusCode.Created) {
             showToast('User registered successfully! Redirecting to login...', 'success');
             router.push("/login")

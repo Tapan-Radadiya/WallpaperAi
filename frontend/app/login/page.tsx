@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import sampleImages from '../../lib/sample.json';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 
 type FormData = {
@@ -25,24 +26,35 @@ export default function LoginPage() {
 
     const router = useRouter();
     const { showToast } = useToast();
+    const { login } = useAuth();
 
     const onSubmit = async (data: FormData) => {
         try {
-            // Note: Adjust the API endpoint as needed if it differs from register
-            // Assuming a standard /login endpoint pattern, but verifying with user later if needed.
-            // Using the same IP/port as seen in register page for consistency.
-            const res = await axios.post('http://192.168.1.31:3002/api/v1/user/login', data);
+            const res = await axios.post('/api/v1/user/login', data, {
+                withCredentials: true
+            });
 
             if (res.status === HttpStatusCode.Ok || res.status === HttpStatusCode.Created) {
+                // Assuming response data structure contains user data
+                // Adjusting based on standard patterns, if it's res.data.user or res.data
+                const userData = res.data.data || res.data;
+
+                // Ensure the data matches User interface, or manually map it
+                login({
+                    id: userData.id || userData._id,
+                    displayName: userData.displayName,
+                    emailId: userData.emailId,
+                    avatarImage: userData.avatarImage
+                });
+
                 showToast('Login successful', 'success');
                 router.push("/")
-                // Redirect logic would go here
             } else {
                 showToast('Login failed! Please check your credentials.', 'error');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            showToast('An error occurred during login. Please try again.', 'error');
+            showToast(error.response?.data?.message || 'An error occurred during login. Please try again.', 'error');
         }
     };
 

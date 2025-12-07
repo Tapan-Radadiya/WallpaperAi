@@ -51,7 +51,7 @@ export default function WallpaperGrid({ initialImages, isMobile }: { initialImag
                     </div>
                 )}
 
-                {(!hasMore || page >= 1000) && (
+                {(!hasMore) && (
                     <div className="text-center py-8">
                         <p className="text-lg font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent animate-pulse">
                             Our photographers are capturing more moments for you...
@@ -60,11 +60,16 @@ export default function WallpaperGrid({ initialImages, isMobile }: { initialImag
                 )}
             </div>
 
-            <Modal isOpen={!!selectedImage} onClose={handleCloseModal}>
+            <Modal
+                isOpen={!!selectedImage}
+                onClose={handleCloseModal}
+                downloadUrl={selectedImage?.imageUrl.full || selectedImage?.imageUrl.regular}
+                downloadName={`wallpaper-${selectedImage?.id}`}
+            >
                 {selectedImage && (
                     <div className="relative w-full h-[80vh] md:h-[90vh]">
                         <Image
-                            src={selectedImage.imageUrl.large || selectedImage.imageUrl.regular}
+                            src={selectedImage.imageUrl.full || selectedImage.imageUrl.regular}
                             alt={selectedImage.alt_text || 'Wallpaper'}
                             fill
                             className="object-contain"

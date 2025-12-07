@@ -1,22 +1,29 @@
 import api from './api';
 
 export interface WallpaperImage {
-    source: string;
     id: string;
     width: number;
     height: number;
     imageUrl: {
+        raw: string;
+        full: string;
         small: string;
-        large: string;
+        thumb: string;
         regular: string;
-        downloadable: string;
+        small_s3: string;
     };
     alt_text: string;
     description: string;
-    created_at: string;
+    userName: string;
+    userAvatar: string;
+    userId: string;
+    // Keeping created_at optional as it's not in the new sample but might still be there or needed
+    created_at?: string;
+    // source might be removed or kept if used elsewhere, but not in sample. Keeping compatible if code uses it, 
+    // but the sample "id" is UUID, so it's likely our backend ID.
 }
 
-export async function getImages(page: number = 100): Promise<WallpaperImage[]> {
+export async function getImages(page: number = 0): Promise<WallpaperImage[]> {
     try {
         const response = await api.get(`/image?page=${page}`);
         // Assuming the API returns the same structure: { statusCode, message, data: [...] }
