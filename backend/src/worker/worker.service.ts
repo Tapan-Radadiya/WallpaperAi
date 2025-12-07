@@ -18,36 +18,36 @@ export class WorkerService {
         private readonly httpService: HttpService,
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>
     ) { }
-    private ImagePages = ['100', '200', '300', '400', '500', '600', '700', '800', '900', '1000']
+    private ImagePages = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
     private insertedImageCount = 0
     private newUserCount = 0
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_10_HOURS)
     async invalidateCache() {
         this.logger.log('Invalidating Cache');
         if (!this.conn) {
             return
         }
         for (let i = 0; i < this.ImagePages.length; i++) {
-            await this.getUnsplashimage(this.ImagePages[i] as '100' | '200')
+            await this.getUnsplashimage(this.ImagePages[i])
         }
         this.logger.log(`Total New Images Dumped: ${this.insertedImageCount} \n New Users Added: ${this.newUserCount}`);
     }
 
-    async getUnsplashimage(pages: '100' | '200' | '300' | '400' | '500') {
-        const unSplashimages = await lastValueFrom(this.httpService.get(`https://api.unsplash.com/photos/random?count=${pages}`, {
+    async getUnsplashimage(pages: string) {
+        const unSplashimages = await lastValueFrom(this.httpService.get(`https://api.unsplash.com/photos/random?count=${pages}00`, {
             headers: {
                 Authorization: `${process.env.SPLASH_API_KEY}`
             }
         }).pipe(catchError(async (error) => {
             throw APIResponse({ statusCode: HttpStatus.CONFLICT, message: "SplashApi Call Failed" })
         })))
-        await this.validateTheUnsplashImages(unSplashimages.data, pages)
+        await this.validateTheUnsplashImages(unSplashimages.data)
         // await this.validateTheUnsplashImages(json, pages)
     }
 
-    async validateTheUnsplashImages(unSplashimages, pages: '100' | '200' | '300' | '400' | '500') {
+    async validateTheUnsplashImages(unSplashimages) {
         if (Array.isArray(unSplashimages)) {
             const updatedImageObj = unSplashimages?.map((ele) => {
                 return {
