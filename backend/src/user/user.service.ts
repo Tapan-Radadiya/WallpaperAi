@@ -17,7 +17,6 @@ export class UserService {
         // Insert User Data
         const { avatar, displayName, emailId, password } = userData
         try {
-            console.log('userData-->', userData);
             const userExists = await this.conn.query.tbl_user.findFirst({
                 where: and(
                     eq(schema.tbl_user.display_name, userData.displayName),
@@ -58,8 +57,13 @@ export class UserService {
 
             req.session.userId = userExists.id
             req.session.useremail = userExists.email_id
-
-            return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully" })
+            const responseData = {
+                id: userExists.id,
+                displayName: userExists.display_name,
+                emailId: userExists.email_id,
+                avatarImage: `${process.env.AWS_CLOUDFRONT}${userExists.avatar}`
+            }
+            return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully", data: responseData })
         } catch (error) {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
         }
@@ -71,9 +75,14 @@ export class UserService {
             const userData = await this.conn.query.tbl_user.findFirst({
                 where: eq(schema.tbl_user.id, userId)
             })
-
             if (userData) {
-                return APIResponse({ statusCode: HttpStatus.OK, message: "", data: userData })
+                const responseData = {
+                    id: userData.id,
+                    displayName: userData.display_name,
+                    emailId: userData.email_id,
+                    avatarImage: `${process.env.AWS_CLOUDFRONT}${userData.avatar}`
+                }
+                return APIResponse({ statusCode: HttpStatus.OK, message: "", data: responseData })
             } else {
                 return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "unable to found user" })
             }

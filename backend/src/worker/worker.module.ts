@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
-import { WorkerService } from './worker.service';
-import { ScheduleModule } from '@nestjs/schedule';
-import { RedisCacheModule } from 'src/redis_cache/redis_cache.module';
 import { HttpModule } from '@nestjs/axios';
+import { Module } from '@nestjs/common';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { RedisCacheModule } from 'src/redis_cache/redis_cache.module';
+import { WorkerService } from './worker.service';
 
 @Module({
   imports: [RedisCacheModule, HttpModule],
-  providers: [WorkerService]
+  providers: [WorkerService, NodePgDatabase]
 })
 export class WorkerModule { }
