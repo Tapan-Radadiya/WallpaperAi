@@ -14,7 +14,7 @@ export class RedisCacheService implements OnModuleDestroy {
         return await this.redisClient.get(key) || '';
     }
 
-    async setRedistKey(key: string, data: string, ttl: number): Promise<void> {
+    async setRedisKey(key: string, data: string, ttl: number): Promise<void> {
         await this.redisClient.set(key, data, { EX: ttl })
     }
 
@@ -24,7 +24,11 @@ export class RedisCacheService implements OnModuleDestroy {
 
     async invalidateCache(key: string, data: string, ttl: number) {
         await this.redisClient.del(key)
-        await this.setRedistKey(key, data, ttl)
+        await this.setRedisKey(key, data, ttl)
+    }
+
+    async isKeyExists(key: string) {
+        return await this.redisClient.exists(key)
     }
 }
 
