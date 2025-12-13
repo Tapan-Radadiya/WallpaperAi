@@ -7,6 +7,9 @@ import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 import { APIResponse } from 'src/utils/common';
 import * as schema from "../Schema/schema";
 import { APIResponseInterface } from 'src/types/common.types';
+import { ImageUploadBodyDTO, ImageUploadDTO } from 'src/DTO/image.dto';
+import sharp from 'sharp';
+import { FileuploadService } from 'src/fileupload/fileupload.service';
 
 @Injectable()
 export class ImageService {
@@ -16,6 +19,7 @@ export class ImageService {
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
         private readonly redis: RedisCacheService,
         private readonly httpService: HttpService,
+        private readonly uploadService: FileuploadService
     ) { }
 
 
@@ -52,13 +56,60 @@ export class ImageService {
         // cache new req for other users 
         await this.redis.setRedisKey(redisKey, JSON.stringify(data), this.DEFAULT_TTL_IMAGE)
         return APIResponse({ statusCode: HttpStatus.OK, message: "", data: data })
+    }
 
-        // if (!getData) {
-        //     return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Getting Images Try After Some Time" })
-        // } else {
-        //     const randomData = this.randomizeData(JSON.parse(getData))
-        //     return APIResponse({ statusCode: HttpStatus.OK, message: "Data Fetched", data: randomData })
-        // }
+    async uploadUserImageService(reqBody: ImageUploadBodyDTO, imageMetaData: sharp.Metadata, userId: string, fileData: Express.Multer.File): Promise<APIResponseInterface> {
+
+        const imageUuid = crypto.randomUUID()
+        const imageThumbnailPath = `images/${userId}/${imageUuid}/thumbnail.webp`
+        const imageRawPath = `images/${userId}/${imageUuid}/raw.webp`
+        try {
+            const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
+
+            await this.uploadService.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype)
+            await this.uploadService.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype)
+
+
+            const imageData: ImageUploadDTO = {
+                id: imageUuid,
+                category: reqBody.category,
+                description: reqBody.description,
+                hashTags: reqBody.hashTags,
+                height: imageMetaData.height,
+                width: imageMetaData.width,
+                is_paid: reqBody.is_paid,
+                user_id: userId,
+                raw_url: imageRawPath,
+                thumbnail_url: imageThumbnailPath
+            }
+            const insertImage = await this.conn.insert(schema.tbl_image).values({
+                description: imageData.description,
+                category: imageData.category,
+                hashTags: imageData.hashTags,
+                height: imageData.height,
+                raw_url: imageData.raw_url,
+                thumbnail_url: imageData.thumbnail_url,
+                user_id: imageData.user_id,
+                width: imageData.width,
+                id: imageData.id,
+                is_paid: imageData.is_paid
+            })
+
+            if (insertImage) {
+                return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
+            } else {
+                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: 'Error uploading image' })
+            }
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Something Went Wrong", err: error })
+        }
+    }
+
+
+    private async convertImageToThumbnail(imageData: Express.Multer.File, orgImage: { width: number, height: number }): Promise<Buffer> {
+        const thumbnailImageWidth = (orgImage.height / orgImage.width) * 400
+        const thumbNailImage = await sharp(imageData.buffer).resize({ width: thumbnailImageWidth }).toBuffer()
+        return thumbNailImage
     }
 
     private randomizeData(data: any[]): any[] {

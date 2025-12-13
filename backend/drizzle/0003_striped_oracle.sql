@@ -1,0 +1,1 @@
+ALTER TABLE "tbl_image" ADD COLUMN "height" integer NOT NULL;
