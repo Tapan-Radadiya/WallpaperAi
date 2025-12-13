@@ -41,14 +41,13 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
         >
             <div className="relative w-full">
                 <Image
-                    src={image.imageUrl.regular}
-                    alt={image.alt_text || 'Wallpaper'}
+                    src={`${image.rawUrl}`}
+                    alt={image.description || 'Wallpaper'}
                     width={image.width}
                     height={image.height}
                     className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    placeholder="blur"
-                    blurDataURL={image.imageUrl.small} // Using small as blur placeholder since thumb/small are similar
+                // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
 
                 {/* Overlay Actions */}
@@ -86,7 +85,7 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
 
             <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
                 <p className="text-white text-sm font-medium truncate">
-                    {image.alt_text || 'Untitled'}
+                    {image.description || 'Untitled'}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                     {image.userAvatar && (

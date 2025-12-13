@@ -4,31 +4,26 @@ export interface WallpaperImage {
     id: string;
     width: number;
     height: number;
-    imageUrl: {
-        raw: string;
-        full: string;
-        small: string;
-        thumb: string;
-        regular: string;
-        small_s3: string;
-    };
-    alt_text: string;
+    rawUrl: string;
+    thumbnailUrl: string;
     description: string;
     userName: string;
     userAvatar: string;
     userId: string;
-    // Keeping created_at optional as it's not in the new sample but might still be there or needed
-    created_at?: string;
-    // source might be removed or kept if used elsewhere, but not in sample. Keeping compatible if code uses it, 
-    // but the sample "id" is UUID, so it's likely our backend ID.
 }
 
 export async function getImages(page: number = 0): Promise<WallpaperImage[]> {
     try {
-        const response = await api.get(`/image?page=${page}`);
-        // Assuming the API returns the same structure: { statusCode, message, data: [...] }
-        // If the API returns the array directly, remove .data.data and use .data
-        return response.data.data;
+        const response = await api.get(`/image/?page=${page}`);
+        // Adjust endpoint to feed if needed, or keep /image depending on API
+        // User didn't specify endpoint name for feed, but /image usually implies feed or list.
+        // Assuming API returns array of objects matching the new structure
+        return (response.data.data || []).map((img: any) => ({
+            ...img,
+            rawUrl: `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT}${img.rawUrl}`,
+            thumbnailUrl: `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT}${img.thumbnailUrl}`,
+            userAvatar: `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT}${img.userAvatar}`
+        }));
     } catch (error) {
         console.error('Error fetching images:', error);
         return [];

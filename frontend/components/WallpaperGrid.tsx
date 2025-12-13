@@ -63,17 +63,17 @@ export default function WallpaperGrid({ initialImages, isMobile }: { initialImag
             <Modal
                 isOpen={!!selectedImage}
                 onClose={handleCloseModal}
-                downloadUrl={selectedImage?.imageUrl.full || selectedImage?.imageUrl.regular}
+                downloadUrl={selectedImage?.rawUrl}
                 downloadName={`wallpaper-${selectedImage?.id}`}
             >
                 {selectedImage && (
-                    <div className="relative w-full h-[80vh] md:h-[90vh]">
+                    <div className="flex items-center justify-center p-4 w-full h-full">
                         <Image
-                            src={selectedImage.imageUrl.full || selectedImage.imageUrl.regular}
-                            alt={selectedImage.alt_text || 'Wallpaper'}
-                            fill
-                            className="object-contain"
-                            sizes="100vw"
+                            src={selectedImage.rawUrl}
+                            alt={selectedImage.description || 'Wallpaper'}
+                            width={selectedImage.width}
+                            height={selectedImage.height}
+                            className="max-w-full max-h-[85vh] w-auto h-auto object-contain"
                             priority
                             quality={100}
                         />

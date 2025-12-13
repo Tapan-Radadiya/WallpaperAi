@@ -5,12 +5,16 @@ import Modal from './Modal';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
+import api from '@/lib/api';
+import { useToast } from '@/context/ToastContext';
+
 interface UploadModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
 export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
+    const { showToast } = useToast();
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [hashtags, setHashtags] = useState('');
@@ -64,21 +68,48 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!file) return;
+        if (!file) {
+            showToast('Please select an image first', 'error');
+            return;
+        }
 
         setIsSubmitting(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
 
-        console.log('Uploading:', { file, hashtags, description });
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('is_paid', String(isPaid));
+            formData.append('category', 'test');
+            // Ensure hashtags are sent correctly. If users type "#nature #dark", we might want to just send that string
+            // or clean it up. The user didn't specify format details other than sending the field.
+            // I will send it as is for now.
+            formData.append('hashTags', hashtags);
+            formData.append('description', description);
 
-        setIsSubmitting(false);
-        onClose();
-        // Reset form
-        setFile(null);
-        setPreviewUrl(null);
-        setHashtags('');
-        setDescription('');
+            await api.post('/image/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                withCredentials: true
+            });
+
+            showToast('Wallpaper uploaded successfully!', 'success');
+            onClose();
+
+            // Reset form
+            setFile(null);
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(null);
+            setHashtags('');
+            setDescription('');
+            setIsPaid(false);
+        } catch (error: any) {
+            console.error('Upload failed:', error);
+            const errorMessage = error.response?.data?.message || 'Failed to upload wallpaper';
+            showToast(errorMessage, 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
