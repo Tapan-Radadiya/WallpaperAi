@@ -10,9 +10,10 @@ interface ModalProps {
     children: React.ReactNode;
     downloadUrl?: string;
     downloadName?: string;
+    hideCloseButton?: boolean;
 }
 
-export default function Modal({ isOpen, onClose, children, downloadUrl, downloadName }: ModalProps) {
+export default function Modal({ isOpen, onClose, children, downloadUrl, downloadName, hideCloseButton }: ModalProps) {
     const [mounted, setMounted] = useState(false);
 
     const handleDownload = async (e: React.MouseEvent) => {
@@ -67,12 +68,14 @@ export default function Modal({ isOpen, onClose, children, downloadUrl, download
                         <span>Download</span>
                     </button>
                 )}
-                <button
-                    onClick={onClose}
-                    className="bg-black/20 hover:bg-[var(--foreground)]/20 backdrop-blur-md text-white/70 hover:text-white rounded-full p-2 transition-all duration-300 hover:scale-110 active:scale-95 hover:rotate-90 cursor-pointer"
-                >
-                    <X size={24} />
-                </button>
+                {!hideCloseButton && (
+                    <button
+                        onClick={onClose}
+                        className="bg-black/20 hover:bg-[var(--foreground)]/20 backdrop-blur-md text-white/70 hover:text-white rounded-full p-2 transition-all duration-300 hover:scale-110 active:scale-95 hover:rotate-90 cursor-pointer"
+                    >
+                        <X size={24} />
+                    </button>
+                )}
             </div>
             <div
                 className="relative max-w-7xl max-h-full w-full flex items-center justify-center"
