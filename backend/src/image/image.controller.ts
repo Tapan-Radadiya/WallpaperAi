@@ -10,6 +10,7 @@ export class ImageController {
     constructor(
         private readonly imageService: ImageService
     ) { }
+
     @Get('')
     async getImages(
         @Query('page') page: string,
