@@ -18,3 +18,16 @@ export type userLoginType = {
     emailId: string
     password: string
 }
+
+export type SharpImageMetaDataType = {
+    format: string,
+    size: number,
+    width: number,
+    height: number,
+    autoOrient: SharpImageAutoOrientDataType,
+}
+
+export type SharpImageAutoOrientDataType = {
+    width: number
+    height: number
+}

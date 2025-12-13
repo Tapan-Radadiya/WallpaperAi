@@ -8,6 +8,27 @@
       "when": 1765119112893,
       "tag": "0000_needy_shooting_star",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1765617649061,
+      "tag": "0001_chubby_rafael_vega",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1765627080544,
+      "tag": "0002_shallow_yellowjacket",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1765631923190,
+      "tag": "0003_striped_oracle",
+      "breakpoints": true
     }
   ]
 }

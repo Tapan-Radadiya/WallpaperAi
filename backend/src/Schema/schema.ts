@@ -3,3 +3,7 @@ export {
     tbl_unsplash_images,
     tbl_unsplash_users
 } from "../user/schema/user_schema"
+
+export {
+    tbl_image
+} from "../image/schema/image.schema"
