@@ -6,12 +6,17 @@ import * as schema from "../Schema/schema"
 import { APIResponse, compareHash } from 'src/utils/common';
 import { and, eq } from 'drizzle-orm';
 import { Request } from 'express';
+import { alias } from 'drizzle-orm/pg-core';
+import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 
 @Injectable()
 export class UserService {
     constructor(
-        @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>
+        @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
+        private readonly redis: RedisCacheService
     ) { }
+
+    private TABLE_USER_ALIAS = alias(schema.tbl_user, 'TABLE_USER_ALIAS')
 
     async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
         // Insert User Data
@@ -86,6 +91,61 @@ export class UserService {
             } else {
                 return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "unable to found user" })
             }
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
+        }
+    }
+
+    async getUserLikedImages(userId: string): Promise<APIResponseInterface> {
+        try {
+
+            const isRedisDataStored = await this.redis.getRedisKeyValue(`profileData_${userId}`)
+            if (isRedisDataStored) {
+                return APIResponse({ statusCode: HttpStatus.OK, message: "userdata", data: JSON.parse(isRedisDataStored) })
+            }
+            const userImages = await this.conn
+                .select({
+                    image_id: schema.tbl_image.id,
+                    is_paid: schema.tbl_image.is_paid,
+                    description: schema.tbl_image.description,
+                    width: schema.tbl_image.width,
+                    height: schema.tbl_image.height,
+                    thumbnail_url: schema.tbl_image.thumbnail_url,
+                    raw_url: schema.tbl_image.raw_url,
+                    ownerData: {
+                        id: this.TABLE_USER_ALIAS.id,
+                        avatar: this.TABLE_USER_ALIAS.avatar,
+                        userName: this.TABLE_USER_ALIAS.display_name
+                    }
+                })
+                .from(schema.tbl_user)
+                .leftJoin(
+                    schema.tbl_image_likes,
+                    eq(schema.tbl_image_likes.user_id, schema.tbl_user.id)
+                )
+                .leftJoin(
+                    schema.tbl_image,
+                    eq(schema.tbl_image_likes.image_id, schema.tbl_image.id)
+                )
+                .leftJoin(
+                    this.TABLE_USER_ALIAS,
+                    eq(this.TABLE_USER_ALIAS.id, schema.tbl_image.user_id)
+                )
+                .where(
+                    and(eq(schema.tbl_user.id, userId))
+                )
+
+            const userProfile = await this.getUserProfile(userId)
+
+            const structuredData = {
+                userProfile: userProfile.data,
+                likedImages: userImages
+            }
+
+            await this.redis.setRedisKey(`profile_${userId}`, JSON.stringify(structuredData), 86400)
+
+            return APIResponse({ statusCode: HttpStatus.OK, message: "User data", data: structuredData })
+
         } catch (error) {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
         }
