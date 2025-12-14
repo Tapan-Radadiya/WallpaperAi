@@ -34,7 +34,8 @@ export class UserController {
             avatar: filePath,
             displayName: body.displayName,
             emailId: body.emailId,
-            password: await hashText(body.password)
+            password: await hashText(body.password),
+            user_bio: body.user_bio
         }
 
         try {
