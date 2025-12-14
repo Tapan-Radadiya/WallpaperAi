@@ -86,7 +86,9 @@ export class UserService {
                     id: userData.id,
                     displayName: userData.display_name,
                     emailId: userData.email_id,
-                    avatarImage: `${process.env.AWS_CLOUDFRONT}${userData.avatar}`
+                    avatarImage: `${process.env.AWS_CLOUDFRONT}${userData.avatar}`,
+                    user_bio: userData.user_bio,
+                    user_instagram_id: userData.instagram_id
                 }
                 return APIResponse({ statusCode: HttpStatus.OK, message: "", data: responseData })
             } else {
