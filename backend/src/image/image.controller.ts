@@ -101,4 +101,27 @@ export class ImageController {
         }
         return res.status(responseData.statusCode).json(responseData)
     }
+
+    @Get('/liked-images')
+    async getLikedImages(
+        @Res() res: Response,
+        @Req() req: Request
+    ) {
+        if (!req.session.userId) {
+            throw new Error("Unauthincated User Found")
+        }
+        let responseData = craftResponseData()
+        try {
+            const data = await this.imageService.getAllLikedImages(req.session.userId)
+            responseData.statusCode = data.statusCode
+            responseData.message = data.message
+            responseData.data = data.data ?? {}
+            responseData.err = data.err ?? {}
+
+        } catch (error) {
+            responseData.err = error
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        return res.status(responseData.statusCode).json(responseData)
+    }
 }

@@ -27,6 +27,10 @@ export class RedisCacheService implements OnModuleDestroy {
         await this.setRedisKey(key, data, ttl)
     }
 
+    async destroyKey(key: string) {
+        await this.redisClient.del(key)
+    }
+
     async isKeyExists(key: string) {
         return await this.redisClient.exists(key)
     }

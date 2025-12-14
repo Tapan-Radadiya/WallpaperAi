@@ -10,6 +10,7 @@ import { APIResponseInterface } from 'src/types/common.types';
 import { ImageUploadBodyDTO, ImageUploadDTO, LikeImageDTO } from 'src/DTO/image.dto';
 import sharp from 'sharp';
 import { FileuploadService } from 'src/fileupload/fileupload.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class ImageService {
@@ -19,7 +20,8 @@ export class ImageService {
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
         private readonly redis: RedisCacheService,
         private readonly httpService: HttpService,
-        private readonly uploadService: FileuploadService
+        private readonly uploadService: FileuploadService,
+        private readonly userService: UserService
     ) { }
 
     async getImages(page: string): Promise<APIResponseInterface> {
@@ -144,10 +146,11 @@ export class ImageService {
             const isImageExists = await this.getLikeImage(body.imageId, userId)
 
             if (!isImageExists) {
-                const likeImage = await this.conn.insert(schema.tbl_image_likes).values({
+                await this.conn.insert(schema.tbl_image_likes).values({
                     image_id: body.imageId,
                     user_id: userId
                 })
+                await this.redis.destroyKey(`profileData_${userId}`)
                 return APIResponse({ statusCode: HttpStatus.OK, message: "Liked" })
             } else {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Operation" })
@@ -166,18 +169,31 @@ export class ImageService {
             if (!isImageExists) {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Operation" })
             } else {
-                const UnlikeImage = await this.conn.delete(schema.tbl_image_likes).where(
+                await this.conn.delete(schema.tbl_image_likes).where(
                     and(
                         eq(schema.tbl_image_likes.user_id, userId),
                         eq(schema.tbl_image_likes.image_id, body.imageId)
                     )
                 )
+                await this.redis.destroyKey(`profileData_${userId}`)
                 return APIResponse({ statusCode: HttpStatus.OK, message: "UnLiked" })
             }
 
         } catch (error) {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error" })
         }
+    }
+
+
+    async getAllLikedImages(userId: string): Promise<APIResponseInterface> {
+        const { data } = await this.userService.getUserLikedImages(userId)
+        const likedImageIds: string[] = []
+        if (Array.isArray(data.likedImages) && data.likedImages.length > 0) {
+            for (const element of data.likedImages) {
+                likedImageIds.push(element.image_id)
+            }
+        }
+        return APIResponse({ statusCode: HttpStatus.OK, message: "Data Fetched", data: likedImageIds })
     }
 
     private async getLikeImage(imageId: string, userId: string) {
