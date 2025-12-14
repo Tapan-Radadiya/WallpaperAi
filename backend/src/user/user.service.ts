@@ -142,7 +142,7 @@ export class UserService {
                 likedImages: userImages
             }
 
-            await this.redis.setRedisKey(`profile_${userId}`, JSON.stringify(structuredData), 86400)
+            await this.redis.setRedisKey(`profileData_${userId}`, JSON.stringify(structuredData), 86400)
 
             return APIResponse({ statusCode: HttpStatus.OK, message: "User data", data: structuredData })
 
