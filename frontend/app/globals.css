@@ -15,7 +15,7 @@
   --foreground: #ededed;
   --card-bg: #1e1e1e; /* Slightly lighter than background for cards */
   --accent: #BB86FC;
-  --muted: #03DAC5; /* Using secondary color for muted/secondary elements */
+  --muted: #A1A1AA; /* Standard gray for muted text */
 }
 
 @theme inline {

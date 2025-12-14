@@ -11,7 +11,6 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen pb-10">
-      <Header />
 
       <div className="container mx-auto mt-6">
         <WallpaperGrid initialImages={images} isMobile={isMobile} />
