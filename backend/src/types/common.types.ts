@@ -13,6 +13,7 @@ export type UserDataType = {
     emailId: string
     avatar: string
     password: string
+    user_bio: string
 }
 export type userLoginType = {
     emailId: string

@@ -7,6 +7,8 @@ export const tbl_user = pgTable('tbl_user', {
     email_id: varchar('email_id').notNull().unique(),
     avatar: varchar('avatar').notNull(),
     password: varchar('password').notNull(),
+    user_bio: varchar('user_bio'),
+    instagram_id: varchar('instagram_id'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').$onUpdate(() => new Date())
 })
@@ -16,7 +18,9 @@ export const tbl_unsplash_users = pgTable('tbl_unsplash_users', {
     unsplash_user_id: varchar('unsplash_user_id').notNull().unique(),
     userName: varchar('userName').notNull(),
     name: varchar('name').notNull(),
-    portfolio_url: varchar('portfolio_url').notNull()
+    portfolio_url: varchar('portfolio_url').notNull(),
+    created_at: timestamp('created_at').defaultNow(),
+    updated_at: timestamp('updated_at').$onUpdate(() => new Date())
 })
 
 export const tbl_unsplash_images = pgTable('tbl_unsplash_images', {
@@ -28,5 +32,6 @@ export const tbl_unsplash_images = pgTable('tbl_unsplash_images', {
     image_urls: jsonb('image_urls'),
     alt_text: varchar('alt_text').notNull(),
     description: varchar('description').notNull(),
-    created_at: timestamp('created_at').notNull()
+    created_at: timestamp('created_at').defaultNow(),
+    updated_at: timestamp('updated_at').$onUpdate(() => new Date())
 })

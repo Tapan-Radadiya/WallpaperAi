@@ -9,6 +9,9 @@ export class RegisterUserDTO {
 
     @IsStrongPassword()
     password: string
+
+    @IsString({ message: "Invalid value for bio" })
+    user_bio: string
 }
 
 export class LoginUserDTO {

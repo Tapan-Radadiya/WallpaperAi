@@ -20,7 +20,7 @@ export class UserService {
 
     async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
         // Insert User Data
-        const { avatar, displayName, emailId, password } = userData
+        const { avatar, displayName, emailId, password, user_bio } = userData
         try {
             const userExists = await this.conn.query.tbl_user.findFirst({
                 where: and(
@@ -35,7 +35,8 @@ export class UserService {
                 avatar,
                 display_name: displayName,
                 email_id: emailId,
-                password
+                password,
+                user_bio
             })
             if (newUser) {
                 return APIResponse({ statusCode: HttpStatus.CREATED, message: "user register successfully", data: newUser })
