@@ -9,6 +9,7 @@ import { useMasonryGrid } from '@/hooks/useMasonryGrid';
 import { useLikes } from '@/hooks/useLikes';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
+import { Instagram } from 'lucide-react';
 
 // --- Interfaces ---
 interface APIUserProfile {
@@ -16,6 +17,8 @@ interface APIUserProfile {
     displayName: string;
     emailId: string;
     avatarImage: string;
+    user_bio?: string;
+    user_instagram_id?: string;
 }
 
 interface APIImageOwner {
@@ -152,9 +155,34 @@ export default function ProfilePage() {
                     )}
                 </div>
                 <h1 className="text-3xl font-bold mb-2 kedebideri-bold">{profileData.userProfile.displayName}</h1>
-                <p className="text-muted text-center max-w-md mb-6">
-                    Wallpaper enthusiast. Creating and collecting the best aesthetics.
-                </p>
+
+                {profileData.userProfile.user_bio ? (
+                    <p className="text-muted text-center max-w-md mb-2">
+                        {profileData.userProfile.user_bio}
+                    </p>
+                ) : (
+                    <p className="text-muted text-center max-w-md mb-2">
+                        Wallpaper enthusiast. Creating and collecting the best aesthetics.
+                    </p>
+                )}
+
+                <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
+                    {profileData.userProfile.user_instagram_id && (
+                        <a
+                            href={`${profileData.userProfile.user_instagram_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-3 rounded-full bg-[#E1306C]/5 border border-[#E1306C]/30 text-[#E1306C] shadow-md shadow-[#E1306C]/10 hover:bg-[var(--card-bg)] hover:border-[var(--muted)]/20 hover:text-[var(--muted)] hover:shadow-sm transition-all duration-300 group"
+                            aria-label={`Instagram: @${profileData.userProfile.user_instagram_id}`}
+                        >
+                            <Instagram size={20} className="group-hover:scale-110 transition-transform duration-300" />
+                        </a>
+                    )}
+
+                    {/* Future links can be added here easily */}
+                </div>
+
+                {!profileData.userProfile.user_instagram_id && <div className="mb-6"></div>}
 
                 {/* Statistics (Static as requested) */}
                 <div className="flex gap-6 text-sm mb-8">
