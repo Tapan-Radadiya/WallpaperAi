@@ -16,7 +16,7 @@ export default function Header() {
     return (
         <header className="sticky top-0 z-10 backdrop-blur-md bg-[var(--background)]/80 border-b border-[var(--muted)]/20">
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-                <Link href="/" className="text-2xl kedebideri-bold tracking-tight bg-gradient-to-r from-[var(--foreground)] to-[var(--muted)] bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+                <Link href="/" className="text-2xl kedebideri-bold tracking-tight bg-gradient-to-r from-[var(--foreground)] to-[var(--muted)] bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer">
                     WallpaperAI
                 </Link>
 
@@ -47,23 +47,25 @@ export default function Header() {
                                     <span className="text-sm font-medium text-[var(--foreground)]">{user.displayName}</span>
                                     <span className="text-xs text-[var(--muted)] truncate max-w-[150px]">{user.emailId}</span>
                                 </div>
-                                <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[var(--muted)]/30 ring-2 ring-[var(--accent)]/20 hover:ring-[var(--accent)]/50 transition-all cursor-pointer">
-                                    {user.avatarImage && !imageError ? (
-                                        <Image
-                                            src={user.avatarImage}
-                                            alt={user.displayName || "User Avatar"}
-                                            fill
-                                            className="object-cover"
-                                            onError={() => setImageError(true)}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-[var(--card-bg)] flex items-center justify-center">
-                                            <span className="text-lg font-bold text-[var(--foreground)]">
-                                                {user.displayName ? user.displayName.charAt(0).toUpperCase() : <UserIcon size={20} />}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
+                                <Link href="/profile">
+                                    <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[var(--muted)]/30 ring-2 ring-[var(--accent)]/20 hover:ring-[var(--accent)]/50 transition-all cursor-pointer">
+                                        {user.avatarImage && !imageError ? (
+                                            <Image
+                                                src={user.avatarImage}
+                                                alt={user.displayName || "User Avatar"}
+                                                fill
+                                                className="object-cover"
+                                                onError={() => setImageError(true)}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-[var(--card-bg)] flex items-center justify-center">
+                                                <span className="text-lg font-bold text-[var(--foreground)]">
+                                                    {user.displayName ? user.displayName.charAt(0).toUpperCase() : <UserIcon size={20} />}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </Link>
                             </div>
                         </div>
                     ) : (

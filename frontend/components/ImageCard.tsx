@@ -47,7 +47,6 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
                     height={image.height}
                     className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
 
                 {/* Overlay Actions */}

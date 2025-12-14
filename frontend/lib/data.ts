@@ -20,9 +20,9 @@ export async function getImages(page: number = 0): Promise<WallpaperImage[]> {
         // Assuming API returns array of objects matching the new structure
         return (response.data.data || []).map((img: any) => ({
             ...img,
-            rawUrl: `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT}${img.rawUrl}`,
-            thumbnailUrl: `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT}${img.thumbnailUrl}`,
-            userAvatar: `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT}${img.userAvatar}`
+            rawUrl: img.rawUrl,
+            thumbnailUrl: img.thumbnailUrl,
+            userAvatar: img.userAvatar
         }));
     } catch (error) {
         console.error('Error fetching images:', error);

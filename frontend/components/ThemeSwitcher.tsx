@@ -36,23 +36,7 @@ export default function ThemeSwitcher() {
             aria-label="Toggle theme"
         >
             {isDark ? (
-                // Moon Icon
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-foreground"
-                >
-                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                </svg>
-            ) : (
-                // Sun Icon
+                // Sun Icon (Switch to Light)
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -74,6 +58,22 @@ export default function ThemeSwitcher() {
                     <path d="M20 12h2" />
                     <path d="m6.34 17.66-1.41 1.41" />
                     <path d="m19.07 4.93-1.41 1.41" />
+                </svg>
+            ) : (
+                // Moon Icon (Switch to Dark)
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-foreground"
+                >
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
                 </svg>
             )}
         </button>
