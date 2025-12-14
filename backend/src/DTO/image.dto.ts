@@ -49,3 +49,11 @@ export class ImageUploadDTO {
     @IsString()
     thumbnail_url: string
 }
+
+export class LikeImageDTO {
+    @IsUUID()
+    imageId: crypto.UUID
+
+    @IsBoolean({ message: "Invalid value for like" })
+    like: boolean
+}

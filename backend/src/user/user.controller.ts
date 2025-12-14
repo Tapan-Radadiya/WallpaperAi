@@ -81,10 +81,10 @@ export class UserController {
         @Req() req: Request,
         @Res() res: Response,
     ) {
-        let responseData = craftResponseData()
         if (!req?.session?.userId && !isUUID(req?.session?.userId)) {
             return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Id" }))
         }
+        let responseData = craftResponseData()
         try {
             if (req.session.userId) {
                 const { message, statusCode, data } = await this.userService.getUserProfile(req?.session?.userId)
@@ -94,6 +94,28 @@ export class UserController {
             } else {
                 throw new Error("Invalid Id")
             }
+        } catch (error) {
+            responseData.err = error
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        return res.status(responseData.statusCode).json(responseData)
+    }
+
+    @Get('/userData')
+    async getUserlikedImages(
+        @Req() req: Request,
+        @Res() res: Response
+    ) {
+        if (!req?.session?.userId) {
+            return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Id" }))
+        }
+        let responseData = craftResponseData()
+        try {
+            const data = await this.userService.getUserLikedImages(req.session.userId)
+            responseData.statusCode = data.statusCode
+            responseData.message = data.message
+            responseData.data = data.data ?? {}
+            responseData.err = data.err ?? {}
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR

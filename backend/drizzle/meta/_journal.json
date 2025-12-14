@@ -29,6 +29,13 @@
       "when": 1765631923190,
       "tag": "0003_striped_oracle",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1765692610004,
+      "tag": "0004_thick_moira_mactaggert",
+      "breakpoints": true
     }
   ]
 }

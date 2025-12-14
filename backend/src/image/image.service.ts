@@ -1,13 +1,13 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 import { APIResponse } from 'src/utils/common';
 import * as schema from "../Schema/schema";
 import { APIResponseInterface } from 'src/types/common.types';
-import { ImageUploadBodyDTO, ImageUploadDTO } from 'src/DTO/image.dto';
+import { ImageUploadBodyDTO, ImageUploadDTO, LikeImageDTO } from 'src/DTO/image.dto';
 import sharp from 'sharp';
 import { FileuploadService } from 'src/fileupload/fileupload.service';
 
@@ -27,11 +27,11 @@ export class ImageService {
         const offset = parseInt(page) * this.PAGE_LENGTH
 
         const isKeyExists = await this.redis.isKeyExists(redisKey)
-        // if (isKeyExists) {
-        //     const getData = await this.redis.getRedisKeyValue(redisKey)
-        //     const randomData = this.randomizeData(JSON.parse(getData))
-        //     return APIResponse({ statusCode: HttpStatus.OK, message: "Cached Data", data: randomData })
-        // }
+        if (isKeyExists) {
+            const getData = await this.redis.getRedisKeyValue(redisKey)
+            const randomData = this.randomizeData(JSON.parse(getData))
+            return APIResponse({ statusCode: HttpStatus.OK, message: "Cached Data", data: randomData })
+        }
         // const data = await this.conn
         //     .select({
         //         id: schema.tbl_unsplash_images.id,
@@ -71,9 +71,19 @@ export class ImageService {
                 )
                 .offset(offset)
                 .limit(this.PAGE_LENGTH)
+
+
+            const updatedData = newData.map((ele) => {
+                return {
+                    ...ele,
+                    rawUrl: `${process.env.AWS_CLOUDFRONT}${ele.rawUrl}`,
+                    thumbnailUrl: `${process.env.AWS_CLOUDFRONT}${ele.thumbnailUrl}`,
+                    userAvatar: `${process.env.AWS_CLOUDFRONT}${ele.userAvatar}`
+                }
+            })
             // cache new req for other users 
-            await this.redis.setRedisKey(redisKey, JSON.stringify(newData), this.DEFAULT_TTL_IMAGE)
-            return APIResponse({ statusCode: HttpStatus.OK, message: "", data: newData })
+            await this.redis.setRedisKey(redisKey, JSON.stringify(updatedData), this.DEFAULT_TTL_IMAGE)
+            return APIResponse({ statusCode: HttpStatus.OK, message: "", data: updatedData })
         } catch (error) {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error", err: error })
@@ -129,6 +139,57 @@ export class ImageService {
         }
     }
 
+    async imageLike(userId: string, body: LikeImageDTO): Promise<APIResponseInterface> {
+        try {
+            const isImageExists = await this.getLikeImage(body.imageId, userId)
+
+            if (!isImageExists) {
+                const likeImage = await this.conn.insert(schema.tbl_image_likes).values({
+                    image_id: body.imageId,
+                    user_id: userId
+                })
+                return APIResponse({ statusCode: HttpStatus.OK, message: "Liked" })
+            } else {
+                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Operation" })
+            }
+
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error" })
+        }
+    }
+
+
+    async unlikeImage(userId: string, body: LikeImageDTO): Promise<APIResponseInterface> {
+        try {
+            const isImageExists = await this.getLikeImage(body.imageId, userId)
+
+            if (!isImageExists) {
+                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Operation" })
+            } else {
+                const UnlikeImage = await this.conn.delete(schema.tbl_image_likes).where(
+                    and(
+                        eq(schema.tbl_image_likes.user_id, userId),
+                        eq(schema.tbl_image_likes.image_id, body.imageId)
+                    )
+                )
+                return APIResponse({ statusCode: HttpStatus.OK, message: "UnLiked" })
+            }
+
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error" })
+        }
+    }
+
+    private async getLikeImage(imageId: string, userId: string) {
+        return await this.conn.query.tbl_image_likes.findFirst({
+            where: (
+                and(
+                    eq(schema.tbl_image_likes.image_id, imageId),
+                    eq(schema.tbl_image_likes.user_id, userId)
+                )
+            )
+        })
+    }
 
     private async convertImageToThumbnail(imageData: Express.Multer.File, orgImage: { width: number, height: number }): Promise<Buffer> {
         const thumbnailImageWidth = (orgImage.height / orgImage.width) * 400
