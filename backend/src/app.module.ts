@@ -12,6 +12,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { WorkerModule } from './worker/worker.module';
 import { FileuploadModule } from './fileupload/fileupload.module';
 import { AuthMiddleware } from './middleware/auth/auth.middleware';
+import { AuthModule } from './auth/auth.module';
+import { ImageController } from './image/image.controller';
+import { UserController } from './user/user.controller';
 
 @Module({
   imports: [
@@ -28,14 +31,15 @@ import { AuthMiddleware } from './middleware/auth/auth.middleware';
     ImageModule,
     WorkerModule,
     FileuploadModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes({
-      path: '/user/profile', method: RequestMethod.GET
-    })
+    consumer.apply(AuthMiddleware)
+      .exclude('/auth', '/image/data')
+      .forRoutes(ImageController, UserController)
   }
 }

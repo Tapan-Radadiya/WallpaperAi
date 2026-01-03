@@ -34,25 +34,7 @@ export class ImageService {
             const randomData = this.randomizeData(JSON.parse(getData))
             return APIResponse({ statusCode: HttpStatus.OK, message: "Cached Data", data: randomData })
         }
-        // const data = await this.conn
-        //     .select({
-        //         id: schema.tbl_unsplash_images.id,
-        //         imageUrl: schema.tbl_unsplash_images.image_urls,
-        //         width: schema.tbl_unsplash_images.image_width,
-        //         height: schema.tbl_unsplash_images.image_height,
-        //         alt_text: schema.tbl_unsplash_images.alt_text,
-        //         description: schema.tbl_unsplash_images.description,
-        //         userName: schema.tbl_unsplash_users.userName,
-        //         userAvatar: schema.tbl_unsplash_users.portfolio_url,
-        //         userId: schema.tbl_unsplash_users.id
-        //     })
-        //     .from(schema.tbl_unsplash_images)
-        //     .leftJoin(
-        //         schema.tbl_unsplash_users,
-        //         eq(schema.tbl_unsplash_images.unsplash_user_id, schema.tbl_unsplash_users.unsplash_user_id)
-        //     )
-        //     .offset(offset)
-        //     .limit(this.PAGE_LENGTH)
+
         try {
             const newData = await this.conn
                 .select({
@@ -104,14 +86,13 @@ export class ImageService {
             await this.uploadService.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype)
             await this.uploadService.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype)
 
-
             const imageData: ImageUploadDTO = {
                 id: imageUuid,
                 category: reqBody.category,
                 description: reqBody.description,
                 hashTags: reqBody.hashTags,
                 height: imageMetaData.height,
-                width: imageMetaData.width,
+                width: Math.round(imageMetaData.width),
                 is_paid: reqBody.is_paid,
                 user_id: userId,
                 raw_url: imageRawPath,
@@ -137,6 +118,7 @@ export class ImageService {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: 'Error uploading image' })
             }
         } catch (error) {
+            console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Something Went Wrong", err: error })
         }
     }
@@ -196,6 +178,9 @@ export class ImageService {
         return APIResponse({ statusCode: HttpStatus.OK, message: "Data Fetched", data: likedImageIds })
     }
 
+
+
+    // Private Functions
     private async getLikeImage(imageId: string, userId: string) {
         return await this.conn.query.tbl_image_likes.findFirst({
             where: (
@@ -208,7 +193,8 @@ export class ImageService {
     }
 
     private async convertImageToThumbnail(imageData: Express.Multer.File, orgImage: { width: number, height: number }): Promise<Buffer> {
-        const thumbnailImageWidth = (orgImage.height / orgImage.width) * 400
+        const thumbnailImageWidth = Math.round((orgImage.height / orgImage.width) * 400)
+
         const thumbNailImage = await sharp(imageData.buffer).resize({ width: thumbnailImageWidth }).toBuffer()
         return thumbNailImage
     }

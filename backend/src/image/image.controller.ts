@@ -12,7 +12,7 @@ export class ImageController {
     ) { }
 
 
-    @Get('')
+    @Get('/data')
     async getImages(
         @Query('page') page: string,
         @Res() res: Response,

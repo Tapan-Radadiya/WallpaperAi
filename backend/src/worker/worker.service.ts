@@ -65,53 +65,53 @@ export class WorkerService {
 
 
             for (let i = 0; i < updatedImageObj.length; i++) {
-                await this.insertUnsplashImageData(updatedImageObj[i])
+                // await this.insertUnsplashImageData(updatedImageObj[i])
             }
             // await this.redis.invalidateCache(`page_${pages}`, JSON.stringify(updatedImageObj), 51000)
         }
     }
 
-    private async insertUnsplashImageData(unsplashData) {
-        const isUserExists = await this.conn.query.tbl_unsplash_users.findFirst({
-            where: eq(schema.tbl_unsplash_users.unsplash_user_id, unsplashData.user.id)
-        })
-        if (!isUserExists) {
-            const userData = unsplashData.user
-            const user = await this.conn.insert(schema.tbl_unsplash_users).values({
-                name: userData.name,
-                portfolio_url: userData?.portfolio_url ?? userData.profile_image.medium ?? 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Ffree-photos-vectors%2Fman-avatar&psig=AOvVaw2d3g3s1tSU7MB3fHCuZL9q&ust=1765204357667000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJCb6_XYq5EDFQAAAAAdAAAAABAL',
-                unsplash_user_id: userData.id,
-                userName: userData.username
-            }).returning({
-                unsplash_user_id: schema.tbl_unsplash_users.unsplash_user_id
-            })
-            if (user) {
-                this.newUserCount = this.newUserCount++
-            }
-            await this.insertUnsplashImage(unsplashData, user[0])
-        } else {
-            await this.insertUnsplashImage(unsplashData, isUserExists)
-        }
-    }
+    // private async insertUnsplashImageData(unsplashData) {
+    //     const isUserExists = await this.conn.query.tbl_unsplash_users.findFirst({
+    //         where: eq(schema.tbl_unsplash_users.unsplash_user_id, unsplashData.user.id)
+    //     })
+    //     if (!isUserExists) {
+    //         const userData = unsplashData.user
+    //         const user = await this.conn.insert(schema.tbl_unsplash_users).values({
+    //             name: userData.name,
+    //             portfolio_url: userData?.portfolio_url ?? userData.profile_image.medium ?? 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Ffree-photos-vectors%2Fman-avatar&psig=AOvVaw2d3g3s1tSU7MB3fHCuZL9q&ust=1765204357667000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJCb6_XYq5EDFQAAAAAdAAAAABAL',
+    //             unsplash_user_id: userData.id,
+    //             userName: userData.username
+    //         }).returning({
+    //             unsplash_user_id: schema.tbl_unsplash_users.unsplash_user_id
+    //         })
+    //         if (user) {
+    //             this.newUserCount = this.newUserCount++
+    //         }
+    //         await this.insertUnsplashImage(unsplashData, user[0])
+    //     } else {
+    //         await this.insertUnsplashImage(unsplashData, isUserExists)
+    //     }
+    // }
 
-    private async insertUnsplashImage(unsplashData, user) {
-        const isImageExists = await this.conn.query.tbl_unsplash_images.findFirst({
-            where: eq(schema.tbl_unsplash_images.unsplash_id, unsplashData.id)
-        })
-        if (!isImageExists) {
-            const insertedImage = await this.conn.insert(schema.tbl_unsplash_images).values({
-                alt_text: unsplashData.alt_text,
-                created_at: new Date(unsplashData.created_at),
-                description: unsplashData.description,
-                image_height: unsplashData.height,
-                image_width: unsplashData.width,
-                unsplash_id: unsplashData.id,
-                unsplash_user_id: user.unsplash_user_id,
-                image_urls: unsplashData.imageUrl
-            })
-            if (insertedImage) {
-                this.insertedImageCount = this.insertedImageCount++
-            }
-        }
-    }
+    // private async insertUnsplashImage(unsplashData, user) {
+    //     const isImageExists = await this.conn.query.tbl_unsplash_images.findFirst({
+    //         where: eq(schema.tbl_unsplash_images.unsplash_id, unsplashData.id)
+    //     })
+    //     if (!isImageExists) {
+    //         const insertedImage = await this.conn.insert(schema.tbl_unsplash_images).values({
+    //             alt_text: unsplashData.alt_text,
+    //             created_at: new Date(unsplashData.created_at),
+    //             description: unsplashData.description,
+    //             image_height: unsplashData.height,
+    //             image_width: unsplashData.width,
+    //             unsplash_id: unsplashData.id,
+    //             unsplash_user_id: user.unsplash_user_id,
+    //             image_urls: unsplashData.imageUrl
+    //         })
+    //         if (insertedImage) {
+    //             this.insertedImageCount = this.insertedImageCount++
+    //         }
+    //     }
+    // }
 }

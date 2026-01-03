@@ -18,9 +18,10 @@ async function bootstrap() {
   })
 
   app.enableCors({
-    origin: '*',
-    method: 'GET'
+    origin: 'http://192.168.56.1:3000/',
+    credentials: true
   })
+
   app.setGlobalPrefix('api/v1')
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
 
@@ -32,7 +33,9 @@ async function bootstrap() {
       saveUninitialized: false,
       cookie: {
         maxAge: 1000000000,
-        httpOnly: true
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: false
       }
     })
   )

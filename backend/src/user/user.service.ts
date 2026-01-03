@@ -4,10 +4,10 @@ import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { userLoginType, APIResponseInterface, UserDataType } from 'src/types/common.types';
 import * as schema from "../Schema/schema"
 import { APIResponse, compareHash } from 'src/utils/common';
-import { and, eq } from 'drizzle-orm';
-import { Request } from 'express';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
+import type { Request, Response } from 'express';
 
 @Injectable()
 export class UserService {
@@ -75,7 +75,6 @@ export class UserService {
         }
     }
 
-
     async getUserProfile(userId: string): Promise<APIResponseInterface> {
         try {
             const userData = await this.conn.query.tbl_user.findFirst({
@@ -101,7 +100,6 @@ export class UserService {
 
     async getUserLikedImages(userId: string): Promise<APIResponseInterface> {
         try {
-
             const isRedisDataStored = await this.redis.getRedisKeyValue(`profileData_${userId}`)
             if (isRedisDataStored) {
                 return APIResponse({ statusCode: HttpStatus.OK, message: "userdata", data: JSON.parse(isRedisDataStored) })
@@ -135,7 +133,10 @@ export class UserService {
                     eq(this.TABLE_USER_ALIAS.id, schema.tbl_image.user_id)
                 )
                 .where(
-                    and(eq(schema.tbl_user.id, userId))
+                    and(
+                        eq(schema.tbl_user.id, userId),
+                        isNotNull(schema.tbl_image.id)
+                    )
                 )
 
             const userProfile = await this.getUserProfile(userId)
@@ -152,5 +153,44 @@ export class UserService {
         } catch (error) {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
         }
+    }
+
+    async getUserUploadedImages(userId: string) {
+        try {
+            const userImageData = await this.conn
+                .select({
+                    image_id: schema.tbl_image.id,
+                    is_paid: schema.tbl_image.is_paid,
+                    description: schema.tbl_image.description,
+                    width: schema.tbl_image.width,
+                    height: schema.tbl_image.height,
+                    thumbnail_url: schema.tbl_image.thumbnail_url,
+                    raw_url: schema.tbl_image.raw_url,
+                    ownerData: {
+                        id: schema.tbl_user.id,
+                        avatar: schema.tbl_user.avatar,
+                        userName: schema.tbl_user.display_name
+                    }
+                })
+                .from(schema.tbl_image)
+                .leftJoin(
+                    schema.tbl_user,
+                    eq(
+                        schema.tbl_user.id,
+                        schema.tbl_image.user_id
+                    )
+                )
+                .where(
+                    and(
+                        eq(schema.tbl_user.id, userId),
+                        isNotNull(schema.tbl_image.id)
+                    )
+                )
+            return APIResponse({ statusCode: HttpStatus.OK, message: '', data: userImageData })
+        } catch (error) {
+            console.log('error-->', error);
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error" })
+        }
+
     }
 }
