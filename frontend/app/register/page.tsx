@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { User, Mail, Lock, Upload, ArrowRight, Loader2, Image as ImageIcon } from 'lucide-react';
+import { User, Mail, Lock, Upload, ArrowRight, Loader2, Image as ImageIcon, FileText } from 'lucide-react';
 import Link from 'next/link';
 import axios, { HttpStatusCode } from 'axios';
 import BackgroundSlider from '@/components/BackgroundSlider';
@@ -13,6 +13,7 @@ import { useToast } from '@/context/ToastContext';
 type FormData = {
     username: string;
     emailId: string;
+    user_bio: string;
     password: string;
     user_avatar: FileList;
 };
@@ -51,12 +52,13 @@ export default function RegisterPage() {
         const formData = new FormData();
         formData.append('displayName', data.username);
         formData.append('emailId', data.emailId);
+        formData.append('user_bio', data.user_bio);
         formData.append('password', data.password);
         formData.append('user_avatar', data.user_avatar[0]);
 
 
 
-        const res = await axios.post('/api/v1/user/register', formData, {
+        const res = await axios.post('/api/v1/auth/register', formData, {
             withCredentials: true
         })
         if (res.status === HttpStatusCode.Created) {
@@ -158,6 +160,19 @@ export default function RegisterPage() {
                                 />
                             </div>
                             {errors.emailId && <span className="text-red-500 text-xs pl-1">{errors.emailId.message}</span>}
+                        </div>
+
+                        {/* Bio Field */}
+                        <div className="space-y-1">
+                            <div className="relative group">
+                                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)] group-focus-within:text-[var(--accent)] transition-colors" size={20} />
+                                <input
+                                    type="text"
+                                    placeholder="Bio (Optional)"
+                                    className="w-full bg-[var(--background)] text-[var(--foreground)] border border-[var(--muted)]/30 rounded-xl py-3 pl-10 pr-4 outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder:text-[var(--muted)]/50"
+                                    {...register('user_bio')}
+                                />
+                            </div>
                         </div>
 
                         {/* Password Field */}
