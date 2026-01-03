@@ -30,7 +30,7 @@ export default function LoginPage() {
 
     const onSubmit = async (data: FormData) => {
         try {
-            const res = await axios.post('/api/v1/user/login', data, {
+            const res = await axios.post('/api/v1/auth/login', data, {
                 withCredentials: true
             });
 

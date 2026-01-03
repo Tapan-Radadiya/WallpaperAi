@@ -14,7 +14,7 @@ export interface WallpaperImage {
 
 export async function getImages(page: number = 0): Promise<WallpaperImage[]> {
     try {
-        const response = await api.get(`/image/?page=${page}`);
+        const response = await api.get(`/image/data?page=${page}`);
         // Adjust endpoint to feed if needed, or keep /image depending on API
         // User didn't specify endpoint name for feed, but /image usually implies feed or list.
         // Assuming API returns array of objects matching the new structure
