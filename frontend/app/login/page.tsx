@@ -21,7 +21,7 @@ export default function LoginPage() {
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
-        mode: 'onBlur'
+        mode: 'onSubmit'
     });
 
     const router = useRouter();

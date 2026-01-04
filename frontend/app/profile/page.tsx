@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import Tabs from '@/components/Tabs';
 import ImageCard from '@/components/ImageCard';
 import Modal from '@/components/Modal';
@@ -9,7 +10,7 @@ import { useMasonryGrid } from '@/hooks/useMasonryGrid';
 import { useLikes } from '@/hooks/useLikes';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
-import { Instagram } from 'lucide-react';
+import { Globe, Instagram, Heart } from 'lucide-react';
 
 // --- Interfaces ---
 interface APIUserProfile {
@@ -18,7 +19,8 @@ interface APIUserProfile {
     emailId: string;
     avatarImage: string;
     user_bio?: string;
-    user_instagram_id?: string;
+    instagram_id?: string;
+    portfolio_url?: string
 }
 
 interface APIImageOwner {
@@ -205,22 +207,34 @@ export default function ProfilePage() {
                 )}
 
                 <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
-                    {profileData.userProfile.user_instagram_id && (
+                    {profileData.userProfile.instagram_id && (
                         <a
-                            href={`${profileData.userProfile.user_instagram_id}`}
+                            href={`${profileData.userProfile.instagram_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-3 rounded-full bg-[#E1306C]/5 border border-[#E1306C]/30 text-[#E1306C] shadow-md shadow-[#E1306C]/10 hover:bg-[var(--card-bg)] hover:border-[var(--muted)]/20 hover:text-[var(--muted)] hover:shadow-sm transition-all duration-300 group"
-                            aria-label={`Instagram: @${profileData.userProfile.user_instagram_id}`}
+                            aria-label={`Instagram: @${profileData.userProfile.instagram_id}`}
                         >
                             <Instagram size={20} className="group-hover:scale-110 transition-transform duration-300" />
+                        </a>
+                    )}
+
+                    {profileData.userProfile.portfolio_url && (
+                        <a
+                            href={profileData.userProfile.portfolio_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-3 rounded-full bg-blue-500/5 border border-blue-500/30 text-blue-500 shadow-md shadow-blue-500/10 hover:bg-[var(--card-bg)] hover:border-[var(--muted)]/20 hover:text-[var(--muted)] hover:shadow-sm transition-all duration-300 group"
+                            aria-label="Portfolio"
+                        >
+                            <Globe size={20} className="group-hover:scale-110 transition-transform duration-300" />
                         </a>
                     )}
 
                     {/* Future links can be added here easily */}
                 </div>
 
-                {!profileData.userProfile.user_instagram_id && <div className="mb-6"></div>}
+                {!profileData.userProfile.instagram_id && !profileData.userProfile.portfolio_url && <div className="mb-6"></div>}
 
                 {/* Statistics (Static as requested) */}
                 <div className="flex gap-6 text-sm mb-8">
@@ -246,8 +260,16 @@ export default function ProfilePage() {
                 {activeTab === 'liked' && (
                     <>
                         {likedImages.length === 0 ? (
-                            <div className="text-center py-20 text-muted">
-                                No liked images yet. Go explore!
+                            <div className="flex flex-col items-center justify-center py-20 text-muted space-y-4">
+                                <div className="w-16 h-16 rounded-2xl bg-muted/10 flex items-center justify-center">
+                                    <Heart className="w-8 h-8 opacity-50" />
+                                </div>
+                                <p>
+                                    No liked images yet.{' '}
+                                    <Link href="/" className="text-[var(--accent)] hover:underline font-medium">
+                                        Go explore!
+                                    </Link>
+                                </p>
                             </div>
                         ) : (
                             <div className="flex gap-4">
