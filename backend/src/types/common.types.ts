@@ -14,6 +14,8 @@ export type UserDataType = {
     avatar: string
     password: string
     user_bio: string
+    instagram_id?: string
+    portfolio_url?: string
 }
 export type userLoginType = {
     emailId: string

@@ -32,7 +32,9 @@ export class AuthController {
             displayName: body.displayName,
             emailId: body.emailId,
             password: await hashText(body.password),
-            user_bio: body.user_bio
+            user_bio: body.user_bio,
+            instagram_id: body.instagram_id ?? '',
+            portfolio_url: body.portfolio_url ?? ''
         }
 
         try {

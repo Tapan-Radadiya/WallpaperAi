@@ -9,6 +9,7 @@ export const tbl_user = pgTable('tbl_user', {
     password: varchar('password').notNull(),
     user_bio: varchar('user_bio'),
     instagram_id: varchar('instagram_id'),
+    portfolio_url: varchar('portfolio_url'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').$onUpdate(() => new Date())
 })

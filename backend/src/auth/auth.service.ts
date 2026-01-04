@@ -17,7 +17,7 @@ export class AuthService {
 
     async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
         // Insert User Data
-        const { avatar, displayName, emailId, password, user_bio } = userData
+        const { avatar, displayName, emailId, password, user_bio, instagram_id = '', portfolio_url = '' } = userData
         try {
             const userExists = await this.conn.query.tbl_user.findFirst({
                 where: and(
@@ -33,6 +33,8 @@ export class AuthService {
                 display_name: displayName,
                 email_id: emailId,
                 password,
+                instagram_id,
+                portfolio_url,
                 user_bio
             })
             if (newUser) {

@@ -18,62 +18,64 @@ export class UserService {
 
     private TABLE_USER_ALIAS = alias(schema.tbl_user, 'TABLE_USER_ALIAS')
 
-    async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
-        // Insert User Data
-        const { avatar, displayName, emailId, password, user_bio } = userData
-        try {
-            const userExists = await this.conn.query.tbl_user.findFirst({
-                where: and(
-                    eq(schema.tbl_user.display_name, userData.displayName),
-                    eq(schema.tbl_user.email_id, userData.emailId)
-                )
-            })
-            if (userExists) {
-                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "User with this name or emailid already exists" })
-            }
-            const newUser = await this.conn.insert(schema.tbl_user).values({
-                avatar,
-                display_name: displayName,
-                email_id: emailId,
-                password,
-                user_bio
-            })
-            if (newUser) {
-                return APIResponse({ statusCode: HttpStatus.CREATED, message: "user register successfully", data: newUser })
-            } else {
-                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Creating User" })
-            }
-        } catch (error) {
-            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Registering User", err: error })
-        }
-    }
+    // async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
+    //     // Insert User Data
+    //     const { avatar, displayName, emailId, password, user_bio, instagram_id = '', portfolio_url = '' } = userData
+    //     try {
+    //         const userExists = await this.conn.query.tbl_user.findFirst({
+    //             where: and(
+    //                 eq(schema.tbl_user.display_name, userData.displayName),
+    //                 eq(schema.tbl_user.email_id, userData.emailId)
+    //             )
+    //         })
+    //         if (userExists) {
+    //             return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "User with this name or emailid already exists" })
+    //         }
+    //         const newUser = await this.conn.insert(schema.tbl_user).values({
+    //             avatar,
+    //             display_name: displayName,
+    //             email_id: emailId,
+    //             password,
+    //             user_bio,
+    //             instagram_id,
+    //             portfolio_url
+    //         })
+    //         if (newUser) {
+    //             return APIResponse({ statusCode: HttpStatus.CREATED, message: "user register successfully", data: newUser })
+    //         } else {
+    //             return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Creating User" })
+    //         }
+    //     } catch (error) {
+    //         return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Registering User", err: error })
+    //     }
+    // }
 
-    async userLoginService(userData: userLoginType, req: Request): Promise<APIResponseInterface> {
-        try {
-            const userExists = await this.conn.query.tbl_user.findFirst({
-                where: eq(schema.tbl_user.email_id, userData.emailId)
-            })
-            if (!userExists) {
-                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid email or password" })
-            }
-            const isValidPassword = await compareHash(userData.password, userExists.password)
-            if (!isValidPassword) {
-                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid email or password" })
-            }
+    // async userLoginService(userData: userLoginType, req: Request): Promise<APIResponseInterface> {
+    //     try {
+    //         const userExists = await this.conn.query.tbl_user.findFirst({
+    //             where: eq(schema.tbl_user.email_id, userData.emailId)
+    //         })
+    //         if (!userExists) {
+    //             return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid email or password" })
+    //         }
+    //         const isValidPassword = await compareHash(userData.password, userExists.password)
+    //         if (!isValidPassword) {
+    //             return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid email or password" })
+    //         }
 
-            req.session.userId = userExists.id
-            req.session.useremail = userExists.email_id
-            const responseData = {
-                id: userExists.id,
-                displayName: userExists.display_name,
-                emailId: userExists.email_id,
-                avatarImage: `${process.env.AWS_CLOUDFRONT}${userExists.avatar}`
-            }
-            return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully", data: responseData })
-        } catch (error) {
-            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
-        }
-    }
+    //         req.session.userId = userExists.id
+    //         req.session.useremail = userExists.email_id
+    //         const responseData = {
+    //             id: userExists.id,
+    //             displayName: userExists.display_name,
+    //             emailId: userExists.email_id,
+    //             avatarImage: `${process.env.AWS_CLOUDFRONT}${userExists.avatar}`
+    //         }
+    //         return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully", data: responseData })
+    //     } catch (error) {
+    //         return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
+    //     }
+    // }
 
     async getUserProfile(userId: string): Promise<APIResponseInterface> {
         try {
@@ -87,7 +89,8 @@ export class UserService {
                     emailId: userData.email_id,
                     avatarImage: `${process.env.AWS_CLOUDFRONT}${userData.avatar}`,
                     user_bio: userData.user_bio,
-                    user_instagram_id: userData.instagram_id
+                    instagram_id: userData.instagram_id ?? '',
+                    portfolio_url: userData.portfolio_url ?? ''
                 }
                 return APIResponse({ statusCode: HttpStatus.OK, message: "", data: responseData })
             } else {
