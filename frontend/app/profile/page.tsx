@@ -11,6 +11,8 @@ import { useLikes } from '@/hooks/useLikes';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
 import { Globe, Instagram, Heart } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import LoginPrompt from '@/components/LoginPrompt';
 
 // --- Interfaces ---
 interface APIUserProfile {
@@ -57,6 +59,8 @@ export default function ProfilePage() {
     const [isUploadsLoading, setIsUploadsLoading] = useState(false);
     const [hasFetchedUploads, setHasFetchedUploads] = useState(false);
 
+    const { user, isLoading: authLoading } = useAuth();
+
     const { isLiked, toggleLike, syncLikes } = useLikes();
 
     useEffect(() => {
@@ -67,6 +71,14 @@ export default function ProfilePage() {
     }, [profileData, syncLikes]);
 
     useEffect(() => {
+        // Only fetch profile data if we have a user
+        if (!user && !authLoading) {
+            setLoading(false);
+            return;
+        }
+
+        if (authLoading) return;
+
         const fetchUserData = async () => {
             try {
                 const response = await api.get('/user/userData');
@@ -87,7 +99,7 @@ export default function ProfilePage() {
         };
 
         fetchUserData();
-    }, []);
+    }, [user, authLoading]);
 
     const processImageUrl = (url: string) => {
         if (!url) return '';
@@ -98,7 +110,7 @@ export default function ProfilePage() {
     // Fetch Uploaded Images when tab changes
     useEffect(() => {
         const fetchUploadedImages = async () => {
-            if (activeTab === 'uploads' && !hasFetchedUploads) {
+            if (activeTab === 'uploads' && !hasFetchedUploads && user) {
                 setIsUploadsLoading(true);
                 try {
                     const response = await api.get('/user/uploaded-images');
@@ -126,7 +138,7 @@ export default function ProfilePage() {
         };
 
         fetchUploadedImages();
-    }, [activeTab, hasFetchedUploads]);
+    }, [activeTab, hasFetchedUploads, user]);
 
     // Transform API liked images to WallpaperImage type
     const likedImages: WallpaperImage[] = React.useMemo(() => {
@@ -160,10 +172,18 @@ export default function ProfilePage() {
         setSelectedImage(null);
     };
 
-    if (loading) {
+    if (authLoading || loading) {
         return (
             <div className="min-h-screen pt-24 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+                <LoginPrompt />
             </div>
         );
     }

@@ -227,8 +227,8 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
                                 type="button"
                                 onClick={() => setIsPaid(!isPaid)}
                                 className={`
-                                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200
-                                    ${isPaid ? 'bg-emerald-500' : 'bg-rose-500'}
+                                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 cursor-pointer
+                                    ${isPaid ? 'bg-emerald-500' : 'bg-[var(--card-bg)]'}
                                 `}
                             >
                                 <span
