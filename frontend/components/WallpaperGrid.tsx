@@ -4,7 +4,7 @@ import { WallpaperImage } from '@/lib/data';
 import ImageCard from './ImageCard';
 import Modal from './Modal';
 import { useState } from 'react';
-import Image from 'next/image';
+import ImageDetails from './ImageDetails';
 import { useWallpaperData } from '@/hooks/useWallpaperData';
 import { useMasonryGrid } from '@/hooks/useMasonryGrid';
 import { useLikes } from '@/hooks/useLikes';
@@ -63,21 +63,23 @@ export default function WallpaperGrid({ initialImages, isMobile }: { initialImag
             <Modal
                 isOpen={!!selectedImage}
                 onClose={handleCloseModal}
-                downloadUrl={selectedImage?.rawUrl}
-                downloadName={`wallpaper-${selectedImage?.id}`}
             >
                 {selectedImage && (
-                    <div className="flex items-center justify-center p-4 w-full h-full">
-                        <Image
-                            src={selectedImage.rawUrl}
-                            alt={selectedImage.description || 'Wallpaper'}
-                            width={selectedImage.width}
-                            height={selectedImage.height}
-                            className="max-w-full max-h-[85vh] w-auto h-auto object-contain"
-                            priority
-                            quality={100}
-                        />
-                    </div>
+                    <ImageDetails
+                        image={selectedImage}
+                        relatedImages={images.slice(0, 10)}
+                        isLiked={isLiked(selectedImage.id)}
+                        onLike={() => toggleLike(selectedImage.id)}
+                        onRelatedImageClick={setSelectedImage}
+                        onDownload={() => {
+                            const link = document.createElement('a');
+                            link.href = selectedImage.rawUrl;
+                            link.download = `wallpaper-${selectedImage.id}`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }}
+                    />
                 )}
             </Modal>
         </>

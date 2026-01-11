@@ -13,6 +13,7 @@ import api from '@/lib/api';
 import { Globe, Instagram, Heart } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import LoginPrompt from '@/components/LoginPrompt';
+import ImageDetails from '@/components/ImageDetails';
 
 // --- Interfaces ---
 interface APIUserProfile {
@@ -361,21 +362,23 @@ export default function ProfilePage() {
             <Modal
                 isOpen={!!selectedImage}
                 onClose={handleCloseModal}
-                downloadUrl={selectedImage?.rawUrl}
-                downloadName={`wallpaper-${selectedImage?.id}`}
             >
                 {selectedImage && (
-                    <div className="flex items-center justify-center p-4 w-full h-full">
-                        <Image
-                            src={selectedImage.rawUrl}
-                            alt={selectedImage.description || 'Wallpaper'}
-                            width={selectedImage.width}
-                            height={selectedImage.height}
-                            className="max-w-full max-h-[85vh] w-auto h-auto object-contain"
-                            priority
-                            quality={100}
-                        />
-                    </div>
+                    <ImageDetails
+                        image={selectedImage}
+                        relatedImages={displayImages.slice(0, 10)}
+                        isLiked={isLiked(selectedImage.id)}
+                        onLike={() => toggleLike(selectedImage.id)}
+                        onRelatedImageClick={setSelectedImage}
+                        onDownload={() => {
+                            const link = document.createElement('a');
+                            link.href = selectedImage.rawUrl;
+                            link.download = `wallpaper-${selectedImage.id}`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }}
+                    />
                 )}
             </Modal>
         </div>
