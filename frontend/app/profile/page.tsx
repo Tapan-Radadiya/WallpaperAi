@@ -34,6 +34,7 @@ interface APIImageOwner {
 
 interface APILikedImage {
     image_id: string;
+    title?: string;
     is_paid: boolean;
     description: string;
     width: number;
@@ -125,7 +126,8 @@ export default function ProfilePage() {
                             description: img.description || 'Wallpaper',
                             userName: img.ownerData?.userName || 'Unknown',
                             userAvatar: processImageUrl(img.ownerData?.avatar),
-                            userId: img.ownerData?.id || ''
+                            userId: img.ownerData?.id || '',
+                            title: img.title
                         }));
                         setUploadedImages(mappedImages);
                     }
@@ -152,7 +154,8 @@ export default function ProfilePage() {
             description: img.description || 'Wallpaper',
             userName: img.ownerData?.userName || 'Unknown',
             userAvatar: processImageUrl(img.ownerData?.avatar),
-            userId: img.ownerData?.id || ''
+            userId: img.ownerData?.id || '',
+            title: img.title
         })) || [];
     }, [profileData]);
 

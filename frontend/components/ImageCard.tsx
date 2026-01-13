@@ -84,7 +84,7 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
 
             <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
                 <p className="text-white text-sm font-medium truncate">
-                    {image.description || 'Untitled'}
+                    {image.title || image.description || 'Untitled'}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                     {image.userAvatar && (
