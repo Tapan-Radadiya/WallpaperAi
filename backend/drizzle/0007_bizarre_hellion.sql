@@ -1,0 +1,1 @@
+ALTER TABLE "tbl_image" ADD COLUMN "title" varchar NOT NULL DEFAULT 'unknown';

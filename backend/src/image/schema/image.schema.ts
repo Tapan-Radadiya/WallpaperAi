@@ -8,6 +8,7 @@ import { tbl_user } from "src/Schema/schema";
 
 export const tbl_image = pgTable('tbl_image', {
     id: uuid('id').defaultRandom().primaryKey(),
+    title: varchar('title').notNull(),
     user_id: uuid('user_id').references(() => tbl_user.id).notNull(),
     is_paid: boolean('is_paid').default(false).notNull(),
     category: varchar('category'),

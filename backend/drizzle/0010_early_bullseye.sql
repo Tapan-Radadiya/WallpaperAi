@@ -1,0 +1,1 @@
+ALTER TABLE "tbl_image" ALTER COLUMN "title" DROP DEFAULT;

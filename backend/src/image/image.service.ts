@@ -96,7 +96,8 @@ export class ImageService {
                 is_paid: reqBody.is_paid,
                 user_id: userId,
                 raw_url: imageRawPath,
-                thumbnail_url: imageThumbnailPath
+                thumbnail_url: imageThumbnailPath,
+                title: reqBody.title
             }
 
             const insertImage = await this.conn.insert(schema.tbl_image).values({
@@ -109,7 +110,8 @@ export class ImageService {
                 user_id: imageData.user_id,
                 width: imageData.width,
                 id: imageData.id,
-                is_paid: imageData.is_paid
+                is_paid: imageData.is_paid,
+                title: imageData.title
             })
 
             if (insertImage) {

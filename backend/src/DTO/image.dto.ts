@@ -15,6 +15,9 @@ export class ImageUploadBodyDTO {
 
     @IsString()
     description: string
+
+    @IsString()
+    title: string
 }
 
 
@@ -48,6 +51,9 @@ export class ImageUploadDTO {
 
     @IsString()
     thumbnail_url: string
+
+    @IsString()
+    title: string
 }
 
 export class LikeImageDTO {
