@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { WallpaperImage } from '@/lib/data';
+import api from '@/lib/api';
 import { Heart, Bookmark, Share2, Info, ChevronDown } from 'lucide-react';
 import ImageCard from './ImageCard';
 
@@ -16,21 +17,54 @@ interface ImageDetailsProps {
 }
 
 export default function ImageDetails({ image, relatedImages = [], onDownload, onLike, isLiked, onRelatedImageClick }: ImageDetailsProps) {
+    const [isFullSize, setIsFullSize] = React.useState(false);
+    const [likesCount, setLikesCount] = React.useState<number>(0);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    // Scroll to top when image changes
+    React.useEffect(() => {
+        if (containerRef.current) {
+            containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [image.id]);
+
+    // Fetch detailed image data (likes)
+    React.useEffect(() => {
+        const fetchImageDetails = async () => {
+            try {
+                const res = await api.get(`/image/image-data/${image.id}`);
+                if (res.data && typeof res.data.imageLikes === 'number') {
+                    setLikesCount(res.data.imageLikes);
+                }
+            } catch (err) {
+                console.error("Failed to fetch image details:", err);
+            }
+        };
+        fetchImageDetails();
+    }, [image.id]);
+
+
     // Mock data for UI that is not in the data model yet
     const stats = [
         { label: 'Resolution', value: `${image.width} x ${image.height}` },
         { label: 'Size', value: '14.2 MB' },
         { label: 'Format', value: 'RAW' },
-        { label: 'Downloads', value: '12,408' },
+        { label: 'Likes', value: likesCount.toLocaleString() },
     ];
 
     return (
-        <div className="flex flex-col bg-[var(--card-bg)] rounded-3xl overflow-hidden max-w-7xl w-full h-[95vh] shadow-2xl overflow-y-auto custom-scrollbar">
+        <div
+            ref={containerRef}
+            className="flex flex-col bg-[var(--card-bg)] rounded-3xl overflow-hidden max-w-7xl w-full h-[95vh] shadow-2xl overflow-y-auto custom-scrollbar"
+        >
             {/* Split View Container */}
             <div className="flex flex-col md:flex-row w-full min-h-[800px] md:h-auto">
                 {/* Left Side: Main Image */}
                 <div className="relative w-full md:w-[70%] bg-black/5 min-h-[50vh] md:min-h-full group">
-                    <div className="absolute inset-0 flex items-center justify-center p-8 md:p-12">
+                    <div
+                        className="absolute inset-0 flex items-center justify-center p-2 md:p-4 cursor-zoom-in"
+                        onClick={() => setIsFullSize(true)}
+                    >
                         <Image
                             src={image.rawUrl}
                             alt={image.description || 'Wallpaper'}
@@ -39,6 +73,37 @@ export default function ImageDetails({ image, relatedImages = [], onDownload, on
                             priority
                         />
                     </div>
+
+                    {/* Full Size Overlay */}
+                    {isFullSize && (
+                        <div
+                            className="fixed inset-0 z-[100] bg-black flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsFullSize(false);
+                            }}
+                        >
+                            <div className="relative w-full h-full">
+                                <Image
+                                    src={image.rawUrl}
+                                    alt={image.description || 'Wallpaper'}
+                                    fill
+                                    className="object-contain"
+                                    priority
+                                    quality={100}
+                                />
+                            </div>
+                            <button
+                                className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsFullSize(false);
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                    )}
 
                     {/* Floating Actions Overlay */}
                     <div className="absolute top-6 right-6 flex flex-col gap-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
