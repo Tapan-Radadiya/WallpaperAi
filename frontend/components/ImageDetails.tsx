@@ -25,9 +25,9 @@ export default function ImageDetails({ image, relatedImages = [], onDownload, on
     ];
 
     return (
-        <div className="flex flex-col bg-[var(--card-bg)] rounded-3xl overflow-hidden max-w-7xl w-full h-[90vh] shadow-2xl overflow-y-auto custom-scrollbar">
+        <div className="flex flex-col bg-[var(--card-bg)] rounded-3xl overflow-hidden max-w-7xl w-full h-[95vh] shadow-2xl overflow-y-auto custom-scrollbar">
             {/* Split View Container */}
-            <div className="flex flex-col md:flex-row w-full min-h-[600px] md:h-auto">
+            <div className="flex flex-col md:flex-row w-full min-h-[800px] md:h-auto">
                 {/* Left Side: Main Image */}
                 <div className="relative w-full md:w-[70%] bg-black/5 min-h-[50vh] md:min-h-full group">
                     <div className="absolute inset-0 flex items-center justify-center p-8 md:p-12">
@@ -41,7 +41,7 @@ export default function ImageDetails({ image, relatedImages = [], onDownload, on
                     </div>
 
                     {/* Floating Actions Overlay */}
-                    <div className="absolute top-6 right-6 flex flex-col gap-3 z-10">
+                    <div className="absolute top-6 right-6 flex flex-col gap-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <button
                             onClick={(e) => { e.stopPropagation(); onLike?.(); }}
                             className="p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
@@ -86,7 +86,7 @@ export default function ImageDetails({ image, relatedImages = [], onDownload, on
                     {/* Title & Description */}
                     <div className="mb-8">
                         <h2 className="text-2xl font-bold text-[var(--foreground)] mb-3 kedebideri-bold tracking-tight">
-                            {image.description ? (image.description.length > 30 ? image.description.substring(0, 30) + "..." : image.description) : "Untitled Artwork"}
+                            {image.title || "Untitled Artwork"}
                         </h2>
                         <p className="text-sm text-[var(--muted)] leading-relaxed">
                             {image.description || "A stunning visual composition capturing the essence of the moment. Perfect for high-resolution displays."}

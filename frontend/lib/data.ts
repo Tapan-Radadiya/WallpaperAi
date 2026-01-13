@@ -10,6 +10,7 @@ export interface WallpaperImage {
     userName: string;
     userAvatar: string;
     userId: string;
+    title?: string;
 }
 
 export async function getImages(page: number = 0): Promise<WallpaperImage[]> {
@@ -22,7 +23,8 @@ export async function getImages(page: number = 0): Promise<WallpaperImage[]> {
             ...img,
             rawUrl: img.rawUrl,
             thumbnailUrl: img.thumbnailUrl,
-            userAvatar: img.userAvatar
+            userAvatar: img.userAvatar,
+            title: img.title
         }));
     } catch (error) {
         console.error('Error fetching images:', error);

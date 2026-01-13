@@ -18,6 +18,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [hashtags, setHashtags] = useState('');
+    const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [isPaid, setIsPaid] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
@@ -84,6 +85,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
             // or clean it up. The user didn't specify format details other than sending the field.
             // I will send it as is for now.
             formData.append('hashTags', hashtags);
+            formData.append('title', title);
             formData.append('description', description);
 
             await api.post('/image/upload', formData, {
@@ -101,6 +103,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
             if (previewUrl) URL.revokeObjectURL(previewUrl);
             setPreviewUrl(null);
             setHashtags('');
+            setTitle('');
             setDescription('');
             setIsPaid(false);
         } catch (error: any) {
@@ -193,6 +196,31 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
                         </button>
                     </div>
 
+
+                    {/* Title Input */}
+                    <div className="space-y-1.5">
+                        <label className="text-s font-semibold text-[var(--foreground)] capitalize tracking-wide">Title</label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Give your wallpaper a name"
+                            className="w-full px-3 py-2.5 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all placeholder:text-[var(--muted)]/40 text-[var(--foreground)] text-sm"
+                        />
+                    </div>
+
+                    {/* Description Input */}
+                    <div className="space-y-1.5">
+                        <label className="text-s font-semibold text-[var(--foreground)] capitalize tracking-wide">Description</label>
+                        <textarea
+                            value={description}
+                            rows={5}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Tell us about this wallpaper..."
+                            className="w-full px-3 py-2.5 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all resize-none placeholder:text-[var(--muted)]/40 text-[var(--foreground)] text-sm"
+                        />
+                    </div>
+
                     <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
                         {/* Hashtags Input */}
                         <div className="space-y-1.5">
@@ -206,17 +234,6 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
                             />
                         </div>
 
-                        {/* Description Input */}
-                        <div className="space-y-1.5">
-                            <label className="text-s font-semibold text-[var(--foreground)] capitalize tracking-wide">Description</label>
-                            <textarea
-                                value={description}
-                                rows={5}
-                                onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Tell us about this wallpaper..."
-                                className="w-full px-3 py-2.5 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all resize-none placeholder:text-[var(--muted)]/40 text-[var(--foreground)] text-sm"
-                            />
-                        </div>
 
                         {/* Paid Toggle */}
                         <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20">
