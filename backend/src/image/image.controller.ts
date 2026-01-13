@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { ImageService } from './image.service';
 import { craftResponseData, getImageMetaData } from 'src/utils/common';
@@ -123,5 +123,29 @@ export class ImageController {
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
         }
         return res.status(responseData.statusCode).json(responseData)
+    }
+
+    @Get('/image-data/:imageId')
+    async getImageDetails(
+        @Res() res: Response,
+        @Req() req: Request,
+        @Param() params: { imageId: string }
+    ) {
+        if (!req.session.userId) {
+            throw new Error("Unauthincated User Found")
+        }
+        let responseData = craftResponseData()
+        try {
+            const data = await this.imageService.getImageDetails(params.imageId)
+            responseData.statusCode = data.statusCode
+            responseData.message = data.message
+            responseData.data = data.data ?? {}
+            responseData.err = data.err ?? {}
+
+        } catch (error) {
+            responseData.err = error
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        return res.status(responseData.statusCode).json(responseData.data)
     }
 }
