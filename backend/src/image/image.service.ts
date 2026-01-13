@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
@@ -76,15 +76,19 @@ export class ImageService {
     }
 
     async uploadUserImageService(reqBody: ImageUploadBodyDTO, imageMetaData: sharp.Metadata, userId: string, fileData: Express.Multer.File): Promise<APIResponseInterface> {
-
         const imageUuid = crypto.randomUUID()
         const imageThumbnailPath = `images/${userId}/${imageUuid}/thumbnail.webp`
-        const imageRawPath = `images/${userId}/${imageUuid}/raw.webp`
+        const imageRawPath = `images/${userId}/${imageUuid}/raw.${imageMetaData.format}`
+        const imageFullPath = `images/${userId}/${imageUuid}/preview.webp`
         try {
             const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
+            const fullImageBuffer = await this.convertImageToPreview(fileData)
 
-            await this.uploadService.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype)
-            await this.uploadService.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype)
+            const data = await Promise.allSettled([
+                this.uploadService.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
+                this.uploadService.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
+                this.uploadService.uploadFile(imageFullPath, fullImageBuffer, fileData.mimetype)
+            ])
 
             const imageData: ImageUploadDTO = {
                 id: imageUuid,
@@ -180,6 +184,39 @@ export class ImageService {
         return APIResponse({ statusCode: HttpStatus.OK, message: "Data Fetched", data: likedImageIds })
     }
 
+    async getImageDetails(imageId: string): Promise<APIResponseInterface> {
+        try {
+            const isImageExists = await this.conn.query.tbl_image.findFirst({
+                where: (
+                    eq(
+                        schema.tbl_image.id, imageId
+                    )
+                )
+            })
+
+            if (!isImageExists) {
+                return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "Unable to find the image" })
+            }
+
+
+            const totalLikedImage = await this.conn
+                .select({
+                    totalLike: count()
+                })
+                .from(schema.tbl_image_likes)
+                .where(
+                    eq(schema.tbl_image_likes.image_id, imageId)
+                )
+            const imageData = {
+                ...isImageExists,
+                imageLikes: totalLikedImage[0].totalLike
+            }
+
+            return APIResponse({ statusCode: HttpStatus.OK, message: "Ok", data: imageData })
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error" })
+        }
+    }
 
 
     // Private Functions
@@ -199,6 +236,16 @@ export class ImageService {
 
         const thumbNailImage = await sharp(imageData.buffer).resize({ width: thumbnailImageWidth }).toBuffer()
         return thumbNailImage
+    }
+
+    private async convertImageToPreview(imageData: Express.Multer.File): Promise<Buffer> {
+        const previewWidth = 1400; // perfect for modal previews
+        const previewImage = await sharp(imageData.buffer)
+            .resize({ width: previewWidth, withoutEnlargement: true })
+            .jpeg({ quality: 90 })
+            .toBuffer();
+
+        return previewImage;
     }
 
     private randomizeData(data: any[]): any[] {
