@@ -6,16 +6,24 @@ import Link from 'next/link';
 import { LogIn, User as UserIcon, Upload } from 'lucide-react';
 import Image from 'next/image';
 import UploadModal from './UploadModal';
-import { User } from '@/context/AuthContext';
+
+import { User, useAuth } from '@/context/AuthContext';
 
 interface HeaderClientProps {
     initialUser: User | null;
 }
 
 export default function HeaderClient({ initialUser }: HeaderClientProps) {
-    const [user] = useState<User | null>(initialUser);
+    const { user, login } = useAuth();
     const [imageError, setImageError] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
+
+    // Sync server-side user data with client context
+    React.useEffect(() => {
+        if (initialUser) {
+            login(initialUser);
+        }
+    }, [initialUser, login]);
 
     return (
         <header className="sticky top-0 z-10 backdrop-blur-md bg-[var(--background)]/80 border-b border-[var(--muted)]/20">

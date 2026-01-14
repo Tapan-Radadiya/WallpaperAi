@@ -24,32 +24,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
 
     // Check for active session on mount
+    // Check for active session on mount
+    /*
     useEffect(() => {
         const checkSession = async () => {
-            try {
-                const res = await axios.get('/api/v1/user/profile', {
-                    withCredentials: true
-                });
-
-                if (res.status === HttpStatusCode.Ok) {
-                    const userData = res.data.data || res.data;
-                    setUser({
-                        id: userData.id || userData._id,
-                        displayName: userData.displayName,
-                        emailId: userData.emailId,
-                        avatarImage: userData.avatarImage
-                    });
-                }
-            } catch (error) {
-                // Session likely invalid or expired
-                console.log("No active session found");
-                setUser(null);
-            } finally {
-                setIsLoading(false);
-            }
+             // Logic moved to SSR in Header component and hydrated via HeaderClient
+             setIsLoading(false);
         };
-
         checkSession();
+    }, []);
+    */
+    // Simplified to just stop loading immediately or keep it false if initialized
+    useEffect(() => {
+        setIsLoading(false);
     }, []);
 
     const login = (userData: User) => {
