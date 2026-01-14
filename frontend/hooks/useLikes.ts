@@ -1,10 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
 import api from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 export function useLikes(initialLikedIds: string[] = []) {
+    const { user } = useAuth();
     const [likedImageIds, setLikedImageIds] = useState<Set<string>>(new Set(initialLikedIds));
 
     useEffect(() => {
+        if (!user) {
+            setLikedImageIds(new Set());
+            return;
+        }
+
         const fetchLikedImages = async () => {
             try {
                 const response = await api.get('/image/liked-images');
@@ -22,7 +29,7 @@ export function useLikes(initialLikedIds: string[] = []) {
         };
 
         fetchLikedImages();
-    }, []);
+    }, [user]);
 
     const toggleLike = async (id: string) => {
         const isCurrentlyLiked = likedImageIds.has(id);

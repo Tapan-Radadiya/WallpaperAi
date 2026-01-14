@@ -71,14 +71,6 @@ export default function WallpaperGrid({ initialImages, isMobile }: { initialImag
                         isLiked={isLiked(selectedImage.id)}
                         onLike={() => toggleLike(selectedImage.id)}
                         onRelatedImageClick={setSelectedImage}
-                        onDownload={() => {
-                            const link = document.createElement('a');
-                            link.href = selectedImage.rawUrl;
-                            link.download = `wallpaper-${selectedImage.id}`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        }}
                     />
                 )}
             </Modal>

@@ -1,46 +1,100 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
-import { Heart, Bookmark, Share2, Info, ChevronDown } from 'lucide-react';
+import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check } from 'lucide-react';
 import ImageCard from './ImageCard';
 
 interface ImageDetailsProps {
     image: WallpaperImage;
     relatedImages?: WallpaperImage[];
-    onDownload?: () => void;
     onLike?: () => void;
     isLiked?: boolean;
     onRelatedImageClick?: (image: WallpaperImage) => void;
 }
 
-export default function ImageDetails({ image, relatedImages = [], onDownload, onLike, isLiked, onRelatedImageClick }: ImageDetailsProps) {
-    const [isFullSize, setIsFullSize] = React.useState(false);
-    const [likesCount, setLikesCount] = React.useState<number>(0);
-    const containerRef = React.useRef<HTMLDivElement>(null);
+export default function ImageDetails({ image, relatedImages = [], onLike, isLiked, onRelatedImageClick }: ImageDetailsProps) {
+    const [isFullSize, setIsFullSize] = useState(false);
+    const [likesCount, setLikesCount] = useState<number>(0);
+    const [downloadCount, setDownloadCount] = useState<number>(0);
+    const [isDownloading, setIsDownloading] = useState(false);
+
+    const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+                setShowDownloadMenu(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleDownload = async (url: string, filename: string) => {
+        // Fire and forget download count update
+        api.patch(`/image/update-download-count/${image.id}`).catch(e => console.error("Error updating download count", e));
+
+        try {
+            setIsDownloading(true);
+            setShowDownloadMenu(false);
+
+            const res = await fetch(url);
+            const blob = await res.blob();
+
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error("Download failed:", error);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+
+
 
     // Scroll to top when image changes
-    React.useEffect(() => {
+    // Scroll to top when image changes
+    useEffect(() => {
         if (containerRef.current) {
             containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, [image.id]);
 
     // Fetch detailed image data (likes)
-    React.useEffect(() => {
+    useEffect(() => {
+        const controller = new AbortController();
         const fetchImageDetails = async () => {
             try {
-                const res = await api.get(`/image/image-data/${image.id}`);
+                const res = await api.get(`/image/image-data/${image.id}`, {
+                    signal: controller.signal
+                });
                 if (res.data && typeof res.data.imageLikes === 'number') {
                     setLikesCount(res.data.imageLikes);
                 }
-            } catch (err) {
-                console.error("Failed to fetch image details:", err);
+                if (res.data && typeof res.data.totalDownloads === 'number') {
+                    setDownloadCount(res.data.totalDownloads);
+                }
+            } catch (err: any) {
+                if (err.name !== 'CanceledError' && err.code !== "ERR_CANCELED") {
+                    console.error("Failed to fetch image details:", err);
+                }
             }
         };
         fetchImageDetails();
+        return () => controller.abort();
     }, [image.id]);
 
 
@@ -48,8 +102,8 @@ export default function ImageDetails({ image, relatedImages = [], onDownload, on
     const stats = [
         { label: 'Resolution', value: `${image.width} x ${image.height}` },
         { label: 'Size', value: '14.2 MB' },
-        { label: 'Format', value: 'RAW' },
         { label: 'Likes', value: likesCount.toLocaleString() },
+        { label: 'Downloads', value: downloadCount.toLocaleString() },
     ];
 
     return (
@@ -170,13 +224,53 @@ export default function ImageDetails({ image, relatedImages = [], onDownload, on
 
                     {/* Download Button */}
                     <div className="mt-auto pt-4">
-                        <button
-                            onClick={onDownload}
-                            className="w-full py-4 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-[var(--foreground)]/10 group"
-                        >
-                            <span>Download Free</span>
-                            <ChevronDown size={20} className="ml-2 opacity-70" />
-                        </button>
+                        <div className="relative" ref={downloadMenuRef}>
+                            <button
+                                onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                                disabled={isDownloading}
+                                className="w-full py-4 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-[var(--foreground)]/10 group disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isDownloading ? (
+                                    <div className="w-6 h-6 border-2 border-[var(--background)] border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        <span>Download Free</span>
+                                        <ChevronDown size={20} className={`opacity-70 transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`} />
+                                    </>
+                                )}
+                            </button>
+
+                            {/* Download Menu */}
+                            {showDownloadMenu && (
+                                <div className="absolute bottom-full left-0 w-full mb-2 bg-[var(--card-bg)] border border-[var(--muted)]/20 rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom-2 z-50">
+                                    <div className="p-2">
+                                        <div className="p-2">
+                                            <button
+                                                onClick={() => handleDownload(image.rawUrl, `wallpaper-${image.id}-original.jpg`)}
+                                                className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-[var(--muted)]/10 transition-colors group/item"
+                                            >
+                                                <div className="flex flex-col items-start">
+                                                    <span className="font-bold text-[var(--foreground)] text-sm">Original</span>
+                                                    <span className="text-xs text-[var(--muted)]">{image.width} x {image.height}</span>
+                                                </div>
+                                                <Download size={18} className="text-[var(--muted)] group-hover/item:text-[var(--foreground)] transition-colors" />
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleDownload(image.thumbnailUrl, `wallpaper-${image.id}-small.jpg`)}
+                                                className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-[var(--muted)]/10 transition-colors group/item"
+                                            >
+                                                <div className="flex flex-col items-start">
+                                                    <span className="font-bold text-[var(--foreground)] text-sm">Small</span>
+                                                    <span className="text-xs text-[var(--muted)]">Thumbnail</span>
+                                                </div>
+                                                <Download size={18} className="text-[var(--muted)] group-hover/item:text-[var(--foreground)] transition-colors" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
