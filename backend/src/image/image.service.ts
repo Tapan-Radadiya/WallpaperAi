@@ -11,6 +11,7 @@ import { ImageUploadBodyDTO, ImageUploadDTO, LikeImageDTO } from 'src/DTO/image.
 import sharp from 'sharp';
 import { FileuploadService } from 'src/fileupload/fileupload.service';
 import { UserService } from 'src/user/user.service';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class ImageService {
@@ -207,9 +208,17 @@ export class ImageService {
                 .where(
                     eq(schema.tbl_image_likes.image_id, imageId)
                 )
+
+            const totalDownlaods = await this.conn
+                .select({
+                    totalDownload: count()
+                })
+                .from(schema.tbl_image_downloads)
+                .where(eq(schema.tbl_image_downloads.image_id, imageId))
             const imageData = {
                 ...isImageExists,
-                imageLikes: totalLikedImage[0].totalLike
+                mageLikes: totalLikedImage?.[0]?.totalLike,
+                totalDownloads: totalDownlaods?.[0]?.totalDownload ?? 0
             }
 
             return APIResponse({ statusCode: HttpStatus.OK, message: "Ok", data: imageData })
@@ -218,6 +227,68 @@ export class ImageService {
         }
     }
 
+    async updateDownloadCounter(imageId: string, userIp?: string, userId?: string): Promise<APIResponseInterface> {
+
+        try {
+            if (userId) {
+                const isUserExists = await this.conn.query.tbl_image_downloads.findFirst({
+                    where: (
+                        and(
+                            eq(
+                                schema.tbl_image_downloads.image_id, imageId
+                            ),
+                            eq(
+                                schema.tbl_image_downloads.user_id, userId as UUID
+                            )
+                        )
+                    )
+                })
+                if (isUserExists) {
+                    return APIResponse({ statusCode: HttpStatus.OK, message: "User Has Already Downloaded" })
+                } else {
+                    await this.conn.insert(schema.tbl_image_downloads).values({
+                        image_id: imageId,
+                        user_id: userId
+                    })
+                    return APIResponse({ statusCode: HttpStatus.OK, message: '' })
+                }
+            }
+
+            // User Is Not LoggedIn
+            if (userIp) {
+                const isUserDownloaded = await this.conn.query.tbl_image_downloads.findFirst({
+                    where: (
+                        and(
+                            eq(
+                                schema.tbl_image_downloads.image_id,
+                                imageId
+                            ),
+                            eq(
+                                schema.tbl_image_downloads.user_ip,
+                                String(userIp)
+                            )
+                        )
+                    )
+                })
+                if (isUserDownloaded) {
+                    return APIResponse({ statusCode: HttpStatus.OK, message: "User Has Already Downloaded" })
+                } else {
+                    const data = await this.conn.insert(schema.tbl_image_downloads).values({
+                        image_id: imageId,
+                        user_ip: userIp
+                    }).returning({
+                        userIp: schema.tbl_image_downloads.user_ip,
+                        userId: schema.tbl_image_downloads.image_id
+                    })
+                    return APIResponse({ statusCode: HttpStatus.OK, message: '' })
+                }
+            }
+            return APIResponse({ statusCode: HttpStatus.CONFLICT, message: 'Unsable to get userId or userIP' })
+        } catch (error) {
+            console.log('error-->', error);
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: 'Internal Server Error', err: error })
+        }
+    }
 
     // Private Functions
     private async getLikeImage(imageId: string, userId: string) {

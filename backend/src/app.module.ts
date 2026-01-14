@@ -39,7 +39,12 @@ import { UserController } from './user/user.controller';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthMiddleware)
-      .exclude('/auth', '/image/data')
+      .exclude(
+        '/auth',
+        '/image/data',
+        { path: '/image/image-data/*path', method: RequestMethod.GET },
+        { path: '/image/update-download-count/*path', method: RequestMethod.PATCH }
+      )
       .forRoutes(ImageController, UserController)
   }
 }

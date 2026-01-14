@@ -33,3 +33,12 @@ export const tbl_image_likes = pgTable('tbl_image_likes', {
         UniqueConstraint: unique('user-image-like-unique-constraint').on(table.image_id, table.user_id)
     }
 })
+
+export const tbl_image_downloads = pgTable('tbl_image_downloads', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    user_id: uuid('user_id').references(() => tbl_user.id),
+    user_ip: varchar('user_ip'),
+    image_id: uuid('image_id').references(() => tbl_image.id).notNull(),
+    created_at: timestamp('created_at').defaultNow(),
+    updated_at: timestamp('updated_at').$onUpdate(() => new Date())
+})

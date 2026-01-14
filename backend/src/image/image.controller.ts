@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { ImageService } from './image.service';
 import { craftResponseData, getImageMetaData } from 'src/utils/common';
@@ -131,10 +131,9 @@ export class ImageController {
         @Req() req: Request,
         @Param() params: { imageId: string }
     ) {
-        if (!req.session.userId) {
-            throw new Error("Unauthincated User Found")
-        }
+
         let responseData = craftResponseData()
+
         try {
             const data = await this.imageService.getImageDetails(params.imageId)
             responseData.statusCode = data.statusCode
@@ -145,6 +144,28 @@ export class ImageController {
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        return res.status(responseData.statusCode).json(responseData.data)
+    }
+
+
+    @Patch("/update-download-count/:imageId")
+    async downloadImage(
+        @Res() res: Response,
+        @Req() req: Request,
+        @Param() params: { imageId: string }
+    ) {
+        let responseData = craftResponseData()
+        let userId = req?.session?.userId
+        const userIp: string | undefined = req.ip
+        try {
+            const data = await this.imageService.updateDownloadCounter(params.imageId, userIp, userId)
+            responseData.statusCode = data.statusCode
+            responseData.message = data.message
+            responseData.data = data.data ?? {}
+            responseData.err = data.err ?? {}
+        } catch (error) {
+            return res.status(responseData.statusCode).json(responseData.data)
         }
         return res.status(responseData.statusCode).json(responseData.data)
     }
