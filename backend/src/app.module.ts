@@ -41,7 +41,7 @@ export class AppModule implements NestModule {
     consumer.apply(AuthMiddleware)
       .exclude(
         '/auth',
-        { path: '/image/data/', method: RequestMethod.GET },
+        '/image/data',
         { path: '/image/image-data/*path', method: RequestMethod.GET },
         { path: '/image/update-download-count/*path', method: RequestMethod.PATCH },
         { path: '/user/username-exists/*path', method: RequestMethod.GET },
