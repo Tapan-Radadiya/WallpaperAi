@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { User, Mail, Lock, Upload, ArrowRight, Loader2, Image as ImageIcon, FileText, Instagram, Globe } from 'lucide-react';
+import { User, Mail, Lock, Upload, ArrowRight, Loader2, Image as ImageIcon, FileText, Instagram, Globe, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import axios, { HttpStatusCode } from 'axios';
 import BackgroundSlider from '@/components/BackgroundSlider';
 import sampleImages from '../../lib/sample.json';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/context/ToastContext';
+import { useDebounce } from '@/hooks/useDebounce';
 
 type FormData = {
     username: string;
@@ -34,6 +35,88 @@ export default function RegisterPage() {
     const avatarFile = watch('user_avatar');
     const router = useRouter();
     const { showToast } = useToast();
+
+    // Username checking state
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+    const [usernameMessage, setUsernameMessage] = useState('');
+    const [isUsernameValid, setIsUsernameValid] = useState<boolean | null>(null);
+
+    const username = watch('username');
+    const debouncedUsername = useDebounce(username, 500);
+
+    React.useEffect(() => {
+        const checkUsernameUnique = async () => {
+            if (!debouncedUsername || debouncedUsername.length < 3) {
+                setIsUsernameValid(null);
+                setUsernameMessage('');
+                return;
+            }
+
+            setIsCheckingUsername(true);
+            try {
+                const response = await axios.get(`/api/v1/user/username-exists/${debouncedUsername}`);
+                // 200 OK means username is not taken (Available)
+                if (response.status === HttpStatusCode.Ok) {
+                    setIsUsernameValid(true);
+                    setUsernameMessage('Username is available');
+                }
+            } catch (error: any) {
+                if (error.response?.status === 409) {
+                    setIsUsernameValid(false);
+                    setUsernameMessage(error.response?.data?.message || 'Username is already taken');
+                } else {
+                    // Handle other errors or treat as potentially available but let submission fail if real issue
+                    setIsUsernameValid(null);
+                    setUsernameMessage('Error checking username');
+                }
+            } finally {
+                setIsCheckingUsername(false);
+            }
+        };
+
+        checkUsernameUnique();
+    }, [debouncedUsername]);
+
+    // Email checking state
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+    const [emailMessage, setEmailMessage] = useState('');
+    const [isEmailValid, setIsEmailValid] = useState<boolean | null>(null);
+
+    const email = watch('emailId');
+    const debouncedEmail = useDebounce(email, 500);
+
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+
+    React.useEffect(() => {
+        const checkEmailUnique = async () => {
+            if (!debouncedEmail || !emailRegex.test(debouncedEmail)) {
+                setIsEmailValid(null);
+                setEmailMessage('');
+                return;
+            }
+
+            setIsCheckingEmail(true);
+            try {
+                const response = await axios.get(`/api/v1/user/useremail-exists/${debouncedEmail}`);
+                if (response.status === HttpStatusCode.Ok) {
+                    setIsEmailValid(true);
+                    setEmailMessage('Email is available');
+                }
+            } catch (error: any) {
+                if (error.response?.status === 409) {
+                    setIsEmailValid(false);
+                    setEmailMessage(error.response?.data?.message || 'Email is already registered');
+                } else {
+                    setIsEmailValid(null);
+                    setEmailMessage('Error checking email');
+                }
+            } finally {
+                setIsCheckingEmail(false);
+            }
+        };
+
+        checkEmailUnique();
+    }, [debouncedEmail]);
 
     // Handle avatar preview
     React.useEffect(() => {
@@ -153,6 +236,10 @@ export default function RegisterPage() {
                                             })}
                                         />
                                     </div>
+
+                                    {isCheckingUsername && <span className="text-[var(--muted)] text-xs pl-1 flex items-center gap-1"><Loader2 className="animate-spin" size={12} /> Checking...</span>}
+                                    {!isCheckingUsername && isUsernameValid === true && <span className="text-green-500 text-xs pl-1 flex items-center gap-1"><CheckCircle size={12} /> {usernameMessage}</span>}
+                                    {!isCheckingUsername && isUsernameValid === false && <span className="text-red-500 text-xs pl-1 flex items-center gap-1"><XCircle size={12} /> {usernameMessage}</span>}
                                     {errors.username && <span className="text-red-500 text-xs pl-1">{errors.username.message}</span>}
                                 </div>
 
@@ -173,9 +260,13 @@ export default function RegisterPage() {
                                             })}
                                         />
                                     </div>
-                                    {errors.emailId && <span className="text-red-500 text-xs pl-1">{errors.emailId.message}</span>}
                                 </div>
+                                {isCheckingEmail && <span className="text-[var(--muted)] text-xs pl-1 flex items-center gap-1"><Loader2 className="animate-spin" size={12} /> Checking...</span>}
+                                {!isCheckingEmail && isEmailValid === true && <span className="text-green-500 text-xs pl-1 flex items-center gap-1"><CheckCircle size={12} /> {emailMessage}</span>}
+                                {!isCheckingEmail && isEmailValid === false && <span className="text-red-500 text-xs pl-1 flex items-center gap-1"><XCircle size={12} /> {emailMessage}</span>}
+                                {errors.emailId && <span className="text-red-500 text-xs pl-1">{errors.emailId.message}</span>}
                             </div>
+
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Password Field */}
@@ -261,8 +352,8 @@ export default function RegisterPage() {
                                 </Link>
                             </div>
                         </form>
-                    </div>
-                </div>
+                    </div >
+                </div >
             </div>
         </div>
     );
