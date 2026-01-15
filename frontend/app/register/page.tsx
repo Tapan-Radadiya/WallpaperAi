@@ -133,6 +133,10 @@ export default function RegisterPage() {
     }, [avatarFile]);
 
     const onSubmit = async (data: FormData) => {
+        // Prevent submission if checks are failing or still running
+        if (isUsernameValid === false || isEmailValid === false || isCheckingUsername || isCheckingEmail) {
+            return;
+        }
 
         const formData = new FormData();
         formData.append('displayName', data.username);
@@ -260,11 +264,11 @@ export default function RegisterPage() {
                                             })}
                                         />
                                     </div>
+                                    {isCheckingEmail && <span className="text-[var(--muted)] text-xs pl-1 flex items-center gap-1"><Loader2 className="animate-spin" size={12} /> Checking...</span>}
+                                    {!isCheckingEmail && isEmailValid === true && <span className="text-green-500 text-xs pl-1 flex items-center gap-1"><CheckCircle size={12} /> {emailMessage}</span>}
+                                    {!isCheckingEmail && isEmailValid === false && <span className="text-red-500 text-xs pl-1 flex items-center gap-1"><XCircle size={12} /> {emailMessage}</span>}
+                                    {errors.emailId && <span className="text-red-500 text-xs pl-1">{errors.emailId.message}</span>}
                                 </div>
-                                {isCheckingEmail && <span className="text-[var(--muted)] text-xs pl-1 flex items-center gap-1"><Loader2 className="animate-spin" size={12} /> Checking...</span>}
-                                {!isCheckingEmail && isEmailValid === true && <span className="text-green-500 text-xs pl-1 flex items-center gap-1"><CheckCircle size={12} /> {emailMessage}</span>}
-                                {!isCheckingEmail && isEmailValid === false && <span className="text-red-500 text-xs pl-1 flex items-center gap-1"><XCircle size={12} /> {emailMessage}</span>}
-                                {errors.emailId && <span className="text-red-500 text-xs pl-1">{errors.emailId.message}</span>}
                             </div>
 
 
@@ -329,7 +333,7 @@ export default function RegisterPage() {
                             {/* Submit Button */}
                             <button
                                 type="submit"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || isCheckingUsername || isCheckingEmail || isUsernameValid === false || isEmailValid === false}
                                 className="w-full bg-[var(--foreground)] text-[var(--background)] rounded-xl py-4 font-medium hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg hover:shadow-xl text-lg"
                             >
                                 {isSubmitting ? (
