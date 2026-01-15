@@ -9,7 +9,6 @@ async function getUser(): Promise<User | null> {
         const cookieStore = await cookies();
         const allCookies = cookieStore.getAll();
         const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join(';');
-
         const res = await axios.get('http://192.168.1.31:3002/api/v1/user/profile', {
             headers: {
                 Cookie: cookieHeader
