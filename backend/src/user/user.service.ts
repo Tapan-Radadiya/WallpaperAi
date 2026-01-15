@@ -4,7 +4,7 @@ import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { userLoginType, APIResponseInterface, UserDataType } from 'src/types/common.types';
 import * as schema from "../Schema/schema"
 import { APIResponse, compareHash } from 'src/utils/common';
-import { and, eq, isNotNull } from 'drizzle-orm';
+import { and, eq, exists, isNotNull } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 import type { Request, Response } from 'express';
@@ -195,5 +195,44 @@ export class UserService {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error" })
         }
 
+    }
+
+    async isUniqueUser(data: { username: string | undefined, userEmail: string | undefined }): Promise<APIResponseInterface> {
+        try {
+            if (data?.username) {
+                const isUserNameExists = await this.conn.query.tbl_user.findFirst({
+                    where: (
+                        eq(
+                            schema.tbl_user.display_name, data.username
+                        )
+                    )
+                })
+
+                if (isUserNameExists) {
+                    return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Username Already Exists", data: { exists: true } })
+                } else {
+                    return APIResponse({ statusCode: HttpStatus.OK, message: "Unique User", data: { exists: false } })
+                }
+            }
+            if (data?.userEmail) {
+                const isUserEmailExists = await this.conn.query.tbl_user.findFirst({
+                    where: (
+                        eq(
+                            schema.tbl_user.email_id, data.userEmail
+                        )
+                    )
+                })
+
+                if (isUserEmailExists) {
+                    return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "UserEmail Already Exists", data: { exists: true } })
+                } else {
+                    return APIResponse({ statusCode: HttpStatus.OK, message: "Unique User", data: { exists: false } })
+                }
+            }
+            throw new Error('Either username or useremail should be provided')
+        } catch (error) {
+            console.log('error-->', error);
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error", err: error })
+        }
     }
 }
