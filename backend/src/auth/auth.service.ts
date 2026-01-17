@@ -14,7 +14,7 @@ export class AuthService {
     constructor(
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
         private readonly redis: RedisCacheService,
-        private readonly userVerification: UserVerificationService
+        private readonly userVerification: UserVerificationService,
     ) { }
 
     async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
@@ -38,8 +38,11 @@ export class AuthService {
                 instagram_id,
                 portfolio_url,
                 user_bio
+            }).returning({
+                id: schema.tbl_user.id
             })
-            if (newUser) {
+            if (newUser?.length > 0) {
+                this.userVerification.sendVerificationEmailService(newUser?.[0]?.id)
                 return APIResponse({ statusCode: HttpStatus.CREATED, message: "user register successfully", data: newUser })
             } else {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Creating User" })
@@ -70,7 +73,6 @@ export class AuthService {
                 emailId: userExists.email_id,
                 avatarImage: `${process.env.AWS_CLOUDFRONT}${userExists.avatar}`
             }
-            this.userVerification.sendVerificationEmailService(userExists.id)
             return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully", data: responseData })
         } catch (error) {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })

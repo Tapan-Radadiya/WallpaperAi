@@ -44,6 +44,8 @@ export const tbl_email_verfications = pgTable('tbl_email_verfications', {
     user_id: uuid('user_id').references(() => tbl_user.id).notNull(),
     email_code: varchar('email_code').notNull(),
     expires_at: timestamp('expires_at').default(sql`NOW() + INTERVAL '10 minutes'`),
+    user_attempts: integer('user_attempts').notNull().default(0),
+    resend_attempts: integer('resend_attempts').notNull().default(0),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').$onUpdate(() => new Date())
 })

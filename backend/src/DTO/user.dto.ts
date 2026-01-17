@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, IsStrongPassword, IsUrl } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsStrongPassword, IsUrl, Length, MaxLength, MinLength } from 'class-validator';
 
 export class RegisterUserDTO {
     @IsString({ message: "Invalid Display Name" })
@@ -28,4 +28,18 @@ export class LoginUserDTO {
 
     @IsString()
     password: string
+}
+
+export class ResendVerificationEmailDTO {
+    @IsEmail()
+    emailId: string
+}
+
+export class UserVerificationDTO {
+    @IsEmail()
+    emailId: string
+
+    @IsString()
+    @Length(6, 6, { message: "Invalid VerificationCode" })
+    verificationCode: string
 }
