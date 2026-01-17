@@ -1,5 +1,6 @@
 export {
-    tbl_user
+    tbl_user,
+    tbl_email_verfications
 } from "../user/schema/user_schema"
 
 export {

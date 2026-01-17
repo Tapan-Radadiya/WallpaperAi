@@ -3,7 +3,7 @@ import { isUUID } from 'class-validator';
 import type { Request, Response } from 'express';
 import { APIResponse, craftResponseData } from 'src/utils/common';
 import { UserService } from './user.service';
-
+import * as pug from "pug"
 @Controller('user')
 export class UserController {
     constructor(
