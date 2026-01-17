@@ -15,6 +15,10 @@ import { AuthMiddleware } from './middleware/auth/auth.middleware';
 import { AuthModule } from './auth/auth.module';
 import { ImageController } from './image/image.controller';
 import { UserController } from './user/user.controller';
+import { UserVerificationController } from './user_verification/user_verification.controller';
+import { UserVerificationService } from './user_verification/user_verification.service';
+import { UserVerificationModule } from './user_verification/user_verification.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -32,9 +36,11 @@ import { UserController } from './user/user.controller';
     WorkerModule,
     FileuploadModule,
     AuthModule,
+    UserVerificationModule,
+    MailModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, UserVerificationController],
+  providers: [AppService, UserVerificationService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

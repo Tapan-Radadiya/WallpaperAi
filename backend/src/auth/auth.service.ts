@@ -7,12 +7,14 @@ import { and, eq } from 'drizzle-orm';
 import { UserDataType, APIResponseInterface, userLoginType } from 'src/types/common.types';
 import { APIResponse, compareHash } from 'src/utils/common';
 import type { Request, Response } from 'express';
+import { UserVerificationService } from 'src/user_verification/user_verification.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
-        private readonly redis: RedisCacheService
+        private readonly redis: RedisCacheService,
+        private readonly userVerification: UserVerificationService
     ) { }
 
     async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
@@ -68,6 +70,7 @@ export class AuthService {
                 emailId: userExists.email_id,
                 avatarImage: `${process.env.AWS_CLOUDFRONT}${userExists.avatar}`
             }
+            this.userVerification.sendVerificationEmailService(userExists.id)
             return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully", data: responseData })
         } catch (error) {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })

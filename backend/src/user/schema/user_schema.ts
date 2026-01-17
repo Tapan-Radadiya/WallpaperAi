@@ -1,5 +1,6 @@
+import { sql } from "drizzle-orm";
 import { jsonb } from "drizzle-orm/pg-core";
-import { uuid, pgTable, varchar, timestamp, integer } from "drizzle-orm/pg-core";
+import { uuid, pgTable, varchar, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 
 export const tbl_user = pgTable('tbl_user', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -10,6 +11,7 @@ export const tbl_user = pgTable('tbl_user', {
     user_bio: varchar('user_bio'),
     instagram_id: varchar('instagram_id'),
     portfolio_url: varchar('portfolio_url'),
+    is_verified: boolean('is_verified').notNull().default(false),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').$onUpdate(() => new Date())
 })
@@ -33,6 +35,15 @@ export const tbl_unsplash_images = pgTable('tbl_unsplash_images', {
     image_urls: jsonb('image_urls'),
     alt_text: varchar('alt_text').notNull(),
     description: varchar('description').notNull(),
+    created_at: timestamp('created_at').defaultNow(),
+    updated_at: timestamp('updated_at').$onUpdate(() => new Date())
+})
+
+export const tbl_email_verfications = pgTable('tbl_email_verfications', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    user_id: uuid('user_id').references(() => tbl_user.id).notNull(),
+    email_code: varchar('email_code').notNull(),
+    expires_at: timestamp('expires_at').default(sql`NOW() + INTERVAL '10 minutes'`),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').$onUpdate(() => new Date())
 })
