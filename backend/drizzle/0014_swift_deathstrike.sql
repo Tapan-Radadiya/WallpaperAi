@@ -1,0 +1,2 @@
+ALTER TABLE "tbl_email_verfications" ADD COLUMN "user_attempts" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "tbl_email_verfications" ADD COLUMN "resend_attempts" integer DEFAULT 0 NOT NULL;

@@ -48,6 +48,7 @@ export class AppModule implements NestModule {
       .exclude(
         '/auth',
         '/image/data',
+        { path: '/user-verification', method: RequestMethod.POST },
         { path: '/image/image-data/*path', method: RequestMethod.GET },
         { path: '/image/update-download-count/*path', method: RequestMethod.PATCH },
         { path: '/user/username-exists/*path', method: RequestMethod.GET },

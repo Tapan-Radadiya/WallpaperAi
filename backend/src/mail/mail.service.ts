@@ -12,7 +12,8 @@ export class MailService {
     async sendEmail(
         subject: string,
         template: string,
-        to: string
+        to: string,
+        context?: Record<string, string | number | Date>
     ) {
         try {
             const toSendEmails = process.env.TO_EMAILS?.split(',')
@@ -24,11 +25,11 @@ export class MailService {
                 to,
                 from: process.env.SMTP_USER,
                 subject,
-                template: 'SignUpVerification.pug'
+                template,
+                context
             }
 
-            console.log('sendEmailparams-->', sendEmailparams);
-            const response = await this.mailerService.sendMail(sendEmailparams)
+            const response = await this.mailerService.sendMail({ ...sendEmailparams })
             this.logger.log("Email Sent Successfully", response)
         } catch (error) {
             console.log('error-->', error);

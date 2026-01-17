@@ -1,9 +1,8 @@
-import { Controller, Get, HttpStatus, Param, Query, Req, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param, Req, Res } from '@nestjs/common';
 import { isUUID } from 'class-validator';
 import type { Request, Response } from 'express';
 import { APIResponse, craftResponseData } from 'src/utils/common';
 import { UserService } from './user.service';
-import * as pug from "pug"
 @Controller('user')
 export class UserController {
     constructor(
