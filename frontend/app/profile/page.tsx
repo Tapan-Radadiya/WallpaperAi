@@ -66,8 +66,6 @@ export default function ProfilePage() {
 
     const { user, isLoading: authLoading } = useAuth();
 
-    // const { user, isLoading: authLoading } = useAuth();
-
     const { isLiked, toggleLike, syncLikes } = useLikes();
 
     useEffect(() => {
@@ -411,6 +409,7 @@ export default function ProfilePage() {
                 <div className="bg-[var(--card-bg)] rounded-3xl p-6 md:p-8 w-full max-w-md border border-[var(--muted)]/20 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
                     <VerificationStep
                         registeredEmail={user.emailId}
+                        autoResend={true}
                         onSuccess={() => {
                             setIsVerificationModalOpen(false);
                             window.location.reload(); // Simple reload to refresh user state

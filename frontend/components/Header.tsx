@@ -22,7 +22,8 @@ async function getUser(): Promise<User | null> {
                 id: userData.id || userData._id,
                 displayName: userData.displayName,
                 emailId: userData.emailId,
-                avatarImage: userData.avatarImage
+                avatarImage: userData.avatarImage,
+                is_verified: userData.is_verified
             };
         }
         return null;
