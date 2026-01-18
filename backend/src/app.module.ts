@@ -19,6 +19,7 @@ import { UserVerificationController } from './user_verification/user_verificatio
 import { UserVerificationService } from './user_verification/user_verification.service';
 import { UserVerificationModule } from './user_verification/user_verification.module';
 import { MailModule } from './mail/mail.module';
+import { AwsServicesModule } from './aws-services/aws-services.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MailModule } from './mail/mail.module';
     AuthModule,
     UserVerificationModule,
     MailModule,
+    AwsServicesModule,
   ],
   controllers: [AppController, UserVerificationController],
   providers: [AppService, UserVerificationService],

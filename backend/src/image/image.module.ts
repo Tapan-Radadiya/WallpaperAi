@@ -3,11 +3,13 @@ import { ImageController } from './image.controller';
 import { ImageService } from './image.service';
 import { RedisCacheModule } from 'src/redis_cache/redis_cache.module';
 import { HttpModule } from '@nestjs/axios';
-import { FileuploadService } from 'src/fileupload/fileupload.service';
 import { UserService } from 'src/user/user.service';
+import { AwsServicesService } from 'src/aws-services/aws-services.service';
+import { AwsServicesModule } from 'src/aws-services/aws-services.module';
+
 @Module({
-  imports: [RedisCacheModule, HttpModule],
+  imports: [RedisCacheModule, HttpModule, AwsServicesModule],
   controllers: [ImageController],
-  providers: [ImageService, FileuploadService, UserService]
+  providers: [ImageService, AwsServicesService, UserService]
 })
 export class ImageModule { }

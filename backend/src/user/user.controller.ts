@@ -1,12 +1,17 @@
-import { Controller, Get, HttpStatus, Param, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Put, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { isUUID } from 'class-validator';
 import type { Request, Response } from 'express';
+import { AwsServicesService } from 'src/aws-services/aws-services.service';
+import { UpdateUserDTO } from 'src/DTO/user.dto';
+import { UpdateUserType } from 'src/types/common.types';
 import { APIResponse, craftResponseData } from 'src/utils/common';
 import { UserService } from './user.service';
 @Controller('user')
 export class UserController {
     constructor(
         private readonly userService: UserService,
+        private readonly awsService: AwsServicesService
     ) { }
 
     @Get('profile')
@@ -127,6 +132,45 @@ export class UserController {
             responseData.err = err
         } catch (error) {
             // console.log('error-->', error);
+            responseData.err = error.message
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        return res.status(responseData.statusCode).json(responseData)
+    }
+
+
+    @Put('update-user')
+    @UseInterceptors(FileInterceptor('user_avatar'))
+    async updateUserController(
+        @Req() req: Request,
+        @Res() res: Response,
+        @Body() body: UpdateUserDTO,
+        @UploadedFile() file: Express.Multer.File
+    ) {
+        if (!req?.session?.userId && !isUUID(req?.session?.userId)) {
+            return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Id" }))
+        }
+        let responseData = craftResponseData()
+
+        try {
+            const updateData: UpdateUserType = {
+                user_bio: body.user_bio,
+                instagram_id: body.instagram_id,
+                portfolio_url: body.portfolio_url,
+                avatar: ''
+            }
+            const { message, statusCode, data, err } = await this.userService.updateUserData(req?.session?.userId!, updateData)
+            responseData.data = data
+            responseData.message = message
+            responseData.statusCode = statusCode
+            responseData.err = err
+            if (statusCode === HttpStatus.OK && file) {
+                const { avatarPath } = data
+
+                await this.awsService.uploadFile(avatarPath, file.buffer, file.mimetype)
+                responseData.data = {}
+            }
+        } catch (error) {
             responseData.err = error.message
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
         }
