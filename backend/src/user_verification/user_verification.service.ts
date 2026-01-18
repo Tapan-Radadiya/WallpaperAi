@@ -7,11 +7,13 @@ import { MailService } from 'src/mail/mail.service';
 import { APIResponseInterface } from 'src/types/common.types';
 import { APIResponse } from 'src/utils/common';
 import * as schema from "../Schema/schema";
+import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 @Injectable()
 export class UserVerificationService {
     constructor(
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
-        private readonly mailService: MailService
+        private readonly mailService: MailService,
+        private readonly redis: RedisCacheService
     ) { }
 
     async sendVerificationEmailService(userId: string): Promise<APIResponseInterface> {
@@ -63,7 +65,8 @@ export class UserVerificationService {
             })
 
             if (!userVerificationData) {
-                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Verifying User Try After Sometime" })
+                this.sendVerificationEmailService(userData.id)
+                return APIResponse({ statusCode: HttpStatus.OK, message: `Verification Email Sent To ${userData.email_id}` })
             }
 
             if (userVerificationData.resend_attempts > 5) {
@@ -120,6 +123,7 @@ export class UserVerificationService {
                     is_verified: true
                 }).where(eq(schema.tbl_user.id, findUser.id))
 
+                await this.redis.destroyKey(`profileData_${findUser.id}`)
                 const deleteUserData = await this.conn.delete(schema.tbl_email_verfications).where(
                     eq(schema.tbl_email_verfications.user_id, findUser.id)
                 )

@@ -90,7 +90,8 @@ export class UserService {
                     avatarImage: `${process.env.AWS_CLOUDFRONT}${userData.avatar}`,
                     user_bio: userData.user_bio,
                     instagram_id: userData.instagram_id ?? '',
-                    portfolio_url: userData.portfolio_url ?? ''
+                    portfolio_url: userData.portfolio_url ?? '',
+                    is_verified: userData.is_verified
                 }
                 return APIResponse({ statusCode: HttpStatus.OK, message: "", data: responseData })
             } else {
