@@ -5,9 +5,11 @@ import ThemeSwitcher from '@/components/ThemeSwitcher';
 import Link from 'next/link';
 import { LogIn, User as UserIcon, Upload, X } from 'lucide-react';
 import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import UploadModal from './UploadModal';
 import LoginPrompt from './LoginPrompt';
 import Modal from './Modal';
+import { useToast } from '@/context/ToastContext';
 
 import { User, useAuth } from '@/context/AuthContext';
 
@@ -17,9 +19,14 @@ interface HeaderClientProps {
 
 export default function HeaderClient({ initialUser }: HeaderClientProps) {
     const { user, login } = useAuth();
+    const { showToast } = useToast();
     const [imageError, setImageError] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const pathname = usePathname();
+    const router = useRouter();
+    const isAuthPage = pathname === '/login' || pathname === '/register';
+    const isLoginPage = pathname === '/login';
 
     // Sync server-side user data with client context
     React.useEffect(() => {
@@ -30,7 +37,12 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
 
     const handleUploadClick = () => {
         if (user) {
-            setShowUploadModal(true);
+            if (user.is_verified) {
+                setShowUploadModal(true);
+            } else {
+                showToast("Please verify your email on your profile page to upload images.", "error");
+                router.push('/profile');
+            }
         } else {
             setShowLoginPrompt(true);
         }
@@ -47,23 +59,27 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                     <ThemeSwitcher />
 
                     <div className="flex items-center gap-4">
-                        {/* Upload Button - Always visible */}
-                        <button
-                            onClick={handleUploadClick}
-                            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-[var(--foreground)]/5"
-                        >
-                            <Upload size={16} />
-                            <span>Upload</span>
-                        </button>
+                        {/* Upload Button - Hidden on auth pages */}
+                        {!isAuthPage && (
+                            <>
+                                <button
+                                    onClick={handleUploadClick}
+                                    className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-[var(--foreground)]/5"
+                                >
+                                    <Upload size={16} />
+                                    <span>Upload</span>
+                                </button>
 
-                        <button
-                            onClick={handleUploadClick}
-                            className="sm:hidden flex items-center justify-center w-10 h-10 rounded-full bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 active:scale-95 transition-all"
-                        >
-                            <Upload size={18} />
-                        </button>
+                                <button
+                                    onClick={handleUploadClick}
+                                    className="sm:hidden flex items-center justify-center w-10 h-10 rounded-full bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 active:scale-95 transition-all"
+                                >
+                                    <Upload size={18} />
+                                </button>
 
-                        <div className="w-px h-8 bg-[var(--muted)]/20 mx-1"></div>
+                                <div className="w-px h-8 bg-[var(--muted)]/20 mx-1"></div>
+                            </>
+                        )}
 
                         {user ? (
                             <div className="flex items-center gap-3">
@@ -92,13 +108,23 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                                 </Link>
                             </div>
                         ) : (
-                            <Link
-                                href="/login"
-                                className="px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 active:scale-95 transition-all flex items-center gap-2"
-                            >
-                                <LogIn size={16} />
-                                <span className="hidden sm:inline">Sign In</span>
-                            </Link>
+                            isLoginPage ? (
+                                <Link
+                                    href="/register"
+                                    className="px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 active:scale-95 transition-all flex items-center gap-2"
+                                >
+                                    <LogIn size={16} />
+                                    <span className="hidden sm:inline">Sign Up</span>
+                                </Link>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 active:scale-95 transition-all flex items-center gap-2"
+                                >
+                                    <LogIn size={16} />
+                                    <span className="hidden sm:inline">Sign In</span>
+                                </Link>
+                            )
                         )}
                     </div>
                 </div>

@@ -9,9 +9,10 @@ import { useToast } from '@/context/ToastContext';
 interface VerificationStepProps {
     registeredEmail: string;
     onSuccess?: () => void;
+    autoResend?: boolean;
 }
 
-export default function VerificationStep({ registeredEmail, onSuccess }: VerificationStepProps) {
+export default function VerificationStep({ registeredEmail, onSuccess, autoResend = false }: VerificationStepProps) {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
@@ -19,6 +20,14 @@ export default function VerificationStep({ registeredEmail, onSuccess }: Verific
     const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
     const router = useRouter();
     const { showToast } = useToast();
+    const hasAutoResent = React.useRef(false);
+
+    React.useEffect(() => {
+        if (autoResend && !hasAutoResent.current) {
+            hasAutoResent.current = true;
+            handleResendEmail();
+        }
+    }, [autoResend]);
 
     const handleOtpChange = (index: number, value: string) => {
         if (isNaN(Number(value))) return;

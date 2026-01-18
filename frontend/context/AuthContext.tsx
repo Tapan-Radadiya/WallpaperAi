@@ -1,7 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import axios, { HttpStatusCode } from 'axios';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 export interface User {
     id: string;
