@@ -12,6 +12,7 @@ import sharp from 'sharp';
 import { FileuploadService } from 'src/fileupload/fileupload.service';
 import { UserService } from 'src/user/user.service';
 import { UUID } from 'crypto';
+import { AwsServicesService } from 'src/aws-services/aws-services.service';
 
 @Injectable()
 export class ImageService {
@@ -21,7 +22,7 @@ export class ImageService {
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
         private readonly redis: RedisCacheService,
         private readonly httpService: HttpService,
-        private readonly uploadService: FileuploadService,
+        private readonly awsServices: AwsServicesService,
         private readonly userService: UserService
     ) { }
 
@@ -86,9 +87,9 @@ export class ImageService {
             const fullImageBuffer = await this.convertImageToPreview(fileData)
 
             const data = await Promise.allSettled([
-                this.uploadService.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
-                this.uploadService.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-                this.uploadService.uploadFile(imageFullPath, fullImageBuffer, fileData.mimetype)
+                this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
+                this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
+                this.awsServices.uploadFile(imageFullPath, fullImageBuffer, fileData.mimetype)
             ])
 
             const imageData: ImageUploadDTO = {

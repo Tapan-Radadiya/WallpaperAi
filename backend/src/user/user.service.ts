@@ -1,13 +1,12 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { userLoginType, APIResponseInterface, UserDataType } from 'src/types/common.types';
-import * as schema from "../Schema/schema"
-import { APIResponse, compareHash } from 'src/utils/common';
-import { and, eq, exists, isNotNull } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
+import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
-import type { Request, Response } from 'express';
+import { APIResponseInterface, UpdateUserType } from 'src/types/common.types';
+import { APIResponse } from 'src/utils/common';
+import * as schema from "../Schema/schema";
 
 @Injectable()
 export class UserService {
@@ -234,6 +233,31 @@ export class UserService {
         } catch (error) {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error", err: error })
+        }
+    }
+
+    async updateUserData(userId: string, userData: UpdateUserType): Promise<APIResponseInterface> {
+        try {
+            const updateUser = await this.conn
+                .update(schema.tbl_user)
+                .set({
+                    instagram_id: userData.instagram_id,
+                    portfolio_url: userData.portfolio_url,
+                    user_bio: userData.user_bio
+                }).where(
+                    eq(schema.tbl_user.id, userId)
+                ).returning({
+                    avatarPath: schema.tbl_user.avatar
+                })
+
+            if (updateUser) {
+                this.redis.destroyKey(`profileData_${userId}`)
+                return APIResponse({ statusCode: HttpStatus.OK, message: "UserData Updated", data: updateUser[0] })
+            } else {
+                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Updating UserData Try AFterSome Time" })
+            }
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error" })
         }
     }
 }

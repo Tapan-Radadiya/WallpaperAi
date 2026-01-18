@@ -17,6 +17,14 @@ export type UserDataType = {
     instagram_id?: string
     portfolio_url?: string
 }
+
+export type UpdateUserType = {
+    avatar: string
+    user_bio: string
+    instagram_id?: string
+    portfolio_url?: string
+}
+
 export type userLoginType = {
     emailId: string
     password: string

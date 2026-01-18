@@ -43,3 +43,16 @@ export class UserVerificationDTO {
     @Length(6, 6, { message: "Invalid VerificationCode" })
     verificationCode: string
 }
+
+export class UpdateUserDTO {
+    @IsString({ message: "Invalid value for bio" })
+    user_bio: string
+
+    @IsOptional()
+    @IsUrl()
+    instagram_id?: string
+
+    @IsOptional()
+    @IsUrl()
+    portfolio_url?: string
+}

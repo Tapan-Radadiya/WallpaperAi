@@ -6,12 +6,13 @@ import { UserDataType, userLoginType } from 'src/types/common.types';
 import { FileuploadService } from 'src/fileupload/fileupload.service';
 import { AuthService } from 'src/auth/auth.service';
 import { craftResponseData, APIResponse, hashText } from 'src/utils/common';
+import { AwsServicesService } from 'src/aws-services/aws-services.service';
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private readonly AuthService: AuthService,
-        private readonly uploadService: FileuploadService
+        private readonly awsService: AwsServicesService
     ) { }
     @Post('register')
     @UseInterceptors(FileInterceptor('user_avatar'))
@@ -45,7 +46,7 @@ export class AuthController {
             responseData.err = err ?? {}
 
             if (statusCode === HttpStatus.CREATED)
-                await this.uploadService.uploadFile(filePath, file.buffer, file.mimetype)
+                await this.awsService.uploadFile(filePath, file.buffer, file.mimetype)
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
