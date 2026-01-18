@@ -8,6 +8,7 @@ export interface User {
     displayName: string;
     emailId: string;
     avatarImage: string;
+    is_verified?: boolean;
 }
 
 interface AuthContextType {

@@ -14,6 +14,8 @@ import { Globe, Instagram, Heart } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import LoginPrompt from '@/components/LoginPrompt';
 import ImageDetails from '@/components/ImageDetails';
+import VerificationStep from '@/components/auth/VerificationStep';
+import { Shield, Sparkles } from 'lucide-react';
 
 // --- Interfaces ---
 interface APIUserProfile {
@@ -60,8 +62,11 @@ export default function ProfilePage() {
     const [uploadedImages, setUploadedImages] = useState<WallpaperImage[]>([]);
     const [isUploadsLoading, setIsUploadsLoading] = useState(false);
     const [hasFetchedUploads, setHasFetchedUploads] = useState(false);
+    const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
     const { user, isLoading: authLoading } = useAuth();
+
+    // const { user, isLoading: authLoading } = useAuth();
 
     const { isLiked, toggleLike, syncLikes } = useLikes();
 
@@ -201,7 +206,29 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="min-h-screen pt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="min-h-screen pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+
+            {/* Verification Banner */}
+            {!user.is_verified && (
+                <div
+                    onClick={() => setIsVerificationModalOpen(true)}
+                    className="mb-8 p-3 rounded-xl bg-gradient-to-r from-[var(--accent)]/10 to-[var(--accent)]/5 border border-[var(--accent)]/20 flex items-center justify-between gap-4 cursor-pointer hover:bg-[var(--accent)]/15 transition-colors group"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/20 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                            <Shield size={16} className="text-[var(--accent)]" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-[var(--foreground)] text-sm">Verify your account</h3>
+                            <p className="text-[var(--muted)] text-xs hidden sm:block">Unlock uploads and join the community.</p>
+                        </div>
+                    </div>
+                    <button className="px-4 py-1.5 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-[var(--accent)]/20 whitespace-nowrap">
+                        Verify Now
+                    </button>
+                </div>
+            )}
+
             {/* Profile Header */}
             <div className="flex flex-col items-center mb-12">
                 <div className="relative w-32 h-32 mb-4">
@@ -373,16 +400,23 @@ export default function ProfilePage() {
                         isLiked={isLiked(selectedImage.id)}
                         onLike={() => toggleLike(selectedImage.id)}
                         onRelatedImageClick={setSelectedImage}
-                        onDownload={() => {
-                            const link = document.createElement('a');
-                            link.href = selectedImage.rawUrl;
-                            link.download = `wallpaper-${selectedImage.id}`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        }}
                     />
                 )}
+            </Modal>
+
+            <Modal
+                isOpen={isVerificationModalOpen}
+                onClose={() => setIsVerificationModalOpen(false)}
+            >
+                <div className="bg-[var(--card-bg)] rounded-3xl p-6 md:p-8 w-full max-w-md border border-[var(--muted)]/20 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
+                    <VerificationStep
+                        registeredEmail={user.emailId}
+                        onSuccess={() => {
+                            setIsVerificationModalOpen(false);
+                            window.location.reload(); // Simple reload to refresh user state
+                        }}
+                    />
+                </div>
             </Modal>
         </div>
     );

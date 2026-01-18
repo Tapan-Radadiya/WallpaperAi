@@ -44,7 +44,8 @@ export default function LoginPage() {
                     id: userData.id || userData._id,
                     displayName: userData.displayName,
                     emailId: userData.emailId,
-                    avatarImage: userData.avatarImage
+                    avatarImage: userData.avatarImage,
+                    is_verified: userData.is_verified
                 });
 
                 showToast('Login successful', 'success');
