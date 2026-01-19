@@ -1,13 +1,13 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { randomInt } from "crypto";
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { MailService } from 'src/mail/mail.service';
+import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 import { APIResponseInterface } from 'src/types/common.types';
 import { APIResponse } from 'src/utils/common';
 import * as schema from "../Schema/schema";
-import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 @Injectable()
 export class UserVerificationService {
     constructor(
@@ -57,7 +57,9 @@ export class UserVerificationService {
             if (!userData) {
                 return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "Unable to find User Try After SomeTime" })
             }
-
+            if (userData.is_verified) {
+                return APIResponse({ statusCode: HttpStatus.OK, message: "User is already verified" })
+            }
             const userVerificationData = await this.conn.query.tbl_email_verfications.findFirst({
                 where: (
                     eq(schema.tbl_email_verfications.user_id, userData.id)
