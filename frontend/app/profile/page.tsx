@@ -15,7 +15,8 @@ import { useAuth } from '@/context/AuthContext';
 import LoginPrompt from '@/components/LoginPrompt';
 import ImageDetails from '@/components/ImageDetails';
 import VerificationStep from '@/components/auth/VerificationStep';
-import { Shield, Sparkles } from 'lucide-react';
+import { Shield, Sparkles, Pencil } from 'lucide-react';
+import EditProfileModal from '@/components/EditProfileModal';
 
 // --- Interfaces ---
 interface APIUserProfile {
@@ -63,8 +64,9 @@ export default function ProfilePage() {
     const [isUploadsLoading, setIsUploadsLoading] = useState(false);
     const [hasFetchedUploads, setHasFetchedUploads] = useState(false);
     const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, login, isLoading: authLoading } = useAuth();
 
     const { isLiked, toggleLike, syncLikes } = useLikes();
 
@@ -75,6 +77,37 @@ export default function ProfilePage() {
         }
     }, [profileData, syncLikes]);
 
+
+    const fetchUserData = async () => {
+        try {
+            const response = await api.get('/user/userData');
+            if (response.data && response.data.data) {
+                const data = response.data.data;
+                // Apply cache busting to avatar if exists
+                if (data.userProfile?.avatarImage) {
+                    const separator = data.userProfile.avatarImage.includes('?') ? '&' : '?';
+                    data.userProfile.avatarImage = `${data.userProfile.avatarImage}${separator}t=${new Date().getTime()}`;
+                }
+                setProfileData(data);
+                return data.userProfile;
+            } else {
+                // Fallback
+                const data = response.data;
+                if (data.userProfile?.avatarImage) {
+                    const separator = data.userProfile.avatarImage.includes('?') ? '&' : '?';
+                    data.userProfile.avatarImage = `${data.userProfile.avatarImage}${separator}t=${new Date().getTime()}`;
+                }
+                setProfileData(data);
+                return data.userProfile;
+            }
+        } catch (error) {
+            console.error("Failed to fetch user data", error);
+        } finally {
+            setLoading(false);
+        }
+        return null;
+    };
+
     useEffect(() => {
         // Only fetch profile data if we have a user
         if (!user && !authLoading) {
@@ -83,25 +116,6 @@ export default function ProfilePage() {
         }
 
         if (authLoading) return;
-
-        const fetchUserData = async () => {
-            try {
-                const response = await api.get('/user/userData');
-                // The API response user provided structure: { data: { userProfile: ..., likedImages: ... } } / or maybe response.data IS the object
-                // Usually axios response.data is the body. The user said: "data": { ... }.
-                // If standard response structure is { statusCode: ..., data: { ... } }
-                if (response.data && response.data.data) {
-                    setProfileData(response.data.data);
-                } else {
-                    // Fallback if structure is different
-                    setProfileData(response.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch user data", error);
-            } finally {
-                setLoading(false);
-            }
-        };
 
         fetchUserData();
     }, [user, authLoading]);
@@ -179,6 +193,40 @@ export default function ProfilePage() {
         setSelectedImage(null);
     };
 
+    const handleUpdateProfile = async (formData: FormData) => {
+        try {
+            // Log FormData for debugging (optional, can be removed)
+            // console.log("Updating profile with:", Object.fromEntries(formData));
+
+            const response = await api.put('/user/update-user', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.status === 200) {
+                // Fetch updated user data to get the new avatar URL with timestamp if needed
+                // and update both local state and global auth context
+                const updatedProfile = await fetchUserData();
+
+                if (updatedProfile && user) {
+                    // Update global context to reflect changes in Header
+                    login({
+                        ...user,
+                        displayName: updatedProfile.displayName,
+                        avatarImage: updatedProfile.avatarImage,
+                        // Keep other fields if necessary
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Failed to update profile", error);
+            // Ideally should show an error toast here
+        } finally {
+            setIsEditModalOpen(false);
+        }
+    };
+
     if (authLoading || loading) {
         return (
             <div className="min-h-screen pt-24 flex items-center justify-center">
@@ -242,18 +290,28 @@ export default function ProfilePage() {
                             {profileData.userProfile.displayName?.charAt(0) || 'U'}
                         </div>
                     )}
+
+                    {/* Edit Profile Button Overlay */}
+                    <button
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="absolute cursor-pointer bottom-0 right-0 p-2 bg-[var(--accent)] rounded-full text-white shadow-lg hover:scale-110 active:scale-95 transition-all border-2 border-[var(--background)]"
+                        title="Edit Profile"
+                    >
+                        <Pencil size={16} />
+                    </button>
                 </div>
                 <h1 className="text-3xl font-bold mb-2 kedebideri-bold">{profileData.userProfile.displayName}</h1>
 
                 {profileData.userProfile.user_bio ? (
-                    <p className="text-muted text-center max-w-md mb-2">
+                    <p className="text-muted text-center max-w-md mb-4">
                         {profileData.userProfile.user_bio}
                     </p>
                 ) : (
-                    <p className="text-muted text-center max-w-md mb-2">
+                    <p className="text-muted text-center max-w-md mb-4">
                         Wallpaper enthusiast. Creating and collecting the best aesthetics.
                     </p>
                 )}
+
 
                 <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
                     {profileData.userProfile.instagram_id && (
@@ -417,6 +475,15 @@ export default function ProfilePage() {
                     />
                 </div>
             </Modal>
+
+            {profileData && (
+                <EditProfileModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    currentProfile={profileData.userProfile}
+                    onUpdateProfile={handleUpdateProfile}
+                />
+            )}
         </div>
     );
 }
