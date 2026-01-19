@@ -48,11 +48,11 @@ export class UpdateUserDTO {
     @IsString({ message: "Invalid value for bio" })
     user_bio: string
 
-    @IsOptional()
     @IsUrl()
+    @IsOptional({ message: "Invalid URL" })
     instagram_id?: string
 
-    @IsOptional()
     @IsUrl()
+    @IsOptional()
     portfolio_url?: string
 }
