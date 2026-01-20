@@ -7,12 +7,14 @@ import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 import { APIResponseInterface, UpdateUserType } from 'src/types/common.types';
 import { APIResponse } from 'src/utils/common';
 import * as schema from "../Schema/schema";
+import { AwsServicesService } from 'src/aws-services/aws-services.service';
 
 @Injectable()
 export class UserService {
     constructor(
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
-        private readonly redis: RedisCacheService
+        private readonly redis: RedisCacheService,
+        private readonly awsServices: AwsServicesService
     ) { }
 
     private TABLE_USER_ALIAS = alias(schema.tbl_user, 'TABLE_USER_ALIAS')

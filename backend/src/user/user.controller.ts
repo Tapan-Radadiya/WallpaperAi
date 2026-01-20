@@ -11,7 +11,7 @@ import { UserService } from './user.service';
 export class UserController {
     constructor(
         private readonly userService: UserService,
-        private readonly awsService: AwsServicesService
+        private readonly awsServices: AwsServicesService
     ) { }
 
     @Get('profile')
@@ -166,8 +166,8 @@ export class UserController {
             responseData.err = err
             if (statusCode === HttpStatus.OK && file) {
                 const { avatarPath } = data
-
-                await this.awsService.uploadFile(avatarPath, file.buffer, file.mimetype)
+                this.awsServices.invalidateImage([`/${avatarPath}`])
+                await this.awsServices.uploadFile(avatarPath, file.buffer, file.mimetype)
                 responseData.data = {}
             }
         } catch (error) {

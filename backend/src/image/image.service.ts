@@ -187,6 +187,7 @@ export class ImageService {
     }
 
     async getImageDetails(imageId: string): Promise<APIResponseInterface> {
+
         try {
             const isImageExists = await this.conn.query.tbl_image.findFirst({
                 where: (
