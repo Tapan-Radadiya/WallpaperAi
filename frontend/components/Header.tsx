@@ -22,7 +22,9 @@ async function getUser(): Promise<User | null> {
                 id: userData.id || userData._id,
                 displayName: userData.displayName,
                 emailId: userData.emailId,
-                avatarImage: userData.avatarImage,
+                avatarImage: userData.avatarImage ?
+                    `${userData.avatarImage}${userData.avatarImage.includes('?') ? '&' : '?'}t=${new Date().getTime()}` :
+                    userData.avatarImage,
                 is_verified: userData.is_verified
             };
         }

@@ -18,11 +18,12 @@ interface HeaderClientProps {
 }
 
 export default function HeaderClient({ initialUser }: HeaderClientProps) {
-    const { user, login } = useAuth();
+    const { user: contextUser, login } = useAuth();
     const { showToast } = useToast();
     const [imageError, setImageError] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const [isSynced, setIsSynced] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
     const isAuthPage = pathname === '/login' || pathname === '/register';
@@ -33,7 +34,10 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
         if (initialUser) {
             login(initialUser);
         }
+        setIsSynced(true);
     }, [initialUser, login]);
+
+    const user = isSynced ? contextUser : initialUser;
 
     const handleUploadClick = () => {
         if (user) {
