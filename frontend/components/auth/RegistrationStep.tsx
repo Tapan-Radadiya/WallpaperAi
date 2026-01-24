@@ -8,6 +8,7 @@ import axios, { HttpStatusCode } from 'axios';
 import { useToast } from '@/context/ToastContext';
 import { useDebounce } from '@/hooks/useDebounce';
 import { AlertCircle } from 'lucide-react';
+import { ALLOWED_EMAILS_DOMAINS } from '../../constants';
 
 type FormData = {
     username: string;
@@ -96,6 +97,13 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
             if (!debouncedEmail || !emailRegex.test(debouncedEmail)) {
                 setIsEmailValid(null);
                 setEmailMessage('');
+                return;
+            }
+
+            const emailDomain = debouncedEmail.split('@')[1];
+            if (!ALLOWED_EMAILS_DOMAINS.includes(emailDomain)) {
+                setIsEmailValid(false);
+                setEmailMessage('Signup with this email provider is currently unavailable. Please try a different email.');
                 return;
             }
 
@@ -257,6 +265,13 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
                                         pattern: {
                                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                                             message: "Invalid email address"
+                                        },
+                                        validate: (value) => {
+                                            const domain = value.split('@')[1];
+                                            if (!ALLOWED_EMAILS_DOMAINS.includes(domain)) {
+                                                return "Signup with this email provider is currently unavailable. Please try a different email.";
+                                            }
+                                            return true;
                                         }
                                     })}
                                 />

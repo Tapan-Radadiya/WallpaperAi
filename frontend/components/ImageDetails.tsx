@@ -277,7 +277,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
 
             {/* Similar Images Section */}
             {relatedImages.length > 0 && (
-                <div className="p-8 border-t border-[var(--muted)]/10 bg-[var(--background)] min-h-[500px]">
+                <div className="p-8 border-t border-[var(--muted)]/10  min-h-[500px] mt-5">
                     <h1 className="text-3xl font-bold text-[var(--foreground)] mb-6 kedebideri-bold">Similar Images</h1>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {relatedImages.map((img) => (
