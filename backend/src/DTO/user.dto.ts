@@ -1,10 +1,12 @@
 import { IsEmail, IsOptional, IsString, IsStrongPassword, IsUrl, Length, MaxLength, MinLength } from 'class-validator';
+import { IsEmailDomainAllowed } from 'src/Custom_DTO/valid_email_domain.decorator';
 
 export class RegisterUserDTO {
     @IsString({ message: "Invalid Display Name" })
     displayName: string
 
     @IsEmail()
+    @IsEmailDomainAllowed()
     emailId: string
 
     @IsStrongPassword()
