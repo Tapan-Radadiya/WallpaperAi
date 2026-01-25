@@ -1,5 +1,5 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { and, eq, isNotNull } from 'drizzle-orm';
+import { and, count, eq, isNotNull } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { alias } from 'drizzle-orm/pg-core';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
@@ -83,6 +83,27 @@ export class UserService {
             const userData = await this.conn.query.tbl_user.findFirst({
                 where: eq(schema.tbl_user.id, userId)
             })
+            const totalUploads = await this.conn
+                .select({
+                    uploadedImages: count()
+                })
+                .from(schema.tbl_image)
+                .where(
+                    eq(schema.tbl_image.user_id, userId)
+                )
+
+            const totalLikesOnUploads = await this.conn
+                .select({
+                    totalLikesOnUploads: count(schema.tbl_image_likes)
+                })
+                .from(schema.tbl_image)
+                .leftJoin(
+                    schema.tbl_image_likes, eq(schema.tbl_image_likes.image_id, schema.tbl_image.id)
+                )
+                .where(
+                    eq(schema.tbl_image.user_id, userId)
+                )
+
             if (userData) {
                 const responseData = {
                     id: userData.id,
@@ -92,7 +113,9 @@ export class UserService {
                     user_bio: userData.user_bio,
                     instagram_id: userData.instagram_id ?? '',
                     portfolio_url: userData.portfolio_url ?? '',
-                    is_verified: userData.is_verified
+                    is_verified: userData.is_verified,
+                    totalUploads: totalUploads[0].uploadedImages,
+                    totalLikesOnUploads: totalLikesOnUploads[0].totalLikesOnUploads
                 }
                 return APIResponse({ statusCode: HttpStatus.OK, message: "", data: responseData })
             } else {
@@ -105,10 +128,10 @@ export class UserService {
 
     async getUserLikedImages(userId: string): Promise<APIResponseInterface> {
         try {
-            const isRedisDataStored = await this.redis.getRedisKeyValue(`profileData_${userId}`)
-            if (isRedisDataStored) {
-                return APIResponse({ statusCode: HttpStatus.OK, message: "userdata", data: JSON.parse(isRedisDataStored) })
-            }
+            // const isRedisDataStored = await this.redis.getRedisKeyValue(`profileData_${userId}`)
+            // if (isRedisDataStored) {
+            //     return APIResponse({ statusCode: HttpStatus.OK, message: "userdata", data: JSON.parse(isRedisDataStored) })
+            // }
             const userImages = await this.conn
                 .select({
                     image_id: schema.tbl_image.id,

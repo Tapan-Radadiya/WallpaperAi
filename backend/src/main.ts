@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import session from "express-session";
 import { initRedis, redisClient } from './redis-client/redis-client';
 import { RedisStore } from 'connect-redis';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -40,6 +41,20 @@ async function bootstrap() {
       }
     })
   )
+
+  const config = new DocumentBuilder()
+    .setTitle('Cats example')
+    .setDescription('The cats API description')
+    .setVersion('1.0')
+    .addTag('cats')
+    .build();
+
+  const documentBuilder = SwaggerModule.createDocument(app, config)
+  SwaggerModule.setup('swagger', app, documentBuilder, {
+    useGlobalPrefix: false
+  })
+
+
   await app.listen(port, '0.0.0.0');
 
   console.log(`Server Running at port ${port} ✅`);
