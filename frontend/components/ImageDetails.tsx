@@ -37,6 +37,11 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     }, []);
 
     const handleDownload = async (url: string, filename: string) => {
+        if (!url) {
+            console.error("Download failed: URL is missing");
+            return;
+        }
+
         // Fire and forget download count update
         api.patch(`/image/update-download-count/${image.id}`).catch(e => console.error("Error updating download count", e));
 
@@ -44,10 +49,16 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
             setIsDownloading(true);
             setShowDownloadMenu(false);
 
-            const res = await fetch(url);
-            const blob = await res.blob();
+            const res = await fetch(url, {
+                method: 'GET',
+                mode: 'cors', // Ensure we request CORS
+            });
 
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+            const blob = await res.blob();
             const blobUrl = window.URL.createObjectURL(blob);
+
             const a = document.createElement("a");
             a.href = blobUrl;
             a.download = filename;
@@ -56,7 +67,9 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
             document.body.removeChild(a);
             window.URL.revokeObjectURL(blobUrl);
         } catch (error) {
-            console.error("Download failed:", error);
+            console.error("Download failed, using fallback:", error);
+            // Fallback: Open in new tab
+            window.open(url, '_blank');
         } finally {
             setIsDownloading(false);
         }

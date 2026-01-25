@@ -26,7 +26,9 @@ interface APIUserProfile {
     avatarImage: string;
     user_bio?: string;
     instagram_id?: string;
-    portfolio_url?: string
+    portfolio_url?: string;
+    totalUploads: string;
+    totalLikesOnUploads: string;
 }
 
 interface APIImageOwner {
@@ -353,9 +355,17 @@ export default function ProfilePage() {
                         <span className="block font-bold text-lg">843</span>
                         <span className="text-muted">Followers</span>
                     </div>
+                    <div className="text-center group relative cursor-help">
+                        <span className="block font-bold text-lg">{profileData.userProfile.totalLikesOnUploads || 0}</span>
+                        <span className="text-muted border-b border-dotted border-muted/50">Likes</span>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-popover text-popover-foreground text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-border z-10">
+                            Total likes received on your uploads
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-popover"></div>
+                        </div>
+                    </div>
                     <div className="text-center">
-                        <span className="block font-bold text-lg">24</span>
-                        <span className="text-muted">Likes</span>
+                        <span className="block font-bold text-lg">{profileData.userProfile.totalUploads}</span>
+                        <span className="text-muted">Uploads</span>
                     </div>
                 </div>
 
