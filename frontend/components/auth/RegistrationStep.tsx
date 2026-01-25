@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { User, Mail, Lock, Upload, ArrowRight, Loader2, Image as ImageIcon, FileText, Instagram, Globe, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -49,7 +49,7 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
     const username = watch('username');
     const debouncedUsername = useDebounce(username, 500);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const checkUsernameUnique = async () => {
             if (!debouncedUsername || debouncedUsername.length < 3) {
                 setIsUsernameValid(null);
@@ -92,7 +92,7 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
 
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
-    React.useEffect(() => {
+    useEffect(() => {
         const checkEmailUnique = async () => {
             if (!debouncedEmail || !emailRegex.test(debouncedEmail)) {
                 setIsEmailValid(null);
@@ -131,7 +131,7 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
     }, [debouncedEmail]);
 
     // Handle avatar preview
-    React.useEffect(() => {
+    useEffect(() => {
         if (avatarFile && avatarFile.length > 0) {
             const file = avatarFile[0];
             const reader = new FileReader();
@@ -153,7 +153,7 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
         setFormError(null); // Clear previous errors
 
         const formData = new FormData();
-        formData.append('displayName', data.username);
+        formData.append('userName', data.username);
         formData.append('emailId', data.emailId);
         formData.append('user_bio', data.user_bio);
         formData.append('password', data.password);

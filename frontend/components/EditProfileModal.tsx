@@ -8,7 +8,7 @@ interface EditProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
     currentProfile: {
-        displayName: string;
+        userName: string;
         avatarImage: string;
         user_bio?: string;
         instagram_id?: string;
@@ -18,7 +18,7 @@ interface EditProfileModalProps {
 }
 
 export default function EditProfileModal({ isOpen, onClose, currentProfile, onUpdateProfile }: EditProfileModalProps) {
-    const [displayName, setDisplayName] = useState(currentProfile.displayName);
+    const [userName, setUserName] = useState(currentProfile.userName);
     const [bio, setBio] = useState(currentProfile.user_bio || '');
     const [instagram, setInstagram] = useState(currentProfile.instagram_id || '');
     const [portfolio, setPortfolio] = useState(currentProfile.portfolio_url || '');
@@ -28,7 +28,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
 
     useEffect(() => {
         if (isOpen) {
-            setDisplayName(currentProfile.displayName);
+            setUserName(currentProfile.userName);
             setBio(currentProfile.user_bio || '');
             setInstagram(currentProfile.instagram_id || '');
             setPortfolio(currentProfile.portfolio_url || '');
@@ -50,7 +50,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
         setIsLoading(true);
 
         const formData = new FormData();
-        if (displayName.trim()) formData.append('displayName', displayName);
+        if (userName.trim()) formData.append('userName', userName);
         if (bio.trim()) formData.append('user_bio', bio);
         if (instagram.trim()) formData.append('instagram_id', instagram);
         if (portfolio.trim()) formData.append('portfolio_url', portfolio);
@@ -106,7 +106,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-[var(--muted)]/20 flex items-center justify-center text-4xl font-bold text-[var(--muted)]">
-                                        {displayName.charAt(0)}
+                                        {userName.charAt(0)}
                                     </div>
                                 )}
 
@@ -124,20 +124,20 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
                         <p className="text-sm text-[var(--muted)]">Click to upload new avatar</p>
                     </div>
 
-                    {/* Display Name (Read Only or Editable?) - Assuming Editable for now implicitly via props but typically name change is sensitive. Keeping mostly layout for Bio/Socials as requested. Adding Name just in case. */}
-                    {/* <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--foreground)]">Display Name</label>
+                    {/* Display Name (Requested to be userName now) */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">Username</label>
                         <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" size={18} />
                             <input
                                 type="text"
-                                value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
                                 className="w-full bg-[var(--background)] border border-[var(--muted)]/20 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 transition-all"
-                                placeholder="Your Name"
+                                placeholder="Your Username"
                             />
                         </div>
-                    </div> */}
+                    </div>
 
                     {/* Bio */}
                     <div className="space-y-2">

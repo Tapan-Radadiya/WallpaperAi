@@ -15,13 +15,13 @@ export default function ProfileHeader({ userProfile, onEditClick }: ProfileHeade
                 {userProfile.avatarImage ? (
                     <Image
                         src={userProfile.avatarImage}
-                        alt={userProfile.displayName}
+                        alt={userProfile.userName}
                         fill
                         className="rounded-full object-cover border-4 border-card-bg shadow-lg"
                     />
                 ) : (
                     <div className="w-full h-full rounded-full bg-muted/20 flex items-center justify-center text-4xl font-bold text-muted">
-                        {userProfile.displayName?.charAt(0) || 'U'}
+                        {userProfile.userName?.charAt(0) || 'U'}
                     </div>
                 )}
 
@@ -34,7 +34,7 @@ export default function ProfileHeader({ userProfile, onEditClick }: ProfileHeade
                     <Pencil size={16} />
                 </button>
             </div>
-            <h1 className="text-3xl font-bold mb-2 kedebideri-bold">{userProfile.displayName}</h1>
+            <h1 className="text-3xl font-bold mb-2 kedebideri-bold">{userProfile.userName}</h1>
 
             {userProfile.user_bio ? (
                 <p className="text-muted text-center max-w-md mb-4">
