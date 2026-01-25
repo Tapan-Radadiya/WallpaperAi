@@ -21,11 +21,11 @@ export class UserService {
 
     // async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
     //     // Insert User Data
-    //     const { avatar, displayName, emailId, password, user_bio, instagram_id = '', portfolio_url = '' } = userData
+    //     const { avatar, userName, emailId, password, user_bio, instagram_id = '', portfolio_url = '' } = userData
     //     try {
     //         const userExists = await this.conn.query.tbl_user.findFirst({
     //             where: and(
-    //                 eq(schema.tbl_user.display_name, userData.displayName),
+    //                 eq(schema.tbl_user.user_name, userData.userName),
     //                 eq(schema.tbl_user.email_id, userData.emailId)
     //             )
     //         })
@@ -34,7 +34,7 @@ export class UserService {
     //         }
     //         const newUser = await this.conn.insert(schema.tbl_user).values({
     //             avatar,
-    //             display_name: displayName,
+    //             user_name: userName,
     //             email_id: emailId,
     //             password,
     //             user_bio,
@@ -68,7 +68,7 @@ export class UserService {
     //         req.session.useremail = userExists.email_id
     //         const responseData = {
     //             id: userExists.id,
-    //             displayName: userExists.display_name,
+    //             userName: userExists.user_name,
     //             emailId: userExists.email_id,
     //             avatarImage: `${process.env.AWS_CLOUDFRONT}${userExists.avatar}`
     //         }
@@ -107,7 +107,7 @@ export class UserService {
             if (userData) {
                 const responseData = {
                     id: userData.id,
-                    displayName: userData.display_name,
+                    userName: userData.user_name,
                     emailId: userData.email_id,
                     avatarImage: `${process.env.AWS_CLOUDFRONT}${userData.avatar}`,
                     user_bio: userData.user_bio,
@@ -144,7 +144,7 @@ export class UserService {
                     ownerData: {
                         id: this.TABLE_USER_ALIAS.id,
                         avatar: this.TABLE_USER_ALIAS.avatar,
-                        userName: this.TABLE_USER_ALIAS.display_name
+                        userName: this.TABLE_USER_ALIAS.user_name
                     }
                 })
                 .from(schema.tbl_user)
@@ -197,7 +197,7 @@ export class UserService {
                     ownerData: {
                         id: schema.tbl_user.id,
                         avatar: schema.tbl_user.avatar,
-                        userName: schema.tbl_user.display_name
+                        userName: schema.tbl_user.user_name
                     }
                 })
                 .from(schema.tbl_image)
@@ -228,7 +228,7 @@ export class UserService {
                 const isUserNameExists = await this.conn.query.tbl_user.findFirst({
                     where: (
                         eq(
-                            schema.tbl_user.display_name, data.username
+                            schema.tbl_user.user_name, data.username
                         )
                     )
                 })

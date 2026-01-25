@@ -46,7 +46,7 @@ export class ImageService {
                     width: schema.tbl_image.width,
                     height: schema.tbl_image.height,
                     description: schema.tbl_image.description,
-                    userName: schema.tbl_user.display_name,
+                    userName: schema.tbl_user.user_name,
                     userAvatar: schema.tbl_user.avatar,
                     userId: schema.tbl_user.id
                 })

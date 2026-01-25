@@ -19,11 +19,11 @@ export class AuthService {
 
     async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
         // Insert User Data
-        const { avatar, displayName, emailId, password, user_bio, instagram_id = '', portfolio_url = '' } = userData
+        const { avatar, userName, emailId, password, user_bio, instagram_id = '', portfolio_url = '' } = userData
         try {
             const userExists = await this.conn.query.tbl_user.findFirst({
                 where: and(
-                    eq(schema.tbl_user.display_name, userData.displayName),
+                    eq(schema.tbl_user.user_name, userData.userName),
                     eq(schema.tbl_user.email_id, userData.emailId)
                 )
             })
@@ -32,7 +32,7 @@ export class AuthService {
             }
             const newUser = await this.conn.insert(schema.tbl_user).values({
                 avatar,
-                display_name: displayName,
+                user_name: userName,
                 email_id: emailId,
                 password,
                 instagram_id,
@@ -69,7 +69,7 @@ export class AuthService {
             req.session.useremail = userExists.email_id
             const responseData = {
                 id: userExists.id,
-                displayName: userExists.display_name,
+                userName: userExists.user_name,
                 emailId: userExists.email_id,
                 avatarImage: `${process.env.AWS_CLOUDFRONT}${userExists.avatar}`
             }
