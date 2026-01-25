@@ -219,7 +219,7 @@ export class ImageService {
                 .where(eq(schema.tbl_image_downloads.image_id, imageId))
             const imageData = {
                 ...isImageExists,
-                mageLikes: totalLikedImage?.[0]?.totalLike,
+                imageLikes: totalLikedImage?.[0]?.totalLike,
                 totalDownloads: totalDownlaods?.[0]?.totalDownload ?? 0
             }
 
