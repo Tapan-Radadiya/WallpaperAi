@@ -4,7 +4,7 @@ import { uuid, pgTable, varchar, timestamp, integer, boolean } from "drizzle-orm
 
 export const tbl_user = pgTable('tbl_user', {
     id: uuid('id').defaultRandom().primaryKey(),
-    display_name: varchar('display_name').notNull().unique(),
+    user_name: varchar('user_name').notNull().unique(),
     email_id: varchar('email_id').notNull().unique(),
     avatar: varchar('avatar').notNull(),
     password: varchar('password').notNull(),

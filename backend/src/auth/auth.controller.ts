@@ -23,13 +23,13 @@ export class AuthController {
     ) {
 
         let responseData = craftResponseData()
-        const filePath = `${body.displayName}-${body.emailId.split('@')[0]}`
+        const filePath = `${body.userName}-${body.emailId.split('@')[0]}`
         if (!filePath) {
             return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error creating user try after sometime" }))
         }
         const userData: UserDataType = {
             avatar: filePath,
-            displayName: body.displayName,
+            userName: body.userName,
             emailId: body.emailId,
             password: await hashText(body.password),
             user_bio: body.user_bio,

@@ -25,7 +25,7 @@ export class UserVerificationService {
             })
 
             if (userData) {
-                const { email_id, display_name } = userData
+                const { email_id, user_name } = userData
                 const verificationCode = randomInt(100000, 999999)
                 const res = await this.conn.insert(schema.tbl_email_verfications).values({
                     email_code: verificationCode.toString(),
@@ -34,7 +34,7 @@ export class UserVerificationService {
 
                 if (res) {
                     this.mailService.sendEmail('User Verification', './SignUpVerification.pug', email_id, {
-                        username: display_name,
+                        username: user_name,
                         code: verificationCode,
                         year: new Date().getFullYear(),
                     })

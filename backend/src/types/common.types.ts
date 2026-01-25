@@ -9,7 +9,7 @@ export interface APIResponseInterface {
 
 export type UserDataType = {
     id?: string
-    displayName: string
+    userName: string
     emailId: string
     avatar: string
     password: string

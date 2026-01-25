@@ -3,7 +3,7 @@ import { IsEmailDomainAllowed } from 'src/Custom_DTO/valid_email_domain.decorato
 
 export class RegisterUserDTO {
     @IsString({ message: "Invalid Display Name" })
-    displayName: string
+    userName: string
 
     @IsEmail()
     @IsEmailDomainAllowed()
