@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import Link from 'next/link';
 import { LogIn, User as UserIcon, Upload, X } from 'lucide-react';
@@ -30,7 +30,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
     const isLoginPage = pathname === '/login';
 
     // Sync server-side user data with client context
-    React.useEffect(() => {
+    useEffect(() => {
         if (initialUser) {
             login(initialUser);
         }
@@ -88,7 +88,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                         {user ? (
                             <div className="flex items-center gap-3">
                                 <div className="flex flex-col items-end hidden sm:flex">
-                                    <span className="text-sm font-medium text-[var(--foreground)]">{user.displayName}</span>
+                                    <span className="text-sm font-medium text-[var(--foreground)]">{user.userName}</span>
                                     <span className="text-xs text-[var(--muted)] truncate max-w-[150px]">{user.emailId}</span>
                                 </div>
                                 <Link href="/profile">
@@ -96,7 +96,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                                         {user.avatarImage && !imageError ? (
                                             <Image
                                                 src={user.avatarImage}
-                                                alt={user.displayName || "User Avatar"}
+                                                alt={user.userName || "User Avatar"}
                                                 fill
                                                 className="object-cover"
                                                 onError={() => setImageError(true)}
@@ -104,7 +104,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                                         ) : (
                                             <div className="w-full h-full bg-[var(--card-bg)] flex items-center justify-center">
                                                 <span className="text-lg font-bold text-[var(--foreground)]">
-                                                    {user.displayName ? user.displayName.charAt(0).toUpperCase() : <UserIcon size={20} />}
+                                                    {user.userName ? user.userName.charAt(0).toUpperCase() : <UserIcon size={20} />}
                                                 </span>
                                             </div>
                                         )}

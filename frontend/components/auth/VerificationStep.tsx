@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Shield, Loader2, AlertCircle } from 'lucide-react';
 import axios, { HttpStatusCode } from 'axios';
 import { useRouter } from 'next/navigation';
@@ -17,12 +17,12 @@ export default function VerificationStep({ registeredEmail, onSuccess, autoResen
     const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const router = useRouter();
     const { showToast } = useToast();
-    const hasAutoResent = React.useRef(false);
+    const hasAutoResent = useRef(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (autoResend && !hasAutoResent.current) {
             hasAutoResent.current = true;
             handleResendEmail();

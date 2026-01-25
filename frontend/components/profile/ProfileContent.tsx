@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Tabs from '@/components/Tabs';
 import ImageCard from '@/components/ImageCard';
@@ -127,7 +127,7 @@ export default function ProfileContent({ initialProfileData }: ProfileContentPro
         fetchUploadedImages();
     }, [activeTab, hasFetchedUploads, user]);
 
-    const likedImages: WallpaperImage[] = React.useMemo(() => {
+    const likedImages: WallpaperImage[] = useMemo(() => {
         return profileData?.likedImages?.map((img) => ({
             id: img.image_id,
             width: img.width ?? '',
@@ -179,7 +179,7 @@ export default function ProfileContent({ initialProfileData }: ProfileContentPro
                     if (user) {
                         login({
                             ...user,
-                            displayName: updatedData.userProfile.displayName,
+                            userName: updatedData.userProfile.userName, // Changed from displayName
                             avatarImage: updatedData.userProfile.avatarImage,
                         });
                     }

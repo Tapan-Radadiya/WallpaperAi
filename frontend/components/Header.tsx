@@ -20,7 +20,7 @@ async function getUser(): Promise<User | null> {
             const userData = res.data.data || res.data;
             return {
                 id: userData.id || userData._id,
-                displayName: userData.displayName,
+                userName: userData.userName,
                 emailId: userData.emailId,
                 avatarImage: userData.avatarImage ?
                     `${userData.avatarImage}${userData.avatarImage.includes('?') ? '&' : '?'}t=${new Date().getTime()}` :

@@ -4,7 +4,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 
 export interface User {
     id: string;
-    displayName: string;
+    userName: string;
     emailId: string;
     avatarImage: string;
     is_verified?: boolean;

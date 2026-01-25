@@ -1,6 +1,6 @@
 export interface APIUserProfile {
     id: string;
-    displayName: string;
+    userName: string;
     emailId: string;
     avatarImage: string;
     user_bio?: string;

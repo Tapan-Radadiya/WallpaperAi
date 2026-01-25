@@ -21,6 +21,7 @@ export async function getImages(page: number = 0): Promise<WallpaperImage[]> {
         // Assuming API returns array of objects matching the new structure
         return (response.data.data || []).map((img: any) => ({
             ...img,
+            userName: img.userName, // Explicitly map userName
             rawUrl: img.rawUrl,
             thumbnailUrl: img.thumbnailUrl,
             userAvatar: img.userAvatar,
