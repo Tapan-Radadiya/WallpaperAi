@@ -86,6 +86,7 @@ export class ImageController {
         if (!req.session.userId) {
             throw new Error("Unauthincated User Found")
         }
+        console.log('file-->', file);
         let responseData = craftResponseData()
         const imageMetaData = await getImageMetaData(file)
         try {
