@@ -10,6 +10,7 @@ import { AwsServicesModule } from 'src/aws-services/aws-services.module';
 @Module({
   imports: [RedisCacheModule, HttpModule, AwsServicesModule],
   controllers: [ImageController],
-  providers: [ImageService, AwsServicesService, UserService]
+  providers: [ImageService, AwsServicesService, UserService],
+  exports: [ImageService]
 })
 export class ImageModule { }

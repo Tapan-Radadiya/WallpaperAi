@@ -20,6 +20,8 @@ import { UserVerificationService } from './user_verification/user_verification.s
 import { UserVerificationModule } from './user_verification/user_verification.module';
 import { MailModule } from './mail/mail.module';
 import { AwsServicesModule } from './aws-services/aws-services.module';
+import { DataSeedController } from './data_seed/data_seed.controller';
+import { DataSeedModule } from './data_seed/data_seed.module';
 
 @Module({
   imports: [
@@ -40,8 +42,9 @@ import { AwsServicesModule } from './aws-services/aws-services.module';
     UserVerificationModule,
     MailModule,
     AwsServicesModule,
+    DataSeedModule,
   ],
-  controllers: [AppController, UserVerificationController],
+  controllers: [AppController, UserVerificationController, DataSeedController],
   providers: [AppService, UserVerificationService],
 })
 export class AppModule implements NestModule {
@@ -54,7 +57,8 @@ export class AppModule implements NestModule {
         { path: '/image/image-data/*path', method: RequestMethod.GET },
         { path: '/image/update-download-count/*path', method: RequestMethod.PATCH },
         { path: '/user/username-exists/*path', method: RequestMethod.GET },
-        { path: '/user/useremail-exists/*path', method: RequestMethod.GET }
+        { path: '/user/useremail-exists/*path', method: RequestMethod.GET },
+        { path: '/data-seed', method: RequestMethod.GET }
       )
       .forRoutes(ImageController, UserController)
   }
