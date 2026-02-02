@@ -60,5 +60,6 @@ async function bootstrap() {
   console.log(`Server Running at port ${port} ✅`);
   console.log(`Accessible at: http://192.168.1.31:${port}`);
   console.log(`Local access: http://localhost:${port}`);
+  console.log("Redis Connected")
 }
 bootstrap();
