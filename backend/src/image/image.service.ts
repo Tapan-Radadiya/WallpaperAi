@@ -91,7 +91,6 @@ export class ImageService {
                 this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
                 this.awsServices.uploadFile(imageFullPath, fullImageBuffer, fileData.mimetype)
             ])
-
             const imageData: ImageUploadDTO = {
                 id: imageUuid,
                 category: reqBody.category,

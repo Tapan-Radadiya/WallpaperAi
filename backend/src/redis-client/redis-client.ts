@@ -6,6 +6,14 @@ export const redisClient: RedisClientType = createClient({
     url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
 })
 
+redisClient.on('connect', () => {
+    console.log(`Connecting To The Redis With Host:${process.env.REDIS_HOST} Port:${process.env.REDIS_PORT}`)
+})
+
+redisClient.on('ready', () => {
+    console.log("Redis Clinet Connected")
+})
+
 redisClient.on('error', (err) => {
     console.error('Redis Client Error', err);
 })

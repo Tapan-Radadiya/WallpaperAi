@@ -8,7 +8,6 @@ RUN npm i -g pnpm
 
 RUN pnpm i
 
-
 COPY . .
 
 COPY .env ./
@@ -16,6 +15,5 @@ COPY .env ./
 RUN pnpm run build
 
 EXPOSE 3002
-
 
 CMD [ "pnpm" ,"run", "start:prod"]

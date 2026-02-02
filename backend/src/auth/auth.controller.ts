@@ -65,10 +65,11 @@ export class AuthController {
             password: body.password
         }
         try {
-            const { message, statusCode, data } = await this.AuthService.userLoginService(userData, req)
+            const { message, statusCode, data, err } = await this.AuthService.userLoginService(userData, req)
             responseData.message = message
             responseData.statusCode = statusCode
             responseData.data = data
+            responseData.err = err
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR

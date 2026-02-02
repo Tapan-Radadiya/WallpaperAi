@@ -75,7 +75,8 @@ export class AuthService {
             }
             return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully", data: responseData })
         } catch (error) {
-            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime" })
+            console.log('error-->', error);
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime", err: error })
         }
     }
 }
