@@ -71,12 +71,24 @@ export class AuthService {
                 id: userExists.id,
                 userName: userExists.user_name,
                 emailId: userExists.email_id,
-                avatarImage: `${process.env.AWS_CLOUDFRONT}${userExists.avatar}`
+                avatarImage: `${process.env.AWS_CLOUDFRONT}${userExists.avatar}`,
+                is_verified: userExists?.is_verified
             }
             return APIResponse({ statusCode: HttpStatus.OK, message: "User logged In Successfully", data: responseData })
         } catch (error) {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error validation user try after sometime", err: error })
+        }
+    }
+
+    async userLogoutService(req: Request, res: Response): Promise<APIResponseInterface> {
+        try {
+            
+
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Logging out user" })
+        } catch (error) {
+            console.log('error-->', error);
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Logging out user", err: error })
         }
     }
 }

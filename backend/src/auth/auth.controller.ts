@@ -77,4 +77,30 @@ export class AuthController {
         return res.status(responseData.statusCode).json(responseData)
     }
 
+    @Post('log-out')
+    async userLogout(
+        @Res() res: Response,
+        @Req() req: Request
+    ) {
+        let responseData = craftResponseData()
+
+        if (!req.session.userId) {
+            throw new Error("user is not logged in")
+        }
+
+        try {
+            req.session.destroy((err) => {
+                if (err) {
+                    console.log('err-->', err);
+                    throw new Error("Error logging out user")
+                }
+                res.clearCookie('connect.sid').status(HttpStatus.OK).json(APIResponse({ message: "User Logged Out", statusCode: HttpStatus.OK }))
+            })
+            return
+        } catch (error) {
+            responseData.err = error
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        return res.status(responseData.statusCode).json(responseData)
+    }
 }
