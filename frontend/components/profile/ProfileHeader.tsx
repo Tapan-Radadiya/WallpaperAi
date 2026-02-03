@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { Pencil, Instagram, Globe } from 'lucide-react';
+import { Pencil, Instagram, Globe, LogOut } from 'lucide-react';
 import { APIUserProfile } from '@/types';
 
 interface ProfileHeaderProps {

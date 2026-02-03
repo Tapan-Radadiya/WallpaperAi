@@ -79,7 +79,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
         try {
             const formData = new FormData();
             formData.append('image', file);
-            formData.append('is_paid', String(isPaid));
+            formData.append('is_paid', 'false'); // Forced to false as feature is disabled
             formData.append('category', 'test');
             // Ensure hashtags are sent correctly. If users type "#nature #dark", we might want to just send that string
             // or clean it up. The user didn't specify format details other than sending the field.
@@ -236,22 +236,24 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
 
                         {/* Paid Toggle */}
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20">
-                            <span className="text-s font-semibold text-[var(--foreground)] capitalize tracking-wide">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20 opacity-60">
+                            <span className="text-s font-semibold text-[var(--foreground)] capitalize tracking-wide flex items-center gap-2">
                                 Paid Wallpaper ?
+                                <span className="text-[10px] bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Coming Soon</span>
                             </span>
                             <button
                                 type="button"
-                                onClick={() => setIsPaid(!isPaid)}
+                                disabled={true}
+                                onClick={() => { }}
                                 className={`
-                                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 cursor-pointer
-                                    ${isPaid ? 'bg-emerald-500' : 'bg-[var(--card-bg)]'}
+                                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 cursor-not-allowed
+                                    bg-[var(--muted)]/20
                                 `}
                             >
                                 <span
                                     className={`
-                                        inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200
-                                        ${isPaid ? 'translate-x-6' : 'translate-x-1'}
+                                        inline-block h-4 w-4 transform rounded-full bg-[var(--muted)] transition-transform duration-200
+                                        translate-x-1
                                     `}
                                 />
                             </button>

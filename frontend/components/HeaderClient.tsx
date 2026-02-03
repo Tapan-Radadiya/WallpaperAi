@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import Link from 'next/link';
-import { LogIn, User as UserIcon, Upload, X } from 'lucide-react';
+import { LogIn, User as UserIcon, Upload, X, LogOut, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import api from '@/lib/api';
 import UploadModal from './UploadModal';
 import LoginPrompt from './LoginPrompt';
 import Modal from './Modal';
@@ -18,11 +19,12 @@ interface HeaderClientProps {
 }
 
 export default function HeaderClient({ initialUser }: HeaderClientProps) {
-    const { user: contextUser, login } = useAuth();
+    const { user: contextUser, login, logout } = useAuth();
     const { showToast } = useToast();
     const [imageError, setImageError] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isSynced, setIsSynced] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
@@ -38,6 +40,25 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
     }, [initialUser, login]);
 
     const user = isSynced ? contextUser : initialUser;
+
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        try {
+            await api.post('/auth/log-out');
+
+            // Short delay for visual feedback
+            setTimeout(async () => {
+                await logout(); // Clear context user
+
+                // Use window.location to properly clear all states and prevent layout shifts during client transition
+                // This ensures a fresh start for the login page and clears any lingering data
+                window.location.href = '/login';
+            }, 1000);
+        } catch (error) {
+            console.error("Logout API call failed", error);
+            setIsLoggingOut(false);
+        }
+    };
 
     const handleUploadClick = () => {
         if (user) {
@@ -63,12 +84,22 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                     <ThemeSwitcher />
 
                     <div className="flex items-center gap-4">
+                        {/* Logout Button - Only visible on Profile Page */}
+                        {user && pathname === '/profile' && (
+                            <button
+                                onClick={handleLogout}
+                                className="p-2 text-[var(--muted)] hover:text-red-500 hover:bg-red-500/10 rounded-full transition-all cursor-pointer"
+                                title="Sign Out"
+                            >
+                                <LogOut size={20} />
+                            </button>
+                        )}
                         {/* Upload Button - Hidden on auth pages */}
                         {!isAuthPage && (
                             <>
                                 <button
                                     onClick={handleUploadClick}
-                                    className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-[var(--foreground)]/5"
+                                    className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-[var(--foreground)]/5 cursor-pointer"
                                 >
                                     <Upload size={16} />
                                     <span>Upload</span>
@@ -76,7 +107,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
 
                                 <button
                                     onClick={handleUploadClick}
-                                    className="sm:hidden flex items-center justify-center w-10 h-10 rounded-full bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 active:scale-95 transition-all"
+                                    className="sm:hidden flex items-center justify-center w-10 h-10 rounded-full bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 active:scale-95 transition-all cursor-pointer"
                                 >
                                     <Upload size={18} />
                                 </button>
@@ -155,6 +186,20 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                         message="Please log in to share your wallpapers with the community."
                         onClose={() => setShowLoginPrompt(false)}
                     />
+                </div>
+            </Modal>
+            <Modal
+                isOpen={isLoggingOut}
+                onClose={() => { }} // Prevent closing while logging out
+            >
+                <div className="bg-[var(--card-bg)] p-8 rounded-3xl flex flex-col items-center justify-center space-y-4 border border-[var(--muted)]/20 shadow-2xl outline-none">
+                    <div className="p-4 rounded-full bg-[var(--accent)]/10">
+                        <Loader2 className="animate-spin text-[var(--accent)]" size={40} />
+                    </div>
+                    <div className="text-center">
+                        <h3 className="text-xl font-bold text-[var(--foreground)]">Signing Out</h3>
+                        <p className="text-[var(--muted)] text-sm mt-1">Please wait a moment...</p>
+                    </div>
                 </div>
             </Modal>
         </header>

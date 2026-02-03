@@ -16,6 +16,7 @@ import ImageDetails from '@/components/ImageDetails';
 import VerificationStep from '@/components/auth/VerificationStep';
 import EditProfileModal from '@/components/EditProfileModal';
 import { APIResponseData, APILikedImage } from '@/types';
+import { useRouter } from 'next/navigation';
 
 import VerificationBanner from './VerificationBanner';
 import ProfileHeader from './ProfileHeader';
@@ -28,6 +29,7 @@ interface ProfileContentProps {
 }
 
 export default function ProfileContent({ initialProfileData }: ProfileContentProps) {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('liked');
     const [selectedImage, setSelectedImage] = useState<WallpaperImage | null>(null);
     const [profileData, setProfileData] = useState<APIResponseData | null>(initialProfileData);
@@ -41,7 +43,7 @@ export default function ProfileContent({ initialProfileData }: ProfileContentPro
     const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const { user, login, isLoading: authLoading } = useAuth();
+    const { user, login, logout, isLoading: authLoading } = useAuth();
     const { isLiked, toggleLike, syncLikes } = useLikes();
 
     // Sync likes coming from server
@@ -351,14 +353,16 @@ export default function ProfileContent({ initialProfileData }: ProfileContentPro
                 </div>
             </Modal>
 
-            {profileData && (
-                <EditProfileModal
-                    isOpen={isEditModalOpen}
-                    onClose={() => setIsEditModalOpen(false)}
-                    currentProfile={profileData.userProfile}
-                    onUpdateProfile={handleUpdateProfile}
-                />
-            )}
-        </div>
+            {
+                profileData && (
+                    <EditProfileModal
+                        isOpen={isEditModalOpen}
+                        onClose={() => setIsEditModalOpen(false)}
+                        currentProfile={profileData.userProfile}
+                        onUpdateProfile={handleUpdateProfile}
+                    />
+                )
+            }
+        </div >
     );
 }

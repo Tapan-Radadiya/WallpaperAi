@@ -42,7 +42,7 @@ export default function LoginPage() {
                 // Ensure the data matches User interface, or manually map it
                 login({
                     id: userData.id || userData._id,
-                    displayName: userData.displayName,
+                    userName: userData.userName,
                     emailId: userData.emailId,
                     avatarImage: userData.avatarImage,
                     is_verified: userData.is_verified
