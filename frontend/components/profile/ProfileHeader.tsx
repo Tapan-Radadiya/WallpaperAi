@@ -6,16 +6,18 @@ import { APIUserProfile } from '@/types';
 interface ProfileHeaderProps {
     userProfile: APIUserProfile;
     onEditClick: () => void;
+    isOwnProfile?: boolean;
 }
 
-export default function ProfileHeader({ userProfile, onEditClick }: ProfileHeaderProps) {
+export default function ProfileHeader({ userProfile, onEditClick, isOwnProfile = true }: ProfileHeaderProps) {
+    console.log(userProfile);
     return (
         <div className="flex flex-col items-center mb-12">
             <div className="relative w-32 h-32 mb-4">
-                {userProfile.avatarImage ? (
+                {userProfile?.avatarImage ? (
                     <Image
                         src={userProfile.avatarImage}
-                        alt={userProfile.userName}
+                        alt={userProfile?.userName}
                         fill
                         className="rounded-full object-cover border-4 border-card-bg shadow-lg"
                     />
@@ -26,13 +28,15 @@ export default function ProfileHeader({ userProfile, onEditClick }: ProfileHeade
                 )}
 
                 {/* Edit Profile Button Overlay */}
-                <button
-                    onClick={onEditClick}
-                    className="absolute cursor-pointer bottom-0 right-0 p-2 bg-[var(--accent)] rounded-full text-white shadow-lg hover:scale-110 active:scale-95 transition-all border-2 border-[var(--background)]"
-                    title="Edit Profile"
-                >
-                    <Pencil size={16} />
-                </button>
+                {isOwnProfile && (
+                    <button
+                        onClick={onEditClick}
+                        className="absolute cursor-pointer bottom-0 right-0 p-2 bg-[var(--accent)] rounded-full text-white shadow-lg hover:scale-110 active:scale-95 transition-all border-2 border-[var(--background)]"
+                        title="Edit Profile"
+                    >
+                        <Pencil size={16} />
+                    </button>
+                )}
             </div>
             <h1 className="text-3xl font-bold mb-2 kedebideri-bold">{userProfile.userName}</h1>
 
