@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Put, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Put, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { isUUID } from 'class-validator';
 import type { Request, Response } from 'express';
@@ -7,6 +7,7 @@ import { UpdateUserDTO } from 'src/DTO/user.dto';
 import { UpdateUserType } from 'src/types/common.types';
 import { APIResponse, craftResponseData } from 'src/utils/common';
 import { UserService } from './user.service';
+import * as uuid from "uuid"
 @Controller('user')
 export class UserController {
     constructor(
@@ -18,14 +19,21 @@ export class UserController {
     async getUserProfile(
         @Req() req: Request,
         @Res() res: Response,
+        @Query() query: { userId: string }
     ) {
         if (!req?.session?.userId && !isUUID(req?.session?.userId)) {
             return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Id" }))
         }
         let responseData = craftResponseData()
+        if (query.userId) {
+            if (!uuid.validate(query.userId)) {
+                return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid Id" }))
+            }
+        }
         try {
+            const userId = query.userId ? query.userId : req.session.userId ?? ''
             if (req.session.userId) {
-                const { message, statusCode, data } = await this.userService.getUserProfile(req?.session?.userId)
+                const { message, statusCode, data } = await this.userService.getUserProfile(userId)
                 responseData.data = data
                 responseData.message = message
                 responseData.statusCode = statusCode
