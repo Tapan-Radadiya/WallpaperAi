@@ -3,16 +3,18 @@ import axios from 'axios';
 import ProfileContent from '@/components/profile/ProfileContent';
 import { APIResponseData } from '@/types';
 
-async function getProfileData(): Promise<APIResponseData | null> {
+async function getProfileData(userId?: string): Promise<APIResponseData | null> {
     try {
         const cookieStore = await cookies();
         const allCookies = cookieStore.getAll();
         const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join(';');
 
-        // Use the same internal IP as Header.tsx or localhost if works, but consistency is key.
-        // Header.tsx used http://192.168.1.31:3002/api/v1/user/profile
-        // Here we need /user/userData
-        const res = await axios.get('http://192.168.1.31:3002/api/v1/user/userData', {
+        let url = 'http://192.168.1.31:3002/api/v1/user/userData';
+        if (userId) {
+            url = `http://192.168.1.31:3002/api/v1/user/profile?userId=${userId}`;
+        }
+
+        const res = await axios.get(url, {
             headers: {
                 Cookie: cookieHeader
             },
@@ -34,8 +36,14 @@ async function getProfileData(): Promise<APIResponseData | null> {
     }
 }
 
-export default async function ProfilePage() {
-    const profileData = await getProfileData();
+interface PageProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
 
-    return <ProfileContent initialProfileData={profileData} />;
+export default async function ProfilePage({ searchParams }: PageProps) {
+    const resolvedSearchParams = await searchParams;
+    const userId = typeof resolvedSearchParams.userId === 'string' ? resolvedSearchParams.userId : undefined;
+    const profileData = await getProfileData(userId);
+
+    return <ProfileContent initialProfileData={profileData} viewedUserId={userId} />;
 }

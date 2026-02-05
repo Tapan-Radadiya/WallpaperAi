@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
 import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check } from 'lucide-react';
@@ -196,8 +197,8 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                 <div className="w-full md:w-[30%] bg-[var(--background)] p-6 md:p-8 flex flex-col border-l border-[var(--muted)]/10 text-left">
                     {/* User Header */}
                     <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-[var(--muted)]/20">
+                        <Link href={`/profile?userId=${image.userId}`} className="flex items-center gap-3 group/user hover:opacity-80 transition-opacity">
+                            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-[var(--muted)]/20 shadow-sm group-hover/user:scale-105 transition-transform">
                                 <Image
                                     src={image.userAvatar || '/placeholder-avatar.png'}
                                     alt={image.userName}
@@ -209,7 +210,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                                 <h3 className="font-bold text-[var(--foreground)] leading-none mb-1">{image.userName}</h3>
                                 <p className="text-xs text-[var(--muted)]">Professional Curator</p>
                             </div>
-                        </div>
+                        </Link>
                         <button className="px-5 py-2 rounded-full border border-[var(--muted)]/20 text-xs font-bold hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-all uppercase tracking-wide">
                             Follow
                         </button>

@@ -26,15 +26,23 @@ const CLOUDFRONT_URL = "https://djrp6t1rc7td.cloudfront.net/";
 
 interface ProfileContentProps {
     initialProfileData: APIResponseData | null;
+    viewedUserId?: string;
 }
 
-export default function ProfileContent({ initialProfileData }: ProfileContentProps) {
+export default function ProfileContent({ initialProfileData, viewedUserId }: ProfileContentProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('liked');
     const [selectedImage, setSelectedImage] = useState<WallpaperImage | null>(null);
     const [profileData, setProfileData] = useState<APIResponseData | null>(initialProfileData);
 
-    // Fallback loading state if we need to fetch on client (e.g. initial fetch failed)
+    const { user, login, logout, isLoading: authLoading } = useAuth();
+
+    // Determine if we are viewing our own profile
+    const isOwnProfile = !viewedUserId || (!!user && user.id === viewedUserId);
+
+    // If viewing another user, we don't rely on `user` object for loading state of profile data
+    // But we still wait for auth to check if it's our own profile or not? 
+    // Actually if initialProfileData is present, we are good.
     const [loading, setLoading] = useState(!initialProfileData);
 
     const [uploadedImages, setUploadedImages] = useState<WallpaperImage[]>([]);
@@ -43,7 +51,6 @@ export default function ProfileContent({ initialProfileData }: ProfileContentPro
     const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const { user, login, logout, isLoading: authLoading } = useAuth();
     const { isLiked, toggleLike, syncLikes } = useLikes();
 
     // Sync likes coming from server
@@ -65,7 +72,11 @@ export default function ProfileContent({ initialProfileData }: ProfileContentPro
             if (authLoading) return;
 
             try {
-                const response = await api.get('/user/userData');
+                let url = '/user/userData';
+                if (viewedUserId) {
+                    url = `/user/profile?userId=${viewedUserId}`;
+                }
+                const response = await api.get(url);
                 if (response.data && response.data.data) {
                     const data = response.data.data;
                     if (data.userProfile?.avatarImage) {
@@ -101,7 +112,10 @@ export default function ProfileContent({ initialProfileData }: ProfileContentPro
             if (activeTab === 'uploads' && !hasFetchedUploads && user) {
                 setIsUploadsLoading(true);
                 try {
-                    const response = await api.get('/user/uploaded-images');
+                    const url = viewedUserId
+                        ? `/user/uploaded-images?userId=${viewedUserId}`
+                        : '/user/uploaded-images';
+                    const response = await api.get(url);
                     if (response.data && response.data.data) {
                         const mappedImages: WallpaperImage[] = response.data.data.map((img: APILikedImage) => ({
                             id: img.image_id,
@@ -221,13 +235,14 @@ export default function ProfileContent({ initialProfileData }: ProfileContentPro
     return (
         <div className="min-h-screen pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
 
-            {!user.is_verified && (
+            {isOwnProfile && !user.is_verified && (
                 <VerificationBanner onVerifyClick={() => setIsVerificationModalOpen(true)} />
             )}
 
             <ProfileHeader
                 userProfile={profileData.userProfile}
                 onEditClick={() => setIsEditModalOpen(true)}
+                isOwnProfile={isOwnProfile}
             />
 
             <ProfileStats
