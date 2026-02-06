@@ -10,7 +10,6 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ userProfile, onEditClick, isOwnProfile = true }: ProfileHeaderProps) {
-    console.log(userProfile);
     return (
         <div className="flex flex-col items-center mb-12">
             <div className="relative w-32 h-32 mb-4">
