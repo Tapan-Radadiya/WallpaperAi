@@ -3,13 +3,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Tabs from '@/components/Tabs';
-import ImageCard from '@/components/ImageCard';
 import Modal from '@/components/Modal';
-import { useMasonryGrid } from '@/hooks/useMasonryGrid';
 import { useLikes } from '@/hooks/useLikes';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
-import { Heart } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import LoginPrompt from '@/components/LoginPrompt';
 import ImageDetails from '@/components/ImageDetails';
@@ -21,6 +18,9 @@ import { useRouter } from 'next/navigation';
 import VerificationBanner from './VerificationBanner';
 import ProfileHeader from './ProfileHeader';
 import ProfileStats from './ProfileStats';
+import LikedTab from './tabs/LikedTab';
+import CollectionsTab from './tabs/CollectionsTab';
+import UploadsTab from './tabs/UploadsTab';
 
 const CLOUDFRONT_URL = "https://djrp6t1rc7td.cloudfront.net/";
 
@@ -65,11 +65,14 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     useEffect(() => {
         const fetchUserData = async () => {
             if (initialProfileData) return; // Already have data
+
+            // If strictly waiting for auth (and not just viewing public profile)
+            if (authLoading) return;
+
             if (!user && !authLoading) {
                 setLoading(false);
                 return;
             }
-            if (authLoading) return;
 
             try {
                 let url = '/user/userData';
@@ -77,17 +80,22 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
                     url = `/user/profile?userId=${viewedUserId}`;
                 }
                 const response = await api.get(url);
-                if (response.data && response.data.data) {
-                    const data = response.data.data;
+                if (response.data) {
+                    let data = response.data.data || response.data;
+
+                    // Normalize public profile data structure
+                    if (!data.userProfile && data.userName) {
+                        data = { userProfile: data, likedImages: [] };
+                    }
+
                     if (data.userProfile?.avatarImage) {
                         const separator = data.userProfile.avatarImage.includes('?') ? '&' : '?';
                         data.userProfile.avatarImage = `${data.userProfile.avatarImage}${separator}t=${new Date().getTime()}`;
                     }
                     setProfileData(data);
                 } else {
-                    const data = response.data;
-                    // simple fallback mapping if needed
-                    setProfileData(data);
+                    // Fallback or error handling
+                    console.error("Invalid API response format");
                 }
             } catch (error) {
                 console.error("Failed to fetch user data", error);
@@ -100,6 +108,12 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     }, [user, authLoading, initialProfileData]);
 
 
+    // Reset uploads fetch state when switching users
+    useEffect(() => {
+        setHasFetchedUploads(false);
+        setUploadedImages([]);
+    }, [viewedUserId]);
+
     const processImageUrl = (url: string) => {
         if (!url) return '';
         if (url.startsWith('http')) return url;
@@ -109,12 +123,16 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     // Fetch Uploaded Images
     useEffect(() => {
         const fetchUploadedImages = async () => {
+            // Allow fetch if 'uploads' tab is active AND we have a logged-in user
             if (activeTab === 'uploads' && !hasFetchedUploads && user) {
                 setIsUploadsLoading(true);
                 try {
                     const url = viewedUserId
                         ? `/user/uploaded-images?userId=${viewedUserId}`
                         : '/user/uploaded-images';
+
+                    console.log("DEBUG: Fetching uploaded images from:", url);
+
                     const response = await api.get(url);
                     if (response.data && response.data.data) {
                         const mappedImages: WallpaperImage[] = response.data.data.map((img: APILikedImage) => ({
@@ -159,13 +177,20 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     }, [profileData]);
 
     const displayImages = activeTab === 'uploads' ? uploadedImages : likedImages;
-    const { columns } = useMasonryGrid(displayImages);
 
-    const tabs = [
+    const allTabs = [
         { id: 'liked', label: 'Liked' },
         { id: 'collections', label: 'Collections' },
         { id: 'uploads', label: 'Uploads' },
     ];
+
+    const tabs = isOwnProfile ? allTabs : allTabs.filter(t => t.id === 'uploads');
+
+    useEffect(() => {
+        if (!isOwnProfile && activeTab !== 'uploads') {
+            setActiveTab('uploads');
+        }
+    }, [isOwnProfile, activeTab]);
 
     const handleImageClick = (image: WallpaperImage) => {
         setSelectedImage(image);
@@ -217,9 +242,12 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     }
 
     if (!user) {
+        if (!authLoading) {
+            router.push('/unauthorized');
+        }
         return (
-            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-                <LoginPrompt />
+            <div className="min-h-screen pt-24 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
             </div>
         );
     }
@@ -235,7 +263,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     return (
         <div className="min-h-screen pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
 
-            {isOwnProfile && !user.is_verified && (
+            {isOwnProfile && user && !user.is_verified && (
                 <VerificationBanner onVerifyClick={() => setIsVerificationModalOpen(true)} />
             )}
 
@@ -257,83 +285,26 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
             {/* Tab Content */}
             <div className="min-h-[400px]">
                 {activeTab === 'liked' && (
-                    <>
-                        {likedImages.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 text-muted space-y-4">
-                                <div className="w-16 h-16 rounded-2xl bg-muted/10 flex items-center justify-center">
-                                    <Heart className="w-8 h-8 opacity-50" />
-                                </div>
-                                <p>
-                                    No liked images yet.{' '}
-                                    <Link href="/" className="text-[var(--accent)] hover:underline font-medium">
-                                        Go explore!
-                                    </Link>
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="flex gap-4">
-                                {columns.map((colImages, colIndex) => (
-                                    <div key={colIndex} className="flex-1 flex flex-col gap-4">
-                                        {colImages.map((image) => (
-                                            <ImageCard
-                                                key={image.id}
-                                                image={image}
-                                                onClick={() => handleImageClick(image)}
-                                                isLiked={isLiked(image.id)}
-                                                onToggleLike={() => toggleLike(image.id)}
-                                            />
-                                        ))}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </>
+                    <LikedTab
+                        images={likedImages}
+                        onImageClick={handleImageClick}
+                        isLiked={isLiked}
+                        onToggleLike={toggleLike}
+                    />
                 )}
 
                 {activeTab === 'collections' && (
-                    <div className="flex flex-col items-center justify-center py-20 text-muted space-y-4">
-                        <div className="w-16 h-16 rounded-2xl bg-muted/10 flex items-center justify-center">
-                            <svg className="w-8 h-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
-                        </div>
-                        <p>No collections created yet.</p>
-                    </div>
+                    <CollectionsTab />
                 )}
 
                 {activeTab === 'uploads' && (
-                    <>
-                        {isUploadsLoading ? (
-                            <div className="flex justify-center py-20">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-                            </div>
-                        ) : uploadedImages.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 text-muted space-y-4">
-                                <div className="w-16 h-16 rounded-2xl bg-muted/10 flex items-center justify-center">
-                                    <svg className="w-8 h-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <p>No uploads yet.</p>
-                            </div>
-                        ) : (
-                            <div className="flex gap-4">
-                                {columns.map((colImages, colIndex) => (
-                                    <div key={colIndex} className="flex-1 flex flex-col gap-4">
-                                        {colImages.map((image) => (
-                                            <ImageCard
-                                                key={image.id}
-                                                image={image}
-                                                onClick={() => handleImageClick(image)}
-                                                isLiked={isLiked(image.id)}
-                                                onToggleLike={() => toggleLike(image.id)}
-                                            />
-                                        ))}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </>
+                    <UploadsTab
+                        images={uploadedImages}
+                        isLoading={isUploadsLoading}
+                        onImageClick={handleImageClick}
+                        isLiked={isLiked}
+                        onToggleLike={toggleLike}
+                    />
                 )}
             </div>
 

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
 import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check } from 'lucide-react';
@@ -17,6 +18,7 @@ interface ImageDetailsProps {
 }
 
 export default function ImageDetails({ image, relatedImages = [], onLike, isLiked, onRelatedImageClick }: ImageDetailsProps) {
+    const { user } = useAuth();
     const [isFullSize, setIsFullSize] = useState(false);
     const [likesCount, setLikesCount] = useState<number>(0);
     const [downloadCount, setDownloadCount] = useState<number>(0);
@@ -197,7 +199,10 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                 <div className="w-full md:w-[30%] bg-[var(--background)] p-6 md:p-8 flex flex-col border-l border-[var(--muted)]/10 text-left">
                     {/* User Header */}
                     <div className="flex items-center justify-between mb-8">
-                        <Link href={`/profile?userId=${image.userId}`} className="flex items-center gap-3 group/user hover:opacity-80 transition-opacity">
+                        <Link
+                            href={user?.id === image.userId ? '/profile' : `/profile/${image.userId}`}
+                            className="flex items-center gap-3 group/user hover:opacity-80 transition-opacity"
+                        >
                             <div className="relative w-12 h-12 rounded-full overflow-hidden border border-[var(--muted)]/20 shadow-sm group-hover/user:scale-105 transition-transform">
                                 <Image
                                     src={image.userAvatar || '/placeholder-avatar.png'}
