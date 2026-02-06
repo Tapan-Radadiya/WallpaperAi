@@ -73,14 +73,21 @@ export class UserController {
     async getUserUploadedImages(
         @Req() req: Request,
         @Res() res: Response,
+        @Query() query: { userId: string }
     ) {
         if (!req?.session?.userId && !isUUID(req?.session?.userId)) {
             return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Id" }))
         }
         let responseData = craftResponseData()
+        if (query.userId) {
+            if (!uuid.validate(query.userId)) {
+                return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid Id" }))
+            }
+        }
         try {
             if (req.session.userId) {
-                const { message, statusCode, data } = await this.userService.getUserUploadedImages(req.session.userId)
+                const userId = query.userId ? query.userId : req.session.userId ?? ''
+                const { message, statusCode, data } = await this.userService.getUserUploadedImages(userId)
                 responseData.data = data
                 responseData.message = message
                 responseData.statusCode = statusCode
