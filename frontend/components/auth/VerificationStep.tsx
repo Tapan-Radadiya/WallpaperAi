@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Shield, Loader2, AlertCircle } from 'lucide-react';
-import axios, { HttpStatusCode } from 'axios';
+import { HttpStatusCode } from 'axios';
+import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/context/ToastContext';
 
@@ -73,7 +74,7 @@ export default function VerificationStep({ registeredEmail, onSuccess, autoResen
         setError(null);
         setIsVerifying(true);
         try {
-            const response = await axios.post('/api/v1/user-verification/verify-user', {
+            const response = await api.post('/user-verification/verify-user', {
                 emailId: registeredEmail,
                 verificationCode: verificationCode
             });
@@ -100,7 +101,7 @@ export default function VerificationStep({ registeredEmail, onSuccess, autoResen
         setIsResending(true);
         setError(null);
         try {
-            const response = await axios.post('/api/v1/user-verification/resend-verification-email', {
+            const response = await api.post('/user-verification/resend-verification-email', {
                 emailId: registeredEmail
             });
 
@@ -131,7 +132,7 @@ export default function VerificationStep({ registeredEmail, onSuccess, autoResen
 
             <div className="w-full max-w-sm space-y-8">
                 <div className="flex justify-center gap-3">
-                    {otp.map((digit, index) => (
+                    {otp.map((digit, index: number) => (
                         <input
                             key={index}
                             ref={el => { inputRefs.current[index] = el }}
