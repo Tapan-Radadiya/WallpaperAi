@@ -22,9 +22,18 @@ import { MailModule } from './mail/mail.module';
 import { AwsServicesModule } from './aws-services/aws-services.module';
 import { DataSeedController } from './data_seed/data_seed.controller';
 import { DataSeedModule } from './data_seed/data_seed.module';
-
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler"
+import { APP_GUARD } from '@nestjs/core';
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 40
+        }
+      ]
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env'
@@ -45,7 +54,14 @@ import { DataSeedModule } from './data_seed/data_seed.module';
     DataSeedModule,
   ],
   controllers: [AppController, UserVerificationController, DataSeedController],
-  providers: [AppService, UserVerificationService],
+  providers: [
+    AppService,
+    UserVerificationService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    }
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
