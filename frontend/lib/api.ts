@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const isServer = typeof window === 'undefined';
-const baseURL = isServer ? 'http://192.168.1.31:3002/api/v1' : '/api/v1';
+const baseURL = isServer ? process.env.NEXT_PUBLIC_API_URL : '/api/v1';
 
 const api = axios.create({
     baseURL,

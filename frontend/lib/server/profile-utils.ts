@@ -3,7 +3,7 @@ import axios from 'axios';
 import { APIResponseData } from '@/types';
 
 // Consider moving this to a config file if not already
-const API_BASE_URL = 'http://192.168.1.31:3002/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getProfileData(userId?: string): Promise<APIResponseData | null> {
     try {
