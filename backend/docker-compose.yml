@@ -1,26 +1,25 @@
 version: '3.8'
 services:
-  postgres:
-    image: postgres:16
-    container_name: wallpaper_pg
-    environment:
-      POSTGRES_USER: tapan
-      POSTGRES_PASSWORD: tapan_wall
-      POSTGRES_DB: wallpaperDB
-    ports:
-      - "5440:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  # backend:
-  #   # image: taps31/wallpaper_backend:latest
-  #   build:
-  #     context: .
+  # postgres:
+  #   image: postgres:16
+  #   container_name: wallpaper_pg
+  #   environment:
+  #     POSTGRES_USER: tapan
+  #     POSTGRES_PASSWORD: tapan_wall
+  #     POSTGRES_DB: wallpaperDB
   #   ports:
-  #     - "3002:3002"
-  #   depends_on:
-  #     - redis
-  #     - postgres
+  #     - "5440:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    # image: taps31/wallpaper_backend:latest
+    build:
+      context: .
+    ports:
+      - "3002:3002"
+    depends_on:
+      - redis
 
   redis:
     image: redis:latest
