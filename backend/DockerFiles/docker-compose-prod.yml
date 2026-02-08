@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  backend:
+    # image: taps31/wallpaper_backend:latest
+    build:
+      context: ../
+    ports:
+      - "3002:3002"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    container_name: wallpaper_redis
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data:/data
+    
+volumes:
+  postgres_data:
+  redis_data:

@@ -12,16 +12,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # backend:
-  #   # image: taps31/wallpaper_backend:latest
-  #   build:
-  #     context: .
-  #   ports:
-  #     - "3002:3002"
-  #   depends_on:
-  #     - redis
-  #     - postgres
-
   redis:
     image: redis:latest
     container_name: wallpaper_redis

@@ -36,7 +36,7 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env'
+      envFilePath: `${process.env.NODE_ENV === 'PROD' ? `.env` : `.env.dev`}`
     }),
     ScheduleModule.forRoot(),
     DrizzleModule,

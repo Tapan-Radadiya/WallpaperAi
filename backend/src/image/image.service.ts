@@ -79,9 +79,9 @@ export class ImageService {
 
     async uploadUserImageService(reqBody: ImageUploadBodyDTO, imageMetaData: sharp.Metadata, userId: string, fileData: Express.Multer.File): Promise<APIResponseInterface> {
         const imageUuid = crypto.randomUUID()
-        const imageThumbnailPath = `images/${userId}/${imageUuid}/thumbnail.webp`
-        const imageRawPath = `images/${userId}/${imageUuid}/raw.${imageMetaData.format}`
-        const imageFullPath = `images/${userId}/${imageUuid}/preview.webp`
+        const imageThumbnailPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/thumbnail.webp`
+        const imageRawPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/raw.${imageMetaData.format}`
+        const imageFullPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/preview.webp`
         try {
             const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
             const fullImageBuffer = await this.convertImageToPreview(fileData)
