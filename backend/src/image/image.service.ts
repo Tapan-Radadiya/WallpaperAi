@@ -30,12 +30,12 @@ export class ImageService {
         const redisKey = `page_${page}`
         const offset = parseInt(page) * this.PAGE_LENGTH
 
-        const isKeyExists = await this.redis.isKeyExists(redisKey)
-        if (isKeyExists) {
-            const getData = await this.redis.getRedisKeyValue(redisKey)
-            const randomData = this.randomizeData(JSON.parse(getData))
-            return APIResponse({ statusCode: HttpStatus.OK, message: "Cached Data", data: randomData })
-        }
+        // const isKeyExists = await this.redis.isKeyExists(redisKey)
+        // if (isKeyExists) {
+        //     const getData = await this.redis.getRedisKeyValue(redisKey)
+        //     const randomData = this.randomizeData(JSON.parse(getData))
+        //     return APIResponse({ statusCode: HttpStatus.OK, message: "Cached Data", data: randomData })
+        // }
 
         try {
             const newData = await this.conn
