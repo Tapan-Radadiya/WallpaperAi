@@ -16,11 +16,16 @@ export class MailService {
         context?: Record<string, string | number | Date>
     ) {
         try {
-            const toSendEmails = process.env.TO_EMAILS?.split(',')
-            if (!toSendEmails?.includes(to)) {
-                this.logger.log("Receiver Not Exists")
-                return
+
+            // Dont check this condition on prod
+            if (process.env.NODE_ENV === 'DEV') {
+                const toSendEmails = process.env.TO_EMAILS?.split(',')
+                if (!toSendEmails?.includes(to)) {
+                    this.logger.log("Receiver Not Exists")
+                    return
+                }
             }
+
             const sendEmailparams = {
                 to,
                 from: process.env.SMTP_USER,
