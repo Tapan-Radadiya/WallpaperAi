@@ -121,7 +121,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
         { label: 'Likes', value: likesCount.toLocaleString() },
         { label: 'Downloads', value: downloadCount.toLocaleString() },
     ];
-
+    console.log("image", image)
     return (
         <div
             ref={containerRef}
