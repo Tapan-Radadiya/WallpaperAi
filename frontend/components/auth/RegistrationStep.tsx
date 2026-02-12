@@ -335,11 +335,15 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
                             <FileText className="absolute left-4 top-3 text-[var(--muted)] group-focus-within:text-[var(--accent)] transition-colors" size={20} />
                             <textarea
                                 rows={3}
-                                placeholder="Tell us a bit about yourself... (Optional)"
+                                placeholder="Tell us a bit about yourself... *"
                                 className="w-full bg-[var(--background)] text-[var(--foreground)] border border-[var(--muted)]/30 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder:text-[var(--muted)]/50 resize-none"
-                                {...register('user_bio')}
+                                {...register('user_bio', {
+                                    required: 'Bio is required',
+                                    minLength: { value: 10, message: 'Bio must be at least 10 characters long' }
+                                })}
                             />
                         </div>
+                        {errors.user_bio && <span className="text-red-500 text-xs pl-1">{errors.user_bio.message}</span>}
                     </div>
 
                     {/* Form Error Message */}
