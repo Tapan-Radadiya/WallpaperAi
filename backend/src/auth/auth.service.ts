@@ -5,7 +5,7 @@ import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 import * as schema from "../Schema/schema"
 import { and, eq } from 'drizzle-orm';
 import { UserDataType, APIResponseInterface, userLoginType } from 'src/types/common.types';
-import { APIResponse, compareHash } from 'src/utils/common';
+import { APIResponse, compareHash, hashText } from 'src/utils/common';
 import type { Request, Response } from 'express';
 import { UserVerificationService } from 'src/user_verification/user_verification.service';
 
@@ -83,12 +83,29 @@ export class AuthService {
 
     async userLogoutService(req: Request, res: Response): Promise<APIResponseInterface> {
         try {
-            
-
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Logging out user" })
         } catch (error) {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Logging out user", err: error })
+        }
+    }
+
+    async resetPasswordService(userEmail: string): Promise<APIResponseInterface> {
+        try {
+            const isUserExists = await this.conn.query.tbl_user.findFirst({
+                where: (
+                    eq(schema.tbl_user.email_id, userEmail)
+                )
+            })
+            if (!isUserExists) {
+                return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "User not found" })
+            }
+            const userHash = await hashText(`${isUserExists.id}${isUserExists.created_at}`)
+            // const saveToTable = await this.
+            return APIResponse({ statusCode: HttpStatus.OK, message: "Done" })
+        } catch (error) {
+            console.log('error-->', error);
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Processing Request" })
         }
     }
 }
