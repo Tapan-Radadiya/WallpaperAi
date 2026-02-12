@@ -51,7 +51,14 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
 
         const formData = new FormData();
         if (userName.trim()) formData.append('userName', userName);
-        if (bio.trim()) formData.append('user_bio', bio);
+
+        // Validate bio
+        if (!bio.trim()) {
+            setIsLoading(false);
+            return;
+        }
+        formData.append('user_bio', bio);
+
         if (instagram.trim()) formData.append('instagram_id', instagram);
         if (portfolio.trim()) formData.append('portfolio_url', portfolio);
 
@@ -141,16 +148,19 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
 
                     {/* Bio */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--foreground)]">Bio</label>
+                        <label className="text-sm font-medium text-[var(--foreground)]">Bio *</label>
                         <textarea
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
-                            className="w-full bg-[var(--background)] border border-[var(--muted)]/20 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 transition-all min-h-[100px] resize-none"
+                            className={`w-full bg-[var(--background)] border ${!bio.trim() && isLoading ? 'border-red-500' : 'border-[var(--muted)]/20'} rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 transition-all min-h-[100px] resize-none`}
                             placeholder="Tell us a little about yourself..."
                             maxLength={160}
                         />
-                        <div className="flex justify-end">
-                            <span className="text-xs text-[var(--muted)]">{bio.length}/160</span>
+                        <div className="flex justify-between items-center">
+                            {!bio.trim() && isLoading && (
+                                <span className="text-red-500 text-xs">Bio is required</span>
+                            )}
+                            <span className="text-xs text-[var(--muted)] ml-auto">{bio.length}/160</span>
                         </div>
                     </div>
 
