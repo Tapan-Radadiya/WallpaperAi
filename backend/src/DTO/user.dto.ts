@@ -58,3 +58,8 @@ export class UpdateUserDTO {
     @IsOptional()
     portfolio_url?: string
 }
+
+export class ResetPasswordDTO {
+    @IsEmail()
+    emailId: string
+}
