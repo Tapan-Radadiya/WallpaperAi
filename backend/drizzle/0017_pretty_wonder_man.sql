@@ -1,0 +1,1 @@
+ALTER TABLE "tbl_user_reset_tickets" ADD COLUMN "userName" varchar;
