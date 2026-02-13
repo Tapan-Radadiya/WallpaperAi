@@ -3,7 +3,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import type { Request, Response } from 'express';
 import { AuthService } from 'src/auth/auth.service';
 import { AwsServicesService } from 'src/aws-services/aws-services.service';
-import { LoginUserDTO, RegisterUserDTO, ResetPasswordDTO } from 'src/DTO/user.dto';
+import { LoginUserDTO, RegisterUserDTO, ResetPasswordDTO, UserResetPasswordDTO } from 'src/DTO/user.dto';
 import { UserDataType, userLoginType } from 'src/types/common.types';
 import { APIResponse, craftResponseData, hashText } from 'src/utils/common';
 
@@ -104,15 +104,36 @@ export class AuthController {
         return res.status(responseData.statusCode).json(responseData)
     }
 
-    @Put('/update-password')
-    async updateUserPassword(
+    @Put('/reset-password')
+    async resetUserPassword(
         @Req() req: Request,
         @Res() res: Response,
         @Body() body: ResetPasswordDTO
     ) {
         let responseData = craftResponseData()
         try {
-            const { message, statusCode, data, err } = await this.AuthService.resetPasswordService(body.emailId)
+            const { message, statusCode, data, err } = await this.AuthService.resetPasswordEmailService(body.emailId)
+            responseData.message = message
+            responseData.statusCode = statusCode
+            responseData.data = data
+            responseData.err = err
+        } catch (error) {
+            responseData.err = error
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+
+        return res.status(responseData.statusCode).json(responseData)
+    }
+
+    @Post("/update-password")
+    async updateUserPassword(
+        @Req() req: Request,
+        @Res() res: Response,
+        @Body() body: UserResetPasswordDTO
+    ) {
+        let responseData = craftResponseData()
+        try {
+            const { message, statusCode, data, err } = await this.AuthService.resetUserPasswordService(body)
             responseData.message = message
             responseData.statusCode = statusCode
             responseData.data = data

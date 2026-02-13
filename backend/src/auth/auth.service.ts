@@ -9,6 +9,7 @@ import { APIResponse, compareHash, hashText } from 'src/utils/common';
 import type { Request, Response } from 'express';
 import { UserVerificationService } from 'src/user_verification/user_verification.service';
 import { MailService } from 'src/mail/mail.service';
+import { UserResetPasswordDTO } from 'src/DTO/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -92,7 +93,7 @@ export class AuthService {
         }
     }
 
-    async resetPasswordService(userEmail: string): Promise<APIResponseInterface> {
+    async resetPasswordEmailService(userEmail: string): Promise<APIResponseInterface> {
         try {
             const isUserExists = await this.conn.query.tbl_user.findFirst({
                 where: (
@@ -112,7 +113,6 @@ export class AuthService {
             }
             else {
                 const userResetLink = `${process.env.FRONTEND_URL}/reset-password/?ticket=${userHash}`
-                console.log('userResetLink-->', userResetLink);
                 await this.mailService.sendEmail("Reset Password Link", './ResetPassword.pug', userEmail, {
                     username: isUserExists.user_name,
                     resetLink: userResetLink,
@@ -123,6 +123,42 @@ export class AuthService {
         } catch (error) {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Processing Request" })
+        }
+    }
+
+    async resetUserPasswordService(userBody: UserResetPasswordDTO): Promise<APIResponseInterface> {
+        const { new_password, user_ticket } = userBody
+
+        try {
+            const isUserTicketExists = await this.conn.query.tbl_user_reset_tickets.findFirst({
+                where: eq(
+                    schema.tbl_user_reset_tickets.userTicket, user_ticket
+                )
+            })
+
+            if (!isUserTicketExists) {
+                return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "Invalid User Ticket" })
+            }
+
+            if (new Date() > new Date(`${isUserTicketExists.expires_at}`)) {
+                return APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Reset Password Link Is Expired" })
+            }
+
+            const hashedPassword = await hashText(new_password)
+
+            const updateUser = await this.conn
+                .update(schema.tbl_user)
+                .set({
+                    password: hashedPassword
+                })
+                .where(eq(schema.tbl_user.id, isUserTicketExists.userId))
+
+            if (!updateUser) {
+                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Resetting Password Try After Sometime" })
+            }
+            return APIResponse({ statusCode: HttpStatus.OK, message: "Password changed successfully" })
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Resetting Password" })
         }
     }
 }
