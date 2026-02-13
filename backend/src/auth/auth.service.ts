@@ -8,6 +8,7 @@ import { UserDataType, APIResponseInterface, userLoginType } from 'src/types/com
 import { APIResponse, compareHash, hashText } from 'src/utils/common';
 import type { Request, Response } from 'express';
 import { UserVerificationService } from 'src/user_verification/user_verification.service';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
         private readonly redis: RedisCacheService,
         private readonly userVerification: UserVerificationService,
+        private readonly mailService: MailService
     ) { }
 
     async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
@@ -101,8 +103,23 @@ export class AuthService {
                 return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "User not found" })
             }
             const userHash = await hashText(`${isUserExists.id}${isUserExists.created_at}`)
-            // const saveToTable = await this.
-            return APIResponse({ statusCode: HttpStatus.OK, message: "Done" })
+            const saveToTable = await this.conn.insert(schema.tbl_user_reset_tickets).values({
+                userId: isUserExists.id,
+                userTicket: userHash
+            })
+            if (!saveToTable) {
+                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error generating reset link" })
+            }
+            else {
+                const userResetLink = `${process.env.FRONTEND_URL}/reset-password/?ticket=${userHash}`
+                console.log('userResetLink-->', userResetLink);
+                await this.mailService.sendEmail("Reset Password Link", './ResetPassword.pug', userEmail, {
+                    username: isUserExists.user_name,
+                    resetLink: userResetLink,
+                    year: new Date(),
+                })
+                return APIResponse({ statusCode: HttpStatus.OK, message: "Verification Link Sent Successfully" })
+            }
         } catch (error) {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Error Processing Request" })

@@ -53,7 +53,7 @@ export const tbl_email_verfications = pgTable('tbl_email_verfications', {
 export const tbl_user_reset_tickets = pgTable('tbl_user_reset_tickets', {
     id: uuid('id').defaultRandom().primaryKey(),
     userId: uuid('user_id').references(() => tbl_user.id).notNull(),
-    userTicket: varchar('userTicket'),
+    userTicket: varchar('userTicket').notNull(),
     expires_at: timestamp('expires_at').default(sql`NOW() + INTERVAL '5 minutes'`),
     created_at: timestamp('created_at').defaultNow(),
 })
