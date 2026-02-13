@@ -6,7 +6,7 @@ import axios from 'axios';
 import { ArrowLeft, ArrowRight, Loader2, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import sampleImages from '../../lib/sample.json';
 
@@ -15,7 +15,7 @@ type FormData = {
     confirmPassword: string;
 };
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
     const {
         register,
         handleSubmit,
@@ -158,5 +158,20 @@ export default function ResetPasswordPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={
+            <div data-theme="dark" className="min-h-screen flex items-center justify-center p-4">
+                <BackgroundSlider images={sampleImages} />
+                <div className="z-10 bg-[var(--card-bg)]/80 p-8 rounded-3xl backdrop-blur-md">
+                    <Loader2 className="animate-spin text-[var(--accent)]" size={40} />
+                </div>
+            </div>
+        }>
+            <ResetPasswordContent />
+        </Suspense>
     );
 }
