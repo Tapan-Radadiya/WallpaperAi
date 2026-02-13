@@ -63,3 +63,11 @@ export class ResetPasswordDTO {
     @IsEmail()
     emailId: string
 }
+
+export class UserResetPasswordDTO {
+    @IsString()
+    user_ticket: string
+
+    @IsStrongPassword()
+    new_password: string
+}
