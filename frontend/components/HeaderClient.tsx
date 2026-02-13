@@ -28,8 +28,9 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
     const [isSynced, setIsSynced] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
-    const isAuthPage = pathname === '/login' || pathname === '/register';
+    const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/reset-password';
     const isLoginPage = pathname === '/login';
+    const isForgotPasswordPage = pathname === '/forgot-password';
 
     // Sync server-side user data with client context
     useEffect(() => {
@@ -143,7 +144,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                                 </Link>
                             </div>
                         ) : (
-                            isLoginPage ? (
+                            isLoginPage || isForgotPasswordPage ? (
                                 <Link
                                     href="/register"
                                     className="px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 active:scale-95 transition-all flex items-center gap-2"
