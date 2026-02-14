@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, DragEvent, ChangeEvent } from 'react';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/context/ToastContext';
 import { ALLOWED_IMAGES } from '@/constants';
@@ -15,6 +15,7 @@ interface ImageDropzoneProps {
     onRemove?: () => void;
     minSize?: number; // in bytes
     maxSize?: number; // in bytes
+    validator?: (file: File) => Promise<boolean>;
 }
 
 export default function ImageDropzone({
@@ -25,10 +26,12 @@ export default function ImageDropzone({
     description = 'Drag and drop your image',
     onRemove,
     minSize = 0,
-    maxSize = 10 * 1024 * 1024 // Default 10MB
+    maxSize = 10 * 1024 * 1024, // Default 10MB
+    validator
 }: ImageDropzoneProps) {
     const { showToast } = useToast();
     const [isDragging, setIsDragging] = useState(false);
+    const [isValidating, setIsValidating] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(currentImage || null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -47,7 +50,7 @@ export default function ImageDropzone({
         setIsDragging(false);
     };
 
-    const validateAndSetFile = (file: File) => {
+    const validateAndSetFile = async (file: File) => {
         if (!ALLOWED_IMAGES.includes(file.type)) {
             showToast('Invalid file type. Please upload a valid image.', 'error');
             return;
@@ -63,6 +66,24 @@ export default function ImageDropzone({
             const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(1);
             showToast(`Image is too large. Maximum size is ${maxSizeMB}MB.`, 'error');
             return;
+        }
+
+        if (validator) {
+            setIsValidating(true);
+            try {
+                const isValid = await validator(file);
+                if (!isValid) {
+                    showToast('Image validation failed. Please try another image.', 'error');
+                    setIsValidating(false);
+                    return;
+                }
+            } catch (error) {
+                console.error('Validation error:', error);
+                showToast('An error occurred during image validation.', 'error');
+                setIsValidating(false);
+                return;
+            }
+            setIsValidating(false);
         }
 
         // Create local preview
@@ -110,7 +131,8 @@ export default function ImageDropzone({
                     : 'border-[var(--muted)]/40 hover:border-[var(--muted)] hover:bg-[var(--foreground)]/5'
                 }
                 ${isCircle ? 'rounded-full w-36 h-36 shrink-0 aspect-square' : 'w-full rounded-2xl'}
-                ${previewUrl && !isCircle ? 'border-none p-0' : 'p-6'}
+                ${previewUrl ? 'p-0' : 'p-6'}
+                ${previewUrl && !isCircle ? 'border-none' : ''}
                 ${className}
             `}
             onDragOver={handleDragOver}
@@ -175,6 +197,13 @@ export default function ImageDropzone({
                 onChange={handleFileSelect}
                 className="hidden"
             />
+
+            {isValidating && (
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-white">
+                    <Loader2 size={32} className="animate-spin mb-2" />
+                    <span className="text-sm font-medium">Validating image...</span>
+                </div>
+            )}
         </div>
     );
 }
