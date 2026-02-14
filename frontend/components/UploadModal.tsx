@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import Modal from './Modal';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { Upload, X, Loader2 } from 'lucide-react';
 
 import api from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
+import ImageDropzone from './ui/ImageDropzone';
+import { MIN_WALLPAPER_SIZE, MAX_WALLPAPER_SIZE } from '@/constants';
 
 interface UploadModalProps {
     isOpen: boolean;
@@ -21,51 +22,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [isPaid, setIsPaid] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const selectedFile = e.target.files[0];
-            setFile(selectedFile);
-            setPreviewUrl(URL.createObjectURL(selectedFile));
-        }
-    };
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const droppedFile = e.dataTransfer.files[0];
-            if (droppedFile.type.startsWith('image/')) {
-                setFile(droppedFile);
-                setPreviewUrl(URL.createObjectURL(droppedFile));
-            }
-        }
-    };
-
-    const removeImage = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setFile(null);
-        if (previewUrl) {
-            URL.revokeObjectURL(previewUrl);
-            setPreviewUrl(null);
-        }
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -123,62 +80,23 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
             >
                 {/* Left Side - Image Upload Area */}
                 <div className="w-full md:w-1/2 p-8 bg-[var(--background)]/50 border-b md:border-b-0 md:border-r border-[var(--muted)]/20 flex flex-col relative">
-                    <div
-                        className={`
-                            relative group flex-1 border-2 border-dashed rounded-2xl transition-all duration-300 flex flex-col items-center justify-center cursor-pointer overflow-hidden
-                            ${isDragging
-                                ? 'border-[var(--accent)] bg-[var(--accent)]/5 scale-[1.02]'
-                                : 'border-[var(--muted)]/40 hover:border-[var(--muted)] hover:bg-[var(--foreground)]/5'
-                            }
-                            ${previewUrl ? 'border-none p-0' : 'p-12'}
-                        `}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                        onClick={() => !previewUrl && fileInputRef.current?.click()}
-                    >
-                        {previewUrl ? (
-                            <div className="relative w-full h-full flex items-center justify-center bg-black/5 rounded-2xl overflow-hidden">
-                                <Image
-                                    src={previewUrl}
-                                    alt="Preview"
-                                    fill
-                                    className="object-contain"
-                                />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                                    <button
-                                        type="button"
-                                        onClick={removeImage}
-                                        className="p-3 bg-red-500/80 text-white rounded-full hover:bg-red-600 transition-colors transform hover:scale-110 shadow-lg"
-                                    >
-                                        <X size={24} />
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                <div className={`p-6 rounded-full bg-[var(--muted)]/10 mb-6 group-hover:bg-[var(--accent)]/10 transition-colors`}>
-                                    <Upload size={48} className={`text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors`} />
-                                </div>
-                                <p className="text-lg font-bold text-[var(--foreground)] text-center mb-2">
-                                    Drag and drop your wallpaper
-                                </p>
-                                <p className="text-sm text-[var(--muted)] text-center mb-6">
-                                    or <span className="text-[var(--accent)] hover:underline">browse files</span> from your computer
-                                </p>
-                                <p className="text-xs text-[var(--muted)] text-center capitalize tracking-wider">
-                                    SVG, PNG, JPG or GIF
-                                </p>
-                            </>
-                        )}
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileSelect}
-                            className="hidden"
-                        />
-                    </div>
+                    <ImageDropzone
+                        variant="rectangle"
+                        currentImage={previewUrl}
+                        onFileSelect={(selectedFile) => {
+                            setFile(selectedFile);
+                            setPreviewUrl(URL.createObjectURL(selectedFile));
+                        }}
+                        onRemove={() => {
+                            setFile(null);
+                            if (previewUrl) URL.revokeObjectURL(previewUrl);
+                            setPreviewUrl(null);
+                        }}
+                        description="Drag and drop your wallpaper (>3MB)"
+                        className="h-full"
+                        minSize={MIN_WALLPAPER_SIZE}
+                        maxSize={MAX_WALLPAPER_SIZE}
+                    />
                 </div>
 
                 {/* Right Side - Form Inputs */}

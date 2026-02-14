@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Instagram, Globe, User, Loader2 } from 'lucide-react';
+import { X, User, Loader2, Instagram, Globe } from 'lucide-react';
 import Image from 'next/image';
+import ImageDropzone from './ui/ImageDropzone';
+import { MAX_FILE_SIZE } from '@/constants';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -102,33 +104,16 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
 
                     {/* Avatar Upload */}
                     <div className="flex flex-col items-center gap-4">
-                        <div className="relative w-28 h-28 group cursor-pointer">
-                            <div className="w-full h-full rounded-full overflow-hidden border-4 border-[var(--card-bg)] shadow-lg ring-2 ring-[var(--accent)]/20 relative">
-                                {avatarPreview ? (
-                                    <Image
-                                        src={avatarPreview}
-                                        alt="Avatar Preview"
-                                        fill
-                                        className="object-cover transition-opacity group-hover:opacity-75"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full bg-[var(--muted)]/20 flex items-center justify-center text-4xl font-bold text-[var(--muted)]">
-                                        {userName.charAt(0)}
-                                    </div>
-                                )}
-
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 text-white">
-                                    <Upload size={24} />
-                                </div>
-                            </div>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="absolute inset-0 opacity-0 cursor-pointer"
-                            />
-                        </div>
-                        <p className="text-sm text-[var(--muted)]">Click to upload new avatar</p>
+                        <ImageDropzone
+                            variant="circle"
+                            currentImage={avatarPreview}
+                            onFileSelect={(file) => {
+                                setAvatarFile(file);
+                                setAvatarPreview(URL.createObjectURL(file));
+                            }}
+                            description="Click to upload new avatar"
+                            maxSize={MAX_FILE_SIZE}
+                        />
                     </div>
 
                     {/* Display Name (Requested to be userName now) */}
