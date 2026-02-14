@@ -3,6 +3,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import type { Request, Response } from 'express';
 import { AuthService } from 'src/auth/auth.service';
 import { AwsServicesService } from 'src/aws-services/aws-services.service';
+import { ALLOWED_IMAGES } from 'src/constants';
 import { LoginUserDTO, RegisterUserDTO, ResetPasswordDTO, UserResetPasswordDTO } from 'src/DTO/user.dto';
 import { UserDataType, userLoginType } from 'src/types/common.types';
 import { APIResponse, craftResponseData, hashText } from 'src/utils/common';
@@ -21,7 +22,9 @@ export class AuthController {
         @Res() res: Response,
         @UploadedFile() file: Express.Multer.File
     ) {
-
+        if (!ALLOWED_IMAGES.includes(file.mimetype)) {
+            return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid File Format" }))
+        }
         let responseData = craftResponseData()
         const filePath = `${body.userName}-${body.emailId.split('@')[0]}`
         if (!filePath) {

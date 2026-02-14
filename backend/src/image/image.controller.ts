@@ -1,9 +1,10 @@
 import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { ImageService } from './image.service';
-import { craftResponseData, getImageMetaData } from 'src/utils/common';
+import { APIResponse, craftResponseData, getImageMetaData } from 'src/utils/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageUploadBodyDTO, LikeImageDTO } from 'src/DTO/image.dto';
+import { ALLOWED_IMAGES } from 'src/constants';
 
 @Controller('image')
 export class ImageController {
@@ -86,7 +87,10 @@ export class ImageController {
         if (!req.session.userId) {
             throw new Error("Unauthincated User Found")
         }
-        console.log('file-->', file);
+        if (!ALLOWED_IMAGES.includes(file.mimetype)) {
+            return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid File Format" }))
+        }
+
         let responseData = craftResponseData()
         const imageMetaData = await getImageMetaData(file)
         try {
