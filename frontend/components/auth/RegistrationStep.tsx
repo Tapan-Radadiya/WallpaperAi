@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { validateImage } from '@/lib/api';
 import { useForm } from 'react-hook-form';
 import { User, Mail, Lock, ArrowRight, Loader2, FileText, Instagram, Globe, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -200,6 +201,7 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
                         currentImage={avatarPreview}
                         description="Upload Photo *"
                         maxSize={MAX_FILE_SIZE}
+                        validator={validateImage}
                     />
                     <input
                         type="hidden"
