@@ -5,7 +5,7 @@ import type { Request, Response } from 'express';
 import { AwsServicesService } from 'src/aws-services/aws-services.service';
 import { UpdateUserDTO } from 'src/DTO/user.dto';
 import { UpdateUserType } from 'src/types/common.types';
-import { APIResponse, craftResponseData } from 'src/utils/common';
+import { APIResponse, craftResponseData, SanitizeImageData } from 'src/utils/common';
 import { UserService } from './user.service';
 import * as uuid from "uuid"
 import { ALLOWED_IMAGES } from 'src/constants';
@@ -170,6 +170,11 @@ export class UserController {
         if (file && !ALLOWED_IMAGES.includes(file.mimetype)) {
             return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid File Format" }))
         }
+        const sanitizedBuffer = await SanitizeImageData(file)
+        if (sanitizedBuffer.statusCode !== HttpStatus.OK) {
+            return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid Or Corrupted Image Found" }))
+        }
+
         let responseData = craftResponseData()
 
         try {
@@ -187,7 +192,7 @@ export class UserController {
             if (statusCode === HttpStatus.OK && file) {
                 const { avatarPath } = data
                 this.awsServices.invalidateImage([`/${avatarPath}`])
-                await this.awsServices.uploadFile(avatarPath, file.buffer, file.mimetype)
+                await this.awsServices.uploadFile(avatarPath, sanitizedBuffer.data.imageBuffer.buffer, file.mimetype)
                 responseData.data = {}
             }
         } catch (error) {
