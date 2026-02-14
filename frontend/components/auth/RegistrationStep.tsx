@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { User, Mail, Lock, Upload, ArrowRight, Loader2, Image as ImageIcon, FileText, Instagram, Globe, CheckCircle, XCircle } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, FileText, Instagram, Globe, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import axios, { HttpStatusCode } from 'axios';
 import { useToast } from '@/context/ToastContext';
 import { useDebounce } from '@/hooks/useDebounce';
-import { AlertCircle } from 'lucide-react';
-import { ALLOWED_EMAILS_DOMAINS } from '../../constants';
+import { ALLOWED_EMAILS_DOMAINS, MAX_FILE_SIZE } from '../../constants';
+import ImageDropzone from '../ui/ImageDropzone';
 
 type FormData = {
     username: string;
@@ -30,6 +30,7 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
         register,
         handleSubmit,
         watch,
+        setValue,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
         mode: 'onSubmit'
@@ -188,38 +189,24 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
                 </div>
 
                 {/* Avatar Upload */}
-                <div className="flex flex-col items-center justify-center py-2">
-                    <label
-                        htmlFor="user_avatar"
-                        className="relative cursor-pointer group"
-                    >
-                        <div className={`w-36 h-36 rounded-full flex items-center justify-center border-2 border-dashed transition-all duration-300 overflow-hidden
-          ${errors.user_avatar ? 'border-red-500 bg-red-500/5' : 'border-[var(--muted)] hover:border-[var(--accent)] bg-[var(--background)]'}
-        `}>
-                            {avatarPreview ? (
-                                <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="flex flex-col items-center text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors">
-                                    <ImageIcon size={32} className="mb-2" />
-                                    <span className="text-sm font-medium">Upload Photo *</span>
-                                </div>
-                            )}
-
-                            {/* Hover Overlay */}
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                                <Upload className="text-white" size={32} />
-                            </div>
-                        </div>
-                        <input
-                            id="user_avatar"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            {...register('user_avatar', {
-                                required: 'Avatar is required'
-                            })}
-                        />
-                    </label>
+                <div className="flex flex-col items-center justify-center py-2 w-full max-w-[200px]">
+                    <ImageDropzone
+                        variant="circle"
+                        onFileSelect={(file) => {
+                            const dt = new DataTransfer();
+                            dt.items.add(file);
+                            setValue('user_avatar', dt.files, { shouldValidate: true });
+                        }}
+                        currentImage={avatarPreview}
+                        description="Upload Photo *"
+                        maxSize={MAX_FILE_SIZE}
+                    />
+                    <input
+                        type="hidden"
+                        {...register('user_avatar', {
+                            required: 'Avatar is required'
+                        })}
+                    />
                     {errors.user_avatar && (
                         <span className="text-red-500 text-sm mt-2">{errors.user_avatar.message}</span>
                     )}
