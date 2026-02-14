@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Modal from './Modal';
 import { Upload, X, Loader2 } from 'lucide-react';
 
-import api from '@/lib/api';
+import api, { validateImage } from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
 import ImageDropzone from './ui/ImageDropzone';
 import { MIN_WALLPAPER_SIZE, MAX_WALLPAPER_SIZE } from '@/constants';
@@ -96,6 +96,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
                         className="h-full"
                         minSize={MIN_WALLPAPER_SIZE}
                         maxSize={MAX_WALLPAPER_SIZE}
+                        validator={validateImage}
                     />
                 </div>
 
