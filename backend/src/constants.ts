@@ -9,3 +9,10 @@ export const ALLOWED_EMAILS_DOMAINS = [
     "proton.me",
     "protonmail.com",
 ];
+
+export const ALLOWED_IMAGES = [
+    "image/jpg",
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+]

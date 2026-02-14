@@ -8,6 +8,7 @@ import { UpdateUserType } from 'src/types/common.types';
 import { APIResponse, craftResponseData } from 'src/utils/common';
 import { UserService } from './user.service';
 import * as uuid from "uuid"
+import { ALLOWED_IMAGES } from 'src/constants';
 @Controller('user')
 export class UserController {
     constructor(
@@ -162,8 +163,12 @@ export class UserController {
         @Body() body: UpdateUserDTO,
         @UploadedFile() file: Express.Multer.File
     ) {
+
         if (!req?.session?.userId && !isUUID(req?.session?.userId)) {
             return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Id" }))
+        }
+        if (file && !ALLOWED_IMAGES.includes(file.mimetype)) {
+            return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid File Format" }))
         }
         let responseData = craftResponseData()
 
