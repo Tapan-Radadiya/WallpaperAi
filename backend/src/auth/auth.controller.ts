@@ -6,7 +6,7 @@ import { AwsServicesService } from 'src/aws-services/aws-services.service';
 import { ALLOWED_IMAGES } from 'src/constants';
 import { LoginUserDTO, RegisterUserDTO, ResetPasswordDTO, UserResetPasswordDTO } from 'src/DTO/user.dto';
 import { UserDataType, userLoginType } from 'src/types/common.types';
-import { APIResponse, craftResponseData, hashText } from 'src/utils/common';
+import { APIResponse, craftResponseData, hashText, SanitizeImageData } from 'src/utils/common';
 
 @Controller('auth')
 export class AuthController {
@@ -25,11 +25,18 @@ export class AuthController {
         if (!ALLOWED_IMAGES.includes(file.mimetype)) {
             return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid File Format" }))
         }
+
+        const sanitizedBuffer = await SanitizeImageData(file)
+        if (sanitizedBuffer.statusCode !== HttpStatus.OK) {
+            return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid Or Corrupted Image Found" }))
+        }
+
         let responseData = craftResponseData()
         const filePath = `${body.userName}-${body.emailId.split('@')[0]}`
         if (!filePath) {
             return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error creating user try after sometime" }))
         }
+
         const userData: UserDataType = {
             avatar: filePath,
             userName: body.userName,
@@ -48,7 +55,7 @@ export class AuthController {
             responseData.err = err ?? {}
 
             if (statusCode === HttpStatus.CREATED)
-                await this.awsService.uploadFile(filePath, file.buffer, file.mimetype)
+                await this.awsService.uploadFile(filePath, sanitizedBuffer.data.imageBuffer.buffer, file.mimetype)
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR

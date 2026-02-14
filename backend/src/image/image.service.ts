@@ -68,9 +68,11 @@ export class ImageService {
                     userAvatar: `${process.env.AWS_CLOUDFRONT}${ele.userAvatar}`
                 }
             })
+
             // cache new req for other users 
             await this.redis.setRedisKey(redisKey, JSON.stringify(updatedData), this.DEFAULT_TTL_IMAGE)
-            return APIResponse({ statusCode: HttpStatus.OK, message: "", data: updatedData })
+            const randomData = this.randomizeData(updatedData)
+            return APIResponse({ statusCode: HttpStatus.OK, message: "", data: randomData })
         } catch (error) {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error", err: error })
@@ -313,7 +315,10 @@ export class ImageService {
 
     private async convertImageToPreview(imageData: Express.Multer.File): Promise<Buffer> {
         const previewWidth = 1400; // perfect for modal previews
-        const previewImage = await sharp(imageData.buffer)
+        const previewImage = await sharp(imageData.buffer, {
+            limitInputPixels: 25_000_000
+        })
+            .rotate()
             .resize({ width: previewWidth, withoutEnlargement: true })
             .jpeg({ quality: 90 })
             .toBuffer();
