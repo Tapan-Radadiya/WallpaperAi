@@ -18,4 +18,22 @@ api.interceptors.request.use(config => {
     return config;
 });
 
+// Image validation helper
+export const validateImage = async (file: File): Promise<boolean> => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        await api.post('/image/process-image', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return true;
+    } catch (error) {
+        console.error('Image validation failed:', error);
+        return false;
+    }
+};
+
 export default api;

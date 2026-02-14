@@ -5,6 +5,7 @@ import { X, User, Loader2, Instagram, Globe } from 'lucide-react';
 import Image from 'next/image';
 import ImageDropzone from './ui/ImageDropzone';
 import { MAX_FILE_SIZE } from '@/constants';
+import { validateImage } from '@/lib/api';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -113,6 +114,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
                             }}
                             description="Click to upload new avatar"
                             maxSize={MAX_FILE_SIZE}
+                            validator={validateImage}
                         />
                     </div>
 
