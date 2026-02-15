@@ -2,13 +2,14 @@
 
 import BackgroundSlider from '@/components/BackgroundSlider';
 import axios, { HttpStatusCode } from 'axios';
-import { ArrowRight, Loader2, Lock, Mail } from 'lucide-react';
+import { ArrowRight, Loader2, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import sampleImages from '../../lib/sample.json';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { useState } from 'react';
 
 type FormData = {
     emailId: string;
@@ -16,6 +17,7 @@ type FormData = {
 };
 
 export default function LoginPage() {
+    const [showPassword, setShowPassword] = useState(false);
     const {
         register,
         handleSubmit,
@@ -102,13 +104,24 @@ export default function LoginPage() {
                             <div className="relative group">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)] group-focus-within:text-[var(--accent)] transition-colors" size={20} />
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="Password *"
-                                    className="w-full bg-[var(--background)] text-[var(--foreground)] border border-[var(--muted)]/30 rounded-xl py-3 pl-10 pr-4 outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder:text-[var(--muted)]/50"
+                                    className="w-full bg-[var(--background)] text-[var(--foreground)] border border-[var(--muted)]/30 rounded-xl py-3 pl-10 pr-12 outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder:text-[var(--muted)]/50"
                                     {...register('password', {
                                         required: 'Password is required',
                                     })}
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff size={20} />
+                                    ) : (
+                                        <Eye size={20} />
+                                    )}
+                                </button>
                             </div>
                             {errors.password && <span className="text-red-500 text-xs pl-1">{errors.password.message}</span>}
                             <div className="flex justify-end">
