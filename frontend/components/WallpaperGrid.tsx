@@ -71,6 +71,7 @@ export default function WallpaperGrid({ initialImages, isMobile }: { initialImag
                         isLiked={isLiked(selectedImage.id)}
                         onLike={() => toggleLike(selectedImage.id)}
                         onRelatedImageClick={setSelectedImage}
+                        onClose={handleCloseModal}
                     />
                 )}
             </Modal>
