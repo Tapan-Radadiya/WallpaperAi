@@ -43,9 +43,12 @@ export default function Modal({ isOpen, onClose, children, downloadUrl, download
         setMounted(true);
         if (isOpen) {
             document.body.style.overflow = 'hidden';
+            // Prevent touch scrolling on body for mobile
+            document.body.style.touchAction = 'none';
         }
         return () => {
-            document.body.style.overflow = 'unset';
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
         };
     }, [isOpen]);
 
@@ -53,8 +56,9 @@ export default function Modal({ isOpen, onClose, children, downloadUrl, download
 
     return createPortal(
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-2 md:p-4 transition-opacity duration-300"
+            className="fixed inset-0 z-50 flex flex-col lg:items-center lg:justify-center bg-black/90 backdrop-blur-sm p-0 md:p-4 transition-opacity duration-300 overflow-y-auto lg:overflow-hidden overscroll-contain"
             onClick={onClose}
+            style={{ touchAction: 'pan-y' }} // Re-enable touch scrolling for the modal itself
         >
 
             <div className="absolute top-4 right-4 flex items-center gap-4 z-50">
@@ -78,7 +82,7 @@ export default function Modal({ isOpen, onClose, children, downloadUrl, download
                 )}
             </div>
             <div
-                className="relative max-w-7xl max-h-full w-full flex items-center justify-center"
+                className="relative max-w-7xl w-full h-full lg:h-auto lg:max-h-full flex flex-col lg:items-center lg:justify-center overflow-y-auto lg:overflow-visible"
                 onClick={(e) => e.stopPropagation()}
             >
 

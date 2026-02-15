@@ -319,6 +319,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
                         isLiked={isLiked(selectedImage.id)}
                         onLike={() => toggleLike(selectedImage.id)}
                         onRelatedImageClick={setSelectedImage}
+                        onClose={handleCloseModal}
                     />
                 )}
             </Modal>
