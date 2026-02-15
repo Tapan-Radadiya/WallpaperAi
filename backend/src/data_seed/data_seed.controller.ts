@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Injectable, Logger, Req, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Injectable, Logger, Req, Res } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request, Response } from 'express';
@@ -392,9 +392,12 @@ export class DataSeedController {
         @Req() req: Request,
         @Res() res: Response
     ) {
-        const userId = "780e2b01-1dc5-4850-9dd6-e6811fa2bb5c"
-        const start = 102
-        const end = 152
+        if (!req.session.userId) {
+            return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
+        }
+        const userId = req.session.userId
+        const start = 0
+        const end = 50
         const isUserExists = await this.conn.query.tbl_user.findFirst({
             where: eq(
                 schema.tbl_user.id, userId
@@ -408,7 +411,7 @@ export class DataSeedController {
             return res.json("Insufficient Data")
         }
 
-        const imagePath = '/home/tapan/codesandbox/wallpaper/Unsplash_Images'
+        const imagePath = process.env.SEED_DATA_IMAGES_PATH!
 
         const data = await fs.readdirSync(imagePath)
         const test: any = []
