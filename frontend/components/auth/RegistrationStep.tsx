@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { validateImage } from '@/lib/api';
 import { useForm } from 'react-hook-form';
-import { User, Mail, Lock, ArrowRight, Loader2, FileText, Instagram, Globe, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, FileText, Instagram, Globe, CheckCircle, XCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import axios, { HttpStatusCode } from 'axios';
 import { useToast } from '@/context/ToastContext';
@@ -26,6 +26,7 @@ interface RegistrationStepProps {
 }
 
 export default function RegistrationStep({ onRegistrationSuccess }: RegistrationStepProps) {
+    const [showPassword, setShowPassword] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const {
         register,
@@ -279,14 +280,25 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
                             <div className="relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)] group-focus-within:text-[var(--accent)] transition-colors" size={20} />
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="Password *"
-                                    className="w-full bg-[var(--background)] text-[var(--foreground)] border border-[var(--muted)]/30 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder:text-[var(--muted)]/50"
+                                    className="w-full bg-[var(--background)] text-[var(--foreground)] border border-[var(--muted)]/30 rounded-xl py-3.5 pl-11 pr-12 outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder:text-[var(--muted)]/50"
                                     {...register('password', {
                                         required: 'Password is required',
                                         minLength: { value: 6, message: 'Minimum 6 characters' }
                                     })}
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff size={20} />
+                                    ) : (
+                                        <Eye size={20} />
+                                    )}
+                                </button>
                             </div>
                             {errors.password && <span className="text-red-500 text-xs pl-1">{errors.password.message}</span>}
                         </div>
