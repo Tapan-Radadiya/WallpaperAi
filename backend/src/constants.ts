@@ -16,3 +16,5 @@ export const ALLOWED_IMAGES = [
     "image/png",
     "image/webp"
 ]
+
+export const ALLOWED_IMAGES_FORMAT = ["jpeg", "jpg", "png", "webp"]
