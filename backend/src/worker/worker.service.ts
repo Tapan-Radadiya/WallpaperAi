@@ -29,9 +29,9 @@ export class WorkerService {
         if (!this.conn) {
             return
         }
-        for (let i = 0; i < this.ImagePages.length; i++) {
-            await this.getUnsplashimage(this.ImagePages[i])
-        }
+        // for (let i = 0; i < this.ImagePages.length; i++) {
+        //     await this.getUnsplashimage(this.ImagePages[i])
+        // }
         this.logger.log(`Total New Images Dumped: ${this.insertedImageCount} \n New Users Added: ${this.newUserCount}`);
     }
 
@@ -116,5 +116,5 @@ export class WorkerService {
     // }
 
 
-    
+
 }
