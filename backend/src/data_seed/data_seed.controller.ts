@@ -392,45 +392,50 @@ export class DataSeedController {
         @Req() req: Request,
         @Res() res: Response
     ) {
-        if (!req.session.userId) {
-            return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
-        }
-        const userId = req.session.userId
+        try {
+            if (!req.session.userId) {
+                return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
+            }
+            const userId = req.session.userId
         const start = 0
         const end = 50
-        const isUserExists = await this.conn.query.tbl_user.findFirst({
-            where: eq(
-                schema.tbl_user.id, userId
-            )
-        })
+            const isUserExists = await this.conn.query.tbl_user.findFirst({
+                where: eq(
+                    schema.tbl_user.id, userId
+                )
+            })
 
-        if (!isUserExists) {
-            return res.json("User Not Exists")
+            if (!isUserExists) {
+                return res.json("User Not Exists")
+            }
+            if (this.testData.length !== end - start) {
+                return res.json("Insufficient Data")
+            }
+
+            const imagePath = process.env.SEED_DATA_IMAGES_PATH!
+
+            const data = await fs.readdirSync(imagePath)
+            const test: any = []
+            for (let index = 0; index <= this.testData.length; index++) {
+                const buffer = fs.readFileSync(`${imagePath}/${data[index + start]}`)
+                const testdata = await sharp(buffer).metadata()
+
+                const multerData = {
+                    buffer,
+                    originalname: data[index + start],
+                    encoding: '7bit',
+                    mimetype: this.IMAGE_FORMAT_TO_MIME[testdata.format],
+                    size: testdata.size,
+                } as Express.Multer.File
+
+                await this.imageService.uploadUserImageService(this.testData[index], testdata, userId, multerData)
+                this.logger.log(`Image: ${index + start} Uploaded ✅`)
+            }
+            return res.json(test)
+
         }
-        if (this.testData.length !== end - start) {
-            return res.json("Insufficient Data")
+        catch (error) {
+            console.log('error-->', error);
         }
-
-        const imagePath = process.env.SEED_DATA_IMAGES_PATH!
-
-        const data = await fs.readdirSync(imagePath)
-        const test: any = []
-        for (let index = 0; index <= this.testData.length; index++) {
-            const buffer = fs.readFileSync(`${imagePath}/${data[index + start]}`)
-            const testdata = await sharp(buffer).metadata()
-
-            const multerData = {
-                buffer,
-                originalname: data[index + start],
-                encoding: '7bit',
-                mimetype: this.IMAGE_FORMAT_TO_MIME[testdata.format],
-                size: testdata.size,
-            } as Express.Multer.File
-
-            await this.imageService.uploadUserImageService(this.testData[index], testdata, userId, multerData)
-            this.logger.log(`Image: ${index + start} Uploaded ✅`)
-        }
-        return res.json(test)
-
     }
 }
