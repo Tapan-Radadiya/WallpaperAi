@@ -139,7 +139,9 @@ export class AuthService {
             if (!isUserTicketExists) {
                 return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "Invalid User Ticket" })
             }
-
+            if (isUserTicketExists.is_url_accessed) {
+                return APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Reset Password Link Is Expired" })
+            }
             if (new Date() > new Date(`${isUserTicketExists.expires_at}`)) {
                 return APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Reset Password Link Is Expired" })
             }
@@ -152,6 +154,10 @@ export class AuthService {
                     password: hashedPassword
                 })
                 .where(eq(schema.tbl_user.id, isUserTicketExists.userId))
+
+            await this.conn.update(schema.tbl_user_reset_tickets).set({
+                is_url_accessed: true
+            }).where(eq(schema.tbl_user_reset_tickets.id, isUserTicketExists.id))
 
             if (!updateUser) {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Resetting Password Try After Sometime" })
