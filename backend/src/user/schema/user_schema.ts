@@ -54,6 +54,7 @@ export const tbl_user_reset_tickets = pgTable('tbl_user_reset_tickets', {
     id: uuid('id').defaultRandom().primaryKey(),
     userId: uuid('user_id').references(() => tbl_user.id).notNull(),
     userTicket: varchar('userTicket').notNull(),
+    is_url_accessed: boolean('is_url_accessed').notNull().default(false),
     expires_at: timestamp('expires_at').default(sql`NOW() + INTERVAL '5 minutes'`).notNull(),
     created_at: timestamp('created_at').defaultNow(),
 })
