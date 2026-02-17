@@ -141,6 +141,13 @@
       "when": 1771171002969,
       "tag": "0019_shocking_purifiers",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1771351678410,
+      "tag": "0020_sleepy_stellaris",
+      "breakpoints": true
     }
   ]
 }
