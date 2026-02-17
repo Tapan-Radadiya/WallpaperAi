@@ -1,14 +1,15 @@
+import { CloudFrontClient, CreateInvalidationCommand, ListInvalidationsCommand } from "@aws-sdk/client-cloudfront";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { ConfigService } from '@nestjs/config';
-import { CloudFront, CloudFrontClient, CreateInvalidationCommand, ListCachePolicies$, ListInvalidationsCommand } from "@aws-sdk/client-cloudfront"
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs"
 
 @Injectable()
 export class AwsServicesService {
     private s3Client: S3Client
     private cloudFrontClient: CloudFrontClient
-    // private cloudFrontClient:
-    // private test = config.cloudfront
+    private sqsClient: SQSClient
+
     constructor(
         private readonly configService: ConfigService
     ) {
@@ -19,6 +20,11 @@ export class AwsServicesService {
         this.cloudFrontClient = new CloudFrontClient({
             region: this.configService.getOrThrow("AWS_REGION"),
         })
+
+        this.sqsClient = new SQSClient({
+            region: this.configService.getOrThrow("AWS_REGION")
+        })
+
     }
 
     async uploadFile(fileName: string, file: Buffer, ContentType: string): Promise<string | null> {
@@ -43,7 +49,6 @@ export class AwsServicesService {
                 DistributionId: this.configService.getOrThrow("AWS_CLOUDRONT_DISTRIBUTION_ID")
             })
         )
-        console.log('data-->', data.InvalidationList?.Items);
     }
 
     async invalidateImage(path: string[]) {
@@ -64,5 +69,18 @@ export class AwsServicesService {
         } else {
             console.log("Error Invalidating Cache")
         }
+    }
+
+    async sqsPush(messageGroupId: string) {
+        console.log("Pushing To Queue")
+        const data = await this.sqsClient.send(
+            new SendMessageCommand({
+                MessageBody: 'This Is For Testing',
+                QueueUrl: this.configService.getOrThrow("AWS_SQS_QUEUE_URL"),
+                MessageGroupId: messageGroupId,
+                MessageDeduplicationId: 'test'
+            })
+        )
+        console.log('data-->', data);
     }
 }
