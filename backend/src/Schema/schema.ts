@@ -9,3 +9,7 @@ export {
     tbl_image_likes,
     tbl_image_downloads
 } from "../image/schema/image.schema"
+
+export {
+    aws_sqs_image_data_status
+} from "../aws-services/schema/schema"
