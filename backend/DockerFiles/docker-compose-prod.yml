@@ -2,6 +2,7 @@ version: '3.8'
 services:
   backend:
     # image: taps31/wallpaper_backend:latest
+    container_name: wallpaper_backend
     build:
       context: ../
     ports:
