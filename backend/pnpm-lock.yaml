@@ -107,6 +107,9 @@ importers:
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
+      sqs-consumer:
+        specifier: ^14.2.1
+        version: 14.2.1(@aws-sdk/client-sqs@3.991.0)
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
@@ -5210,6 +5213,12 @@ packages:
 
   sprintf-js@1.0.3:
     resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
+
+  sqs-consumer@14.2.1:
+    resolution: {integrity: sha512-SLl/HTs7dS/SWJNwigN9t97Wxq1WmOaer7LR/YV6e9kvUtiLySlmIxJ/wYgGHPjWi9jMpVBUYRgY2Hl1jUMGAg==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      '@aws-sdk/client-sqs': ^3.967.0
 
   stack-utils@2.0.6:
     resolution: {integrity: sha512-XlkWvfIm6RmsWtNJx+uqtKLS8eqFbxUg0ZzLXqY0caEy9l7hruX8IpiDnjsLavoBgqCCR71TqWO8MaXYheJ3RQ==}
@@ -12483,6 +12492,13 @@ snapshots:
   split2@4.2.0: {}
 
   sprintf-js@1.0.3: {}
+
+  sqs-consumer@14.2.1(@aws-sdk/client-sqs@3.991.0):
+    dependencies:
+      '@aws-sdk/client-sqs': 3.991.0
+      debug: 4.4.3
+    transitivePeerDependencies:
+      - supports-color
 
   stack-utils@2.0.6:
     dependencies:
