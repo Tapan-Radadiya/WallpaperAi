@@ -5,11 +5,12 @@ import session from "express-session";
 import { initRedis, redisClient } from './redis-client/redis-client';
 import { RedisStore } from 'connect-redis';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { AwsServicesService } from './aws-services/aws-services.service';
 
 async function bootstrap() {
+
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT ?? 3002;
-
 
   await initRedis()
 
