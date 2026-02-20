@@ -77,22 +77,14 @@ export class AwsServicesService {
     }
 
     async sqsPush(messageGroupId: string) {
-        console.log("Pushing Datattatat")
+        console.log("Pushing Message")
         const data = await this.sqsService.send('wallpaper_ai_fifo_sqs', {
             body: "This Is For Testing",
             id: Date.now().toString(),
-            deduplicationId: `test-${Date.now()}`,
-            groupId: `${messageGroupId}-${Date.now()}`
+            deduplicationId: `${messageGroupId}-${Date.now()}`,
+            groupId: messageGroupId
         })
-        console.log("Data Pushed", data)
-        // const data = await this.sqsClient.send(
-        //     new SendMessageCommand({
-        //         MessageBody: 'This Is For Testing',
-        //         QueueUrl: this.configService.getOrThrow("AWS_SQS_QUEUE_URL"),
-        //         MessageGroupId: messageGroupId,
-        //         MessageDeduplicationId: 'test'
-        //     })
-        // )
+        console.log('data-->', data);
     }
 
     async sqsMessageDelete(messageId: string) {
@@ -103,5 +95,5 @@ export class AwsServicesService {
                 ReceiptHandle: messageId
             })
         )
-    }    
+    }
 }
