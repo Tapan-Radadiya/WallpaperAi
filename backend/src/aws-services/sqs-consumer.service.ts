@@ -18,5 +18,8 @@ export class SqsConsumerService implements OnModuleInit {
     @SqsMessageHandler('wallpaper_ai_fifo_sqs')
     async sqsMessageHandler(message: Message) {
         console.log('message-->', message);
+        if (message.ReceiptHandle) {
+            this.awsSerice.sqsMessageDelete(message.ReceiptHandle)
+        }
     }
 }

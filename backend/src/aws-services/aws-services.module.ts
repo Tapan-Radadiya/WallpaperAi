@@ -14,7 +14,7 @@ import { SqsConsumerService } from './sqs-consumer.service';
         consumers: [
           {
             name: 'wallpaper_ai_fifo_sqs',
-            queueUrl: configService.getOrThrow("AWS_SQS_QUEUE_URL"),
+            queueUrl: configService.getOrThrow("AWS_SQS_STD_QUEUE_URL"),
             region: configService.getOrThrow("AWS_REGION"),
             batchSize: 1,
             waitTimeSeconds: 5,
@@ -23,7 +23,7 @@ import { SqsConsumerService } from './sqs-consumer.service';
         producers: [
           {
             name: "wallpaper_ai_fifo_sqs",
-            queueUrl: configService.getOrThrow("AWS_SQS_QUEUE_URL"),
+            queueUrl: configService.getOrThrow("AWS_SQS_STD_QUEUE_URL"),
             region: configService.getOrThrow("AWS_REGION"),
           }
         ]
