@@ -81,17 +81,15 @@ export class AwsServicesService {
         const data = await this.sqsService.send('wallpaper_ai_fifo_sqs', {
             body: "This Is For Testing",
             id: Date.now().toString(),
-            deduplicationId: `${messageGroupId}-${Date.now()}`,
-            groupId: messageGroupId
         })
         console.log('data-->', data);
     }
 
     async sqsMessageDelete(messageId: string) {
         console.log(`Deleteting: ${messageId} `)
-        await this.sqsClient.send(
+        const data = await this.sqsClient.send(
             new DeleteMessageCommand({
-                QueueUrl: this.configService.getOrThrow("AWS_SQS_QUEUE_URL"),
+                QueueUrl: this.configService.getOrThrow("AWS_SQS_STD_QUEUE_URL"),
                 ReceiptHandle: messageId
             })
         )
