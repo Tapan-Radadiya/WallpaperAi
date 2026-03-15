@@ -1,17 +1,21 @@
 import { CloudFrontClient, CreateInvalidationCommand, ListInvalidationsCommand } from "@aws-sdk/client-cloudfront";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DeleteMessageCommand, SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SqsMessageHandler } from "@ssut/nestjs-sqs";
 import type { Message } from "@ssut/nestjs-sqs/dist/sqs.types";
 import { SqsService } from "@ssut/nestjs-sqs"
-
+import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
+import { validate } from "class-validator"
+import { plainToInstance } from "class-transformer"
+import { validateInput } from "src/utils/common";
 @Injectable()
 export class AwsServicesService {
     private s3Client: S3Client
     private cloudFrontClient: CloudFrontClient
     private sqsClient: SQSClient
+    private logger: Logger
 
     constructor(
         private readonly configService: ConfigService,
@@ -76,13 +80,17 @@ export class AwsServicesService {
         }
     }
 
-    async sqsPush(messageGroupId: string) {
-        console.log("Pushing Message")
+    async sqsImageProcessingDataPush(imageData: SQSImageProcessDTO) {
+        const validatedData = await validateInput(imageData, SQSImageProcessDTO)
+        if (validatedData.length > 0) {
+            this.logger.log("Invalide Data Passed To Image Processing Queue")
+            return
+        }
+
         const data = await this.sqsService.send('wallpaper_ai_fifo_sqs', {
-            body: "This Is For Testing",
+            body: imageData,
             id: Date.now().toString(),
         })
-        console.log('data-->', data);
     }
 
     async sqsMessageDelete(messageId: string) {

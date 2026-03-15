@@ -148,6 +148,20 @@
       "when": 1771351678410,
       "tag": "0020_sleepy_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1773596869443,
+      "tag": "0021_absurd_jasper_sitwell",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1773597002491,
+      "tag": "0022_woozy_synch",
+      "breakpoints": true
     }
   ]
 }

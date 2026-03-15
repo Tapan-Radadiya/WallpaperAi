@@ -1,17 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai"
+import { TaskType } from '@google/generative-ai';
 
 @Injectable()
 export class LangchainService {
 
     private embedding: GoogleGenerativeAIEmbeddings
     private logger: Logger
+
     constructor() {
         this.embedding = new GoogleGenerativeAIEmbeddings({
-            model: process.env.LANGCHAIN_MODEL,
+            model: process.env.LANGCHAIN_MODEL, // 
             apiKey: process.env.AI_MODEL_API_KEY,
-
-
+            taskType:TaskType.RETRIEVAL_DOCUMENT
         })
     }
 

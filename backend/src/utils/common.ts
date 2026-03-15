@@ -3,6 +3,8 @@ import { APIResponseInterface, SharpImageMetaDataType } from "src/types/common.t
 import * as bcrypt from "bcrypt"
 import sharp from "sharp"
 import { ALLOWED_IMAGES_FORMAT } from "src/constants"
+import { plainToInstance } from "class-transformer"
+import { validate } from "class-validator"
 export const APIResponse = ({ statusCode, message, data, err }: APIResponseInterface) => {
     return {
         statusCode,
@@ -56,4 +58,14 @@ export const SanitizeImageData = async (file: Express.Multer.File): Promise<APIR
         return APIResponse({ statusCode: responseData.statusCode, message: "Valid", data: { imageBuffer: sanitizedBuffer } })
     }
     return APIResponse({ statusCode: responseData.statusCode, message: responseData.message })
+}
+
+export const validateInput = async (payload, dtoType) => {
+    const plainObj = plainToInstance(dtoType, payload)
+    const validatedData = await validate(plainObj)
+    if (validatedData.length > 0) {
+        return validatedData
+    } else {
+        return []
+    }
 }

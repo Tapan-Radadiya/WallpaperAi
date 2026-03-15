@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SqsModule } from "@ssut/nestjs-sqs";
 import { AwsServicesService } from './aws-services.service';
 import { SqsConsumerService } from './sqs-consumer.service';
+import { LangchainService } from 'src/langchain/langchain.service';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { SqsConsumerService } from './sqs-consumer.service';
       })
     })
   ],
-  providers: [AwsServicesService, ConfigService, SqsConsumerService],
+  providers: [AwsServicesService, ConfigService, SqsConsumerService, LangchainService],
   exports: [AwsServicesService],
 })
 export class AwsServicesModule { }
