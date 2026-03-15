@@ -81,6 +81,14 @@ export class ImageService {
     }
 
     async uploadUserImageService(reqBody: ImageUploadBodyDTO, imageMetaData: sharp.Metadata, userId: string, fileData: Express.Multer.File): Promise<APIResponseInterface> {
+
+
+        this.awsServices.sqsImageProcessingDataPush({
+            description: reqBody.description,
+            hashTags: reqBody.hashTags,
+            image_id: '780e2b01-1dc5-4850-9dd6-e6811fa2bb5c'
+        })
+        return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
         const imageUuid = crypto.randomUUID()
         const imageThumbnailPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/thumbnail.webp`
         const imageRawPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/raw.${imageMetaData.format}`
@@ -120,9 +128,20 @@ export class ImageService {
                 id: imageData.id,
                 is_paid: imageData.is_paid,
                 title: imageData.title
+            }).returning({
+                image_id: schema.tbl_image.id,
+                description: schema.tbl_image.description,
+                hashTags: schema.tbl_image.hashTags
             })
 
             if (insertImage) {
+                this.awsServices.sqsImageProcessingDataPush({
+                    description: insertImage[0].description,
+                    hashTags: insertImage[0].hashTags,
+                    image_id: insertImage[0].image_id
+                })
+
+
                 return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
             } else {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: 'Error uploading image' })
@@ -235,6 +254,7 @@ export class ImageService {
 
         try {
             if (userId) {
+                // Is same user downloading image again
                 const isUserExists = await this.conn.query.tbl_image_downloads.findFirst({
                     where: (
                         and(

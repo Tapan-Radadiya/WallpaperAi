@@ -7,7 +7,8 @@ export {
 export {
     tbl_image,
     tbl_image_likes,
-    tbl_image_downloads
+    tbl_image_downloads,
+    tbl_image_embeddings
 } from "../image/schema/image.schema"
 
 export {
