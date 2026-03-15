@@ -81,14 +81,6 @@ export class ImageService {
     }
 
     async uploadUserImageService(reqBody: ImageUploadBodyDTO, imageMetaData: sharp.Metadata, userId: string, fileData: Express.Multer.File): Promise<APIResponseInterface> {
-
-
-        this.awsServices.sqsImageProcessingDataPush({
-            description: reqBody.description,
-            hashTags: reqBody.hashTags,
-            image_id: '780e2b01-1dc5-4850-9dd6-e6811fa2bb5c'
-        })
-        return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
         const imageUuid = crypto.randomUUID()
         const imageThumbnailPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/thumbnail.webp`
         const imageRawPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/raw.${imageMetaData.format}`
@@ -140,7 +132,6 @@ export class ImageService {
                     hashTags: insertImage[0].hashTags,
                     image_id: insertImage[0].image_id
                 })
-
 
                 return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
             } else {
