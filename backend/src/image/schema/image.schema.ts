@@ -32,7 +32,7 @@ export const tbl_image_embeddings = pgTable('tbl_image_embeddings', {
     image_metadata: vector('image_metadata', { dimensions: 3072 }),
     created_at: timestamp('created_at').defaultNow(),
 }, (table) => [
-    index("tbl_image_embeddings_tbl_image_idx").using('hnsw', table.image_metadata.op('vector_cosine_ops'))
+    index("tbl_image_embeddings_tbl_image_idx").using('ivfflat', table.image_metadata.op('vector_cosine_ops'))
 ])
 
 export const tbl_image_likes = pgTable('tbl_image_likes', {

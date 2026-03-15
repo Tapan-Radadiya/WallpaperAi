@@ -12,7 +12,7 @@ export class LangchainService {
         this.embedding = new GoogleGenerativeAIEmbeddings({
             model: process.env.LANGCHAIN_MODEL, // 
             apiKey: process.env.AI_MODEL_API_KEY,
-            taskType:TaskType.RETRIEVAL_DOCUMENT
+            taskType: TaskType.RETRIEVAL_DOCUMENT
         })
     }
 
@@ -25,7 +25,8 @@ export class LangchainService {
             this.logger.log("Only string can be embedded in this function")
             return null
         }
-        const embededData = await this.embedding.embedQuery(text)
+        const embededData = await this.embedding.embedQuery(text
+        )
         return embededData
     }
 }
