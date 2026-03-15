@@ -24,6 +24,8 @@ import { DataSeedController } from './data_seed/data_seed.controller';
 import { DataSeedModule } from './data_seed/data_seed.module';
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler"
 import { APP_GUARD } from '@nestjs/core';
+import { LangchainModule } from './langchain/langchain.module';
+import { LangchainService } from './langchain/langchain.service';
 @Module({
   imports: [
     ThrottlerModule.forRoot({
@@ -52,6 +54,7 @@ import { APP_GUARD } from '@nestjs/core';
     MailModule,
     AwsServicesModule,
     DataSeedModule,
+    LangchainModule,
   ],
   controllers: [AppController, UserVerificationController, DataSeedController],
   providers: [
