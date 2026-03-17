@@ -1,7 +1,7 @@
 CREATE TABLE "tbl_image_embeddings" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tbl_image_id" uuid NOT NULL,
-	"image_metadata" vector(3072),
+	"image_metadata" vector(768),
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint

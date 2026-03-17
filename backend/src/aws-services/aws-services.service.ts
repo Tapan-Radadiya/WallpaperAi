@@ -1,21 +1,17 @@
 import { CloudFrontClient, CreateInvalidationCommand, ListInvalidationsCommand } from "@aws-sdk/client-cloudfront";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { DeleteMessageCommand, SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import { DeleteMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SqsMessageHandler } from "@ssut/nestjs-sqs";
-import type { Message } from "@ssut/nestjs-sqs/dist/sqs.types";
-import { SqsService } from "@ssut/nestjs-sqs"
-import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
-import { validate } from "class-validator"
-import { plainToInstance } from "class-transformer"
+import { SqsService } from "@ssut/nestjs-sqs";
 import { validateInput } from "src/utils/common";
+import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
 @Injectable()
 export class AwsServicesService {
     private s3Client: S3Client
     private cloudFrontClient: CloudFrontClient
     private sqsClient: SQSClient
-    private logger: Logger
+    private logger: Logger = new Logger(AwsServicesService.name)
 
     constructor(
         private readonly configService: ConfigService,

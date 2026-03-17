@@ -38,8 +38,14 @@ export class SqsConsumerService implements OnModuleInit {
             const parsedBody: SQSImageProcessDTO = JSON.parse(message.Body)
 
             const descriptionEmbeddings = await this.langchainService.getEmbeddedText(parsedBody.description)
+            if (message.ReceiptHandle) {
+                this.awsService.sqsMessageDelete(message.ReceiptHandle)
+            }
 
-
+            if (!descriptionEmbeddings) {
+                this.logger.log(`Error Getting Embeddings for ${parsedBody}`)
+                return
+            }
             await this.conn.insert(tbl_image_embeddings).values({
                 tbl_image_id: parsedBody.image_id,
                 image_metadata: descriptionEmbeddings
@@ -55,6 +61,8 @@ export class SqsConsumerService implements OnModuleInit {
             }
         } catch (error) {
             this.logger.log(`Error Processing ${message.MessageId}, ${message.ReceiptHandle}`)
+            return
         }
+        return
     }
 }
