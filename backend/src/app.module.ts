@@ -26,6 +26,7 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler"
 import { APP_GUARD } from '@nestjs/core';
 import { LangchainModule } from './langchain/langchain.module';
 import { LangchainService } from './langchain/langchain.service';
+import { ImageSearchModule } from './image-search/image-search.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot({
@@ -55,6 +56,7 @@ import { LangchainService } from './langchain/langchain.service';
     AwsServicesModule,
     DataSeedModule,
     LangchainModule,
+    ImageSearchModule,
   ],
   controllers: [AppController, UserVerificationController, DataSeedController],
   providers: [
