@@ -29,7 +29,8 @@ export const tbl_image = pgTable('tbl_image', {
 export const tbl_image_embeddings = pgTable('tbl_image_embeddings', {
     id: uuid('id').defaultRandom().primaryKey(),
     tbl_image_id: uuid('tbl_image_id').references(() => tbl_image.id).notNull(),
-    image_metadata: vector('image_metadata', { dimensions: 3072 }),
+    // If Need to change the dimensions then create new column and recompute all the dimensions
+    image_metadata: vector('image_metadata', { dimensions: 768 }),
     created_at: timestamp('created_at').defaultNow(),
 }, (table) => [
     index("tbl_image_embeddings_tbl_image_idx").using('ivfflat', table.image_metadata.op('vector_cosine_ops'))
