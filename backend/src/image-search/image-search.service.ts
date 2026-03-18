@@ -1,11 +1,11 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { cosineDistance, desc, eq, gt, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import * as schema from "../Schema/schema"
 import { LangchainService } from 'src/langchain/langchain.service';
 import { APIResponseInterface } from 'src/types/common.types';
 import { APIResponse } from 'src/utils/common';
-import { cosineDistance, desc, eq, gt, sql } from 'drizzle-orm';
+import * as schema from "../Schema/schema";
 @Injectable()
 export class ImageSearchService {
     constructor(
@@ -32,8 +32,8 @@ export class ImageSearchService {
             const similarData = await this.conn
                 .select({
                     imageId: schema.tbl_image_embeddings.tbl_image_id,
-                    image_metadata: schema.tbl_image_embeddings.image_metadata,
-                    imageSource: schema.tbl_image.raw_url
+                    imageSource: schema.tbl_image.raw_url,
+                    similarity
                 })
                 .from(schema.tbl_image_embeddings)
                 .leftJoin(
@@ -41,13 +41,14 @@ export class ImageSearchService {
                     eq(schema.tbl_image.id, schema.tbl_image_embeddings.tbl_image_id)
                 )
                 .where(gt(similarity, 0.5))
-                .orderBy((t) => desc(t.image_metadata))
+                .orderBy(desc(similarity))
                 .limit(4)
+
             return APIResponse({
                 message: "ok",
                 statusCode: HttpStatus.OK,
                 data: similarData.map((ele) => {
-                    return { image: ele.imageId, source: ele.imageSource }
+                    return { image: ele.imageId, source: ele.imageSource, similarity: ele.similarity }
                 })
             })
         } catch (error) {
