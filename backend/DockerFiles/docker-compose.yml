@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg17
     container_name: wallpaper_pg
     environment:
       POSTGRES_USER: tapan

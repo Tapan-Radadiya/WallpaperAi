@@ -1,0 +1,1 @@
+ALTER TABLE "tbl_image" ADD COLUMN "image_processed" boolean DEFAULT false NOT NULL;

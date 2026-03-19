@@ -1,18 +1,21 @@
 import { CloudFrontClient, CreateInvalidationCommand, ListInvalidationsCommand } from "@aws-sdk/client-cloudfront";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { HttpStatus, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { DeleteMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DeleteMessageCommand, ReceiveMessageCommand, SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs"
-import { Consumer } from 'sqs-consumer'
+import { SqsService } from "@ssut/nestjs-sqs";
+import { validateInput } from "src/utils/common";
+import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
 @Injectable()
-export class AwsServicesService implements OnModuleInit, OnModuleDestroy {
+export class AwsServicesService {
     private s3Client: S3Client
     private cloudFrontClient: CloudFrontClient
     private sqsClient: SQSClient
-    private sqsConsumer;
+    private logger: Logger = new Logger(AwsServicesService.name)
 
     constructor(
-        private readonly configService: ConfigService
+        private readonly configService: ConfigService,
+        private readonly sqsService: SqsService
     ) {
         this.s3Client = new S3Client({
             region: this.configService.getOrThrow("AWS_REGION"),
@@ -73,53 +76,26 @@ export class AwsServicesService implements OnModuleInit, OnModuleDestroy {
         }
     }
 
-    async sqsPush(messageGroupId: string) {
-        console.log("Pushing Datattatat")
-        const data = await this.sqsClient.send(
-            new SendMessageCommand({
-                MessageBody: 'This Is For Testing',
-                QueueUrl: this.configService.getOrThrow("AWS_SQS_QUEUE_URL"),
-                MessageGroupId: messageGroupId,
-                MessageDeduplicationId: 'test'
-            })
-        )
-        console.log('data-->', data);
-        console.log("Data Pushed")
+    async sqsImageProcessingDataPush(imageData: SQSImageProcessDTO) {
+        const validatedData = await validateInput(imageData, SQSImageProcessDTO)
+        if (validatedData.length > 0) {
+            this.logger.log("Invalide Data Passed To Image Processing Queue")
+            return
+        }
+
+        const data = await this.sqsService.send('wallpaper_ai_fifo_sqs', {
+            body: imageData,
+            id: Date.now().toString(),
+        })
     }
 
     async sqsMessageDelete(messageId: string) {
         console.log(`Deleteting: ${messageId} `)
-        await this.sqsClient.send(
+        const data = await this.sqsClient.send(
             new DeleteMessageCommand({
-                QueueUrl: this.configService.getOrThrow("AWS_SQS_QUEUE_URL"),
+                QueueUrl: this.configService.getOrThrow("AWS_SQS_STD_QUEUE_URL"),
                 ReceiptHandle: messageId
             })
         )
-    }
-
-    // For continuous SQS Polling
-    onModuleInit() {
-        console.log("SQS Polling Enabled")
-        this.sqsConsumer = Consumer.create({
-            queueUrl: this.configService.getOrThrow("AWS_SQS_QUEUE_URL"),
-            sqs: this.sqsClient,
-            batchSize: 1,
-            handleMessage: async (message) => {
-                const receiptHandle = message.ReceiptHandle
-                console.log('Received message:', message.Body);
-
-                const parsed = message.Body!;
-
-                console.log('parsed-->', parsed);
-                if (receiptHandle)
-                    this.sqsMessageDelete(receiptHandle)
-
-                return undefined
-            },
-        })
-        this.sqsConsumer.start(); // 🔥 Starts continuous polling
-    }
-    onModuleDestroy() {
-        this.sqsConsumer.stop();
     }
 }

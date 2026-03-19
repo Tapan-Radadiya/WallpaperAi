@@ -23,7 +23,7 @@ export class WorkerService {
     private insertedImageCount = 0
     private newUserCount = 0
 
-    @Cron(CronExpression.EVERY_10_HOURS)
+    // @Cron(CronExpression.EVERY_10_HOURS)
     async invalidateCache() {
         this.logger.log('Invalidating Cache');
         if (!this.conn) {
