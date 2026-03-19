@@ -31,7 +31,7 @@ interface ProfileContentProps {
 
 export default function ProfileContent({ initialProfileData, viewedUserId }: ProfileContentProps) {
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState('liked');
+    const [activeTab, setActiveTab] = useState('uploads');
     const [selectedImage, setSelectedImage] = useState<WallpaperImage | null>(null);
     const [profileData, setProfileData] = useState<APIResponseData | null>(initialProfileData);
 
@@ -179,9 +179,9 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     const displayImages = activeTab === 'uploads' ? uploadedImages : likedImages;
 
     const allTabs = [
+        { id: 'uploads', label: 'Uploads' },
         { id: 'liked', label: 'Liked' },
         { id: 'collections', label: 'Collections' },
-        { id: 'uploads', label: 'Uploads' },
     ];
 
     const tabs = isOwnProfile ? allTabs : allTabs.filter(t => t.id === 'uploads');

@@ -1,5 +1,6 @@
 import { getImages } from '@/lib/data';
 import WallpaperGrid from '@/components/WallpaperGrid';
+import SearchLayout from '@/components/SearchLayout';
 import Header from '@/components/Header';
 import { headers } from 'next/headers';
 
@@ -11,9 +12,11 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen pb-10">
-
-      <div className="container mx-auto mt-6">
-        <WallpaperGrid initialImages={images} isMobile={isMobile} />
+      <div className="container mx-auto px-4 mt-6 space-y-12">
+        <SearchLayout />
+        <div>
+           <WallpaperGrid initialImages={images} isMobile={isMobile} />
+        </div>
       </div>
     </main>
   );

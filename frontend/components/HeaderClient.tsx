@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import Link from 'next/link';
-import { LogIn, User as UserIcon, Upload, X, LogOut, Loader2 } from 'lucide-react';
+import { LogIn, User as UserIcon, Upload, X, LogOut, Loader2, Search } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import api from '@/lib/api';
