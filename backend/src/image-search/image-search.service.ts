@@ -31,14 +31,20 @@ export class ImageSearchService {
             const similarity = sql<number>`1 - (${cosineDistance(schema.tbl_image_embeddings.image_metadata, embeddings)})`
             const similarData = await this.conn
                 .select({
-                    imageId: schema.tbl_image_embeddings.tbl_image_id,
                     imageSource: schema.tbl_image.raw_url,
-                    similarity
+                    userName: schema.tbl_user.user_name,
+                    userId: schema.tbl_user.id,
+                    imageDescription: schema.tbl_image.description,
+                    imageTitle: schema.tbl_image.title
                 })
                 .from(schema.tbl_image_embeddings)
                 .leftJoin(
                     schema.tbl_image,
                     eq(schema.tbl_image.id, schema.tbl_image_embeddings.tbl_image_id)
+                )
+                .leftJoin(
+                    schema.tbl_user,
+                    eq(schema.tbl_user.id, schema.tbl_image.user_id)
                 )
                 .where(gt(similarity, 0.5))
                 .orderBy(desc(similarity))
@@ -47,9 +53,7 @@ export class ImageSearchService {
             return APIResponse({
                 message: "ok",
                 statusCode: HttpStatus.OK,
-                data: similarData.map((ele) => {
-                    return { image: ele.imageId, source: ele.imageSource, similarity: ele.similarity }
-                })
+                data: similarData
             })
         } catch (error) {
             return APIResponse({
