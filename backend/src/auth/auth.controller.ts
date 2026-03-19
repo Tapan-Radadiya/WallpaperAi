@@ -75,7 +75,6 @@ export class AuthController {
             password: body.password
         }
         try {
-            // this.awsService.sqsPush("TEST")
             const { message, statusCode, data, err } = await this.AuthService.userLoginService(userData, req)
             responseData.message = message
             responseData.statusCode = statusCode

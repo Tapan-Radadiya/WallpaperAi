@@ -120,9 +120,19 @@ export class ImageService {
                 id: imageData.id,
                 is_paid: imageData.is_paid,
                 title: imageData.title
+            }).returning({
+                image_id: schema.tbl_image.id,
+                description: schema.tbl_image.description,
+                hashTags: schema.tbl_image.hashTags
             })
 
             if (insertImage) {
+                this.awsServices.sqsImageProcessingDataPush({
+                    description: insertImage[0].description,
+                    hashTags: insertImage[0].hashTags,
+                    image_id: insertImage[0].image_id
+                })
+
                 return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
             } else {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: 'Error uploading image' })
@@ -235,6 +245,7 @@ export class ImageService {
 
         try {
             if (userId) {
+                // Is same user downloading image again
                 const isUserExists = await this.conn.query.tbl_image_downloads.findFirst({
                     where: (
                         and(
