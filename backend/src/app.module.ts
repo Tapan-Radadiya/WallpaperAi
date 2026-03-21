@@ -27,6 +27,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { LangchainModule } from './langchain/langchain.module';
 import { LangchainService } from './langchain/langchain.service';
 import { ImageSearchModule } from './image-search/image-search.module';
+import { StripeModule } from './stripe/stripe.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot({
@@ -57,6 +58,7 @@ import { ImageSearchModule } from './image-search/image-search.module';
     DataSeedModule,
     LangchainModule,
     ImageSearchModule,
+    StripeModule,
   ],
   controllers: [AppController, UserVerificationController, DataSeedController],
   providers: [
