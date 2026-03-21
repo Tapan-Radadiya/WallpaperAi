@@ -1,5 +1,5 @@
 import { Controller, Get, HttpStatus, Inject, Injectable, Logger, Req, Res } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request, Response } from 'express';
 import * as fs from 'fs';
@@ -8,13 +8,20 @@ import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { ImageService } from 'src/image/image.service';
 import * as schema from "../Schema/schema";
 import { ImageUploadBodyDTO } from 'src/DTO/image.dto';
+import { AwsServicesService } from 'src/aws-services/aws-services.service';
+import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import { LangchainService } from 'src/langchain/langchain.service';
+import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
 
 @Controller('data-seed')
 @Injectable()
 export class DataSeedController {
     constructor(
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
-        private readonly imageService: ImageService
+        private readonly imageService: ImageService,
+        private readonly awsService: AwsServicesService,
+        private readonly lanchainService: LangchainService,
+        private readonly redisService: RedisCacheService
     ) { }
 
     private readonly logger = new Logger(DataSeedController.name)
@@ -385,7 +392,55 @@ export class DataSeedController {
         }
     ]
 
+    @Get('generate-description')
+    async addImageEmbeddings(
+        @Req() req: Request,
+        @Res() res: Response
+    ) {
+        if (!req.session.userId) {
+            return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
+        }
+        try {
+            if (!await this.redisService.isKeyExists('imageDescriptionChanges')) {
+                console.log("Cache Key Created")
+                await this.redisService.setRedisKey(`imageDescriptionChanges`, JSON.stringify([]), 1000000)
+            }
 
+            const dataProcessed: string[] = JSON.parse(await this.redisService.getRedisKeyValue(`imageDescriptionChanges`))
+            if (dataProcessed.length === 100) {
+                console.error("All The Data Processed ")
+                return
+            }
+            const data = await this.conn
+                .select({
+                    s3ImageUrl: schema.tbl_image.raw_url,
+                    imageId: schema.tbl_image.id
+                })
+                .from(schema.tbl_image)
+                .orderBy(sql`random()`)
+                .limit(50)
+
+            for await (const element of data) {
+                if (dataProcessed.includes(element.imageId)) {
+                    console.log({ imageId: element.imageId, message: `dataProcessed Already` })
+                    continue
+                } else {
+                    dataProcessed.push(element.imageId)
+                    if (element.s3ImageUrl.includes("/dev")) { continue }
+
+                    const data = await this.lanchainService.getImageDescription(element.s3ImageUrl)
+                    await this.conn.update(schema.tbl_image).set({
+                        description: data
+                    }).where(eq(schema.tbl_image.id, element.imageId))
+                }
+            }
+            await this.redisService.setRedisKey(`imageDescriptionChanges`, JSON.stringify(dataProcessed), 1000000)
+            return res.status(HttpStatus.OK).json({ message: "Ok" })
+        } catch (error) {
+            console.log('error-->', error);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error })
+        }
+    }
 
     @Get('')
     async uploadUserImages(
@@ -397,8 +452,8 @@ export class DataSeedController {
                 return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
             }
             const userId = req.session.userId
-        const start = 0
-        const end = 50
+            const start = 0
+            const end = 50
             const isUserExists = await this.conn.query.tbl_user.findFirst({
                 where: eq(
                     schema.tbl_user.id, userId
