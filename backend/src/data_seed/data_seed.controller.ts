@@ -1,5 +1,5 @@
 import { Controller, Get, HttpStatus, Inject, Injectable, Logger, Req, Res } from '@nestjs/common';
-import { eq, sql } from 'drizzle-orm';
+import { eq, inArray, not, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request, Response } from 'express';
 import * as fs from 'fs';
@@ -400,9 +400,9 @@ export class DataSeedController {
         if (!req.session.userId) {
             return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
         }
+        return res.status(HttpStatus.NOT_ACCEPTABLE).json({ message: "Currently not accepting" })
         try {
             if (!await this.redisService.isKeyExists('imageDescriptionChanges')) {
-                console.log("Cache Key Created")
                 await this.redisService.setRedisKey(`imageDescriptionChanges`, JSON.stringify([]), 1000000)
             }
 
@@ -439,6 +439,44 @@ export class DataSeedController {
         } catch (error) {
             console.log('error-->', error);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error })
+        }
+    }
+
+
+    @Get('seed-embeddings')
+    async seedEmbeddings(
+        @Req() req: Request,
+        @Res() res: Response
+    ) {
+        try {
+
+            if (!await this.redisService.isKeyExists('imageDescriptionChanges')) {
+                await this.redisService.setRedisKey(`imageDescriptionChanges`, JSON.stringify([]), 1000000)
+            }
+            return res.status(HttpStatus.OK).json({ message: "Restricated By User" })
+            const dataProcessed: string[] = JSON.parse(await this.redisService.getRedisKeyValue(`imageDescriptionChanges`))
+
+            const data = await this.conn
+                .select({
+                    id: schema.tbl_image.id,
+                    desc: schema.tbl_image.description,
+                    hashTags: schema.tbl_image.hashTags
+                })
+                .from(schema.tbl_image)
+                .where(inArray(schema.tbl_image.id, dataProcessed))
+
+            for await (const element of data) {
+                this.awsService.sqsImageProcessingDataPush({
+                    description: element.desc,
+                    hashTags: element.hashTags,
+                    image_id: element.id
+                })
+
+            }
+            return res.status(HttpStatus.OK).json()
+        } catch (error) {
+            console.log(error)
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error" })
         }
     }
 

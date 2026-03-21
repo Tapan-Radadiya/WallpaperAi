@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString, IsUUID, Length } from "class-validator";
 export class SQSImageProcessDTO {
     @IsString()
     @IsNotEmpty()
-    @Length(10, 100)
+    @Length(10, 500)
     description: string
 
     @IsString()
