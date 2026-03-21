@@ -1,5 +1,5 @@
 import { CloudFrontClient, CreateInvalidationCommand, ListInvalidationsCommand } from "@aws-sdk/client-cloudfront";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, GetObjectCommandOutput, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DeleteMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -28,10 +28,9 @@ export class AwsServicesService {
         this.sqsClient = new SQSClient({
             region: this.configService.getOrThrow("AWS_REGION")
         })
-
     }
 
-
+    // S3 Services
     async uploadFile(fileName: string, file: Buffer, ContentType: string): Promise<string | null> {
         const uploadedFile = await this.s3Client.send(
             new PutObjectCommand({
@@ -47,6 +46,22 @@ export class AwsServicesService {
             return null
         }
     }
+
+    async getS3FileData(filePath: string): Promise<GetObjectCommandOutput | null> {
+        const fileData = await this.s3Client.send(
+            new GetObjectCommand({
+                Bucket: this.configService.getOrThrow("AWS_BUCKET_NAME"),
+                Key: filePath
+            })
+        )
+        if (fileData.$metadata.httpStatusCode === HttpStatus.OK) {
+            return fileData
+        } else {
+            return null
+        }
+    }
+
+    // S3 Services
 
     async cloudFrontTest() {
         const data = await this.cloudFrontClient.send(
