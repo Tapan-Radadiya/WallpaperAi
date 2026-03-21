@@ -48,7 +48,7 @@ export class ImageSearchService {
                 )
                 .where(gt(similarity, 0.5))
                 .orderBy(desc(similarity))
-                .limit(4)
+                .limit(8)
 
             return APIResponse({
                 message: "ok",
