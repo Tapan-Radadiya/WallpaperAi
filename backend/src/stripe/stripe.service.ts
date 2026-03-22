@@ -56,30 +56,27 @@ export class StripeService {
                 })
             }
 
-
-            // Create Payment 
-
             const { platFormCut, userCut } = this.getUserAndPlatformCutValue(price)
 
-            // const paymentData = await this.conn.insert(tbl_payments).values({
-            //     amount: price,
-            //     buyer_id: userId,
-            //     image_id: id,
-            //     platform_cut: platFormCut,
-            //     seller_id: imageOwnerId,
-            //     user_cut: userCut,
-            // }).returning({
-            //     id: tbl_payments.id,
-            //     buyer_id: tbl_payments.buyer_id,
-            //     seller_id: tbl_payments.seller_id
-            // })
+            const paymentData = await this.conn.insert(tbl_payments).values({
+                amount: price,
+                buyer_id: userId,
+                image_id: id,
+                platform_cut: platFormCut,
+                seller_id: imageOwnerId,
+                user_cut: userCut,
+            }).returning({
+                id: tbl_payments.id,
+                buyer_id: tbl_payments.buyer_id,
+                seller_id: tbl_payments.seller_id
+            })
 
-            // if (!paymentData) {
-            //     return APIResponse({
-            //         statusCode: HttpStatus.CONFLICT,
-            //         message: "Error creating purchase try after sometime"
-            //     })
-            // }
+            if (!paymentData) {
+                return APIResponse({
+                    statusCode: HttpStatus.CONFLICT,
+                    message: "Error creating purchase try after sometime"
+                })
+            }
 
             const stripeData = await this.stripe.checkout.sessions.create({
                 mode: 'payment',
@@ -93,11 +90,11 @@ export class StripeService {
                             },
                         },
                         quantity: 1,
-                        // metadata: {
-                        //     payment_id: paymentData[0].id,
-                        //     buyer_id: paymentData[0].buyer_id,
-                        //     seller_id: paymentData[0].seller_id,
-                        // }
+                        metadata: {
+                            payment_id: paymentData[0].id,
+                            buyer_id: paymentData[0].buyer_id,
+                            seller_id: paymentData[0].seller_id,
+                        }
                     }
                 ],
                 success_url: 'http://192.168.56.1:3000/'
@@ -121,18 +118,16 @@ export class StripeService {
 
     async stripeWebhookService(body: any, stripeSign: string) {
         const payload = body.rawBody
-        console.log('payload-->', payload);
         if (!payload) {
             return
         }
-        console.log('process.env.STRIPE_WEBHOOK_SECRET-->', process.env.STRIPE_WEBHOOK_SECRET);
         const event = this.stripe.webhooks.constructEvent(
             payload,
             stripeSign,
             process.env.STRIPE_WEBHOOK_SECRET!
         )
+        console.log('event.data-->', event);
         if (event.type === 'checkout.session.completed') {
-            console.log('event.data-->', event);
         }
     }
 

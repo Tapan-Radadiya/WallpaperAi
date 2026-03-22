@@ -169,6 +169,20 @@
       "when": 1774173513302,
       "tag": "0023_robust_ghost_rider",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1774201368431,
+      "tag": "0024_faithful_rachel_grey",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1774201564562,
+      "tag": "0025_furry_leo",
+      "breakpoints": true
     }
   ]
 }
