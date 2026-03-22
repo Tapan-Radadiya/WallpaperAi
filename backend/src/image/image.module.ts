@@ -11,6 +11,6 @@ import { AwsServicesModule } from 'src/aws-services/aws-services.module';
   imports: [RedisCacheModule, HttpModule, AwsServicesModule],
   controllers: [ImageController],
   providers: [ImageService, AwsServicesService, UserService],
-  exports: [ImageService]
+  exports: [ImageService, ImageModule]
 })
 export class ImageModule { }
