@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
-import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check } from 'lucide-react';
+import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check, Lock } from 'lucide-react';
 import ImageCard from './ImageCard';
 import ImageDetailsMobile from './ImageDetailsMobile';
 
@@ -25,6 +25,11 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     const [likesCount, setLikesCount] = useState<number>(0);
     const [downloadCount, setDownloadCount] = useState<number>(0);
     const [isDownloading, setIsDownloading] = useState(false);
+    
+    // Purchase & detailed state
+    const [hasPurchased, setHasPurchased] = useState(false);
+    const [fetchedPrice, setFetchedPrice] = useState<number | null>(null);
+    const isPremiumLocked = image.is_paid && !hasPurchased;
 
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -99,11 +104,11 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                 const res = await api.get(`/image/image-data/${image.id}`, {
                     signal: controller.signal
                 });
-                if (res.data && typeof res.data.imageLikes === 'number') {
-                    setLikesCount(res.data.imageLikes);
-                }
-                if (res.data && typeof res.data.totalDownloads === 'number') {
-                    setDownloadCount(res.data.totalDownloads);
+                if (res.data) {
+                    if (typeof res.data.imageLikes === 'number') setLikesCount(res.data.imageLikes);
+                    if (typeof res.data.totalDownloads === 'number') setDownloadCount(res.data.totalDownloads);
+                    if (res.data.price !== undefined) setFetchedPrice(res.data.price);
+                    if (res.data.has_purchased !== undefined) setHasPurchased(res.data.has_purchased);
                 }
             } catch (err: any) {
                 if (err.name !== 'CanceledError' && err.code !== "ERR_CANCELED") {
@@ -134,6 +139,10 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                 isLiked={isLiked}
                 onRelatedImageClick={onRelatedImageClick}
                 onClose={onClose}
+                likesCount={likesCount}
+                downloadCount={downloadCount}
+                hasPurchased={hasPurchased}
+                fetchedPrice={fetchedPrice}
             />
 
             {/* Desktop View */}
@@ -175,8 +184,8 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                         {/* Mobile/Tablet Image View (Constrained Height, Preserve Aspect Ratio) */}
                         <div className="lg:hidden w-full flex items-center justify-center py-4 bg-black/5">
                             <div
-                                className="relative cursor-zoom-in"
-                                onClick={() => setIsFullSize(true)}
+                                className={`relative ${isPremiumLocked ? 'cursor-not-allowed' : 'cursor-zoom-in'}`}
+                                onClick={() => { if (!isPremiumLocked) setIsFullSize(true); }}
                             >
                                 <img
                                     src={image.rawUrl}
@@ -188,8 +197,8 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
 
                         {/* Desktop Image View (Fill Container) */}
                         <div
-                            className="hidden lg:flex absolute inset-0 items-center justify-center p-2 md:p-4 cursor-zoom-in"
-                            onClick={() => setIsFullSize(true)}
+                            className={`hidden lg:flex absolute inset-0 items-center justify-center p-2 md:p-4 ${isPremiumLocked ? 'cursor-not-allowed' : 'cursor-zoom-in'}`}
+                            onClick={() => { if (!isPremiumLocked) setIsFullSize(true); }}
                         >
                             <Image
                                 src={image.rawUrl}
@@ -297,11 +306,20 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                             ))}
                         </div>
 
-                        {/* Download Button */}
+                        {/* Download / Purchase Button */}
                         <div className="mt-auto pt-4">
-                            <div className="relative" ref={downloadMenuRef}>
+                            {isPremiumLocked ? (
                                 <button
-                                    onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                                    onClick={() => alert('Purchase flow to be integrated')}
+                                    className="w-full py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-yellow-500/20"
+                                >
+                                    <Lock size={20} className="text-black/80" />
+                                    <span>Unlock Premium | ${fetchedPrice ?? image.price ?? '2.99'}</span>
+                                </button>
+                            ) : (
+                                <div className="relative" ref={downloadMenuRef}>
+                                    <button
+                                        onClick={() => setShowDownloadMenu(!showDownloadMenu)}
                                     disabled={isDownloading}
                                     className="w-full py-4 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-[var(--foreground)]/10 group disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
@@ -346,6 +364,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                                     </div>
                                 )}
                             </div>
+                            )}
                         </div>
                     </div>
                 </div>
