@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { WallpaperImage } from '@/lib/data';
-import { Maximize2, Heart } from 'lucide-react';
+import { Maximize2, Heart, Crown } from 'lucide-react';
 import { useState, useRef } from 'react';
 
 interface ImageCardProps {
@@ -55,6 +55,14 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
                         <Maximize2 size={24} className="transform rotate-45" />
                     </div>
                 </div>
+
+                {/* Premium Badge */}
+                {image.is_paid && (
+                    <div className="absolute top-3 left-3 px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/20 flex items-center gap-1.5 z-10 pointer-events-none">
+                        <Crown size={14} className="text-yellow-400" />
+                        <span className="text-white text-[11px] font-bold uppercase tracking-wider">Premium</span>
+                    </div>
+                )}
 
                 {/* Heart Animation Overlay */}
                 {showHeartAnimation && (

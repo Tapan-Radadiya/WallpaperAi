@@ -22,6 +22,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [isPaid, setIsPaid] = useState(false);
+    const [price, setPrice] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -36,7 +37,10 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
         try {
             const formData = new FormData();
             formData.append('image', file);
-            formData.append('is_paid', 'false'); // Forced to false as feature is disabled
+            formData.append('is_paid', isPaid.toString());
+            if (isPaid && price) {
+                formData.append('price', price);
+            }
             formData.append('category', 'test');
             // Ensure hashtags are sent correctly. If users type "#nature #dark", we might want to just send that string
             // or clean it up. The user didn't specify format details other than sending the field.
@@ -63,6 +67,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
             setTitle('');
             setDescription('');
             setIsPaid(false);
+            setPrice('');
         } catch (error: any) {
             console.error('Upload failed:', error);
             const errorMessage = error.response?.data?.message || 'Failed to upload wallpaper';
@@ -155,27 +160,44 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
 
                         {/* Paid Toggle */}
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20 opacity-60">
-                            <span className="text-s font-semibold text-[var(--foreground)] capitalize tracking-wide flex items-center gap-2">
-                                Paid Wallpaper ?
-                                <span className="text-[10px] bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Coming Soon</span>
-                            </span>
-                            <button
-                                type="button"
-                                disabled={true}
-                                onClick={() => { }}
-                                className={`
-                                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 cursor-not-allowed
-                                    bg-[var(--muted)]/20
-                                `}
-                            >
-                                <span
+                        <div className="flex flex-col gap-3">
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20">
+                                <span className="text-s font-semibold text-[var(--foreground)] capitalize tracking-wide flex items-center gap-2">
+                                    Paid Wallpaper ?
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPaid(!isPaid)}
                                     className={`
-                                        inline-block h-4 w-4 transform rounded-full bg-[var(--muted)] transition-transform duration-200
-                                        translate-x-1
+                                        relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--foreground)] focus:ring-offset-2 focus:ring-offset-[var(--background)]
+                                        ${isPaid ? 'bg-[var(--foreground)]' : 'bg-[var(--muted)]/30'}
                                     `}
-                                />
-                            </button>
+                                >
+                                    <span
+                                        className={`
+                                            inline-block h-4 w-4 transform rounded-full bg-[var(--background)] transition-transform duration-200 shadow-sm
+                                            ${isPaid ? 'translate-x-6' : 'translate-x-1'}
+                                        `}
+                                    />
+                                </button>
+                            </div>
+
+                            {/* Price Input (Conditional) */}
+                            {isPaid && (
+                                <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-200">
+                                    <label className="text-s font-semibold text-[var(--foreground)] capitalize tracking-wide">Price</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        value={price}
+                                        onChange={(e) => setPrice(e.target.value)}
+                                        placeholder="Enter wallpaper price"
+                                        className="w-full px-3 py-2.5 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all placeholder:text-[var(--muted)]/40 text-[var(--foreground)] text-sm"
+                                        required={isPaid}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <button
