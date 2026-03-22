@@ -237,6 +237,7 @@ export class ImageService {
 
             return APIResponse({ statusCode: HttpStatus.OK, message: "Ok", data: imageData })
         } catch (error) {
+            console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error" })
         }
     }

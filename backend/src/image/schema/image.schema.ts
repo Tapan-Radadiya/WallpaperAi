@@ -21,7 +21,7 @@ export const tbl_image = pgTable('tbl_image', {
     thumbnail_url: varchar('thumbnail_url').notNull(),
     raw_url: varchar('raw_url').notNull(),
     image_processed: boolean('image_processed').default(false).notNull(),
-    price: integer('price').default(0),
+    // price: integer('price').default(0),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').$onUpdate(() => new Date())
 })

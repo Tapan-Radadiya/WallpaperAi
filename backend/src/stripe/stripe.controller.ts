@@ -1,7 +1,8 @@
-import { Controller, Get, HttpStatus, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { APIResponse, craftResponseData } from 'src/utils/common';
 import { StripeService } from './stripe.service';
+import { PaymentBody } from './dto/payment.dto';
 
 @Controller('stripe')
 export class StripeController {
@@ -11,10 +12,11 @@ export class StripeController {
     ) { }
 
 
-    @Get('payment')
+    @Post('payment')
     async makePayment(
         @Req() req: Request,
-        @Res() res: Response
+        @Res() res: Response,
+        @Body() body: PaymentBody
     ) {
         let responseData = craftResponseData()
         if (!req.session.userId) {
@@ -25,7 +27,11 @@ export class StripeController {
         }
         let userId = req?.session?.userId
         try {
-            const data = await this.stripeService.createPaymentSession(200)
+            const { image_id } = body
+            const data = await this.stripeService.createPaymentSession({
+                image_id,
+                userId
+            })
             responseData.statusCode = data.statusCode
             responseData.message = data.message
             responseData.data = data.data ?? {}
