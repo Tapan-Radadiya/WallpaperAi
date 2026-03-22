@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
-import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check, ArrowLeft, MoreHorizontal } from 'lucide-react';
+import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check, ArrowLeft, MoreHorizontal, Lock } from 'lucide-react';
 import ImageCard from './ImageCard';
 
 interface ImageDetailsMobileProps {
@@ -17,6 +17,10 @@ interface ImageDetailsMobileProps {
     isLiked?: boolean;
     onRelatedImageClick?: (image: WallpaperImage) => void;
     onClose?: () => void;
+    likesCount: number;
+    downloadCount: number;
+    hasPurchased: boolean;
+    fetchedPrice: number | null;
 }
 
 export default function ImageDetailsMobile({
@@ -25,38 +29,18 @@ export default function ImageDetailsMobile({
     onLike,
     isLiked,
     onRelatedImageClick,
-    onClose
+    onClose,
+    likesCount,
+    downloadCount,
+    hasPurchased,
+    fetchedPrice
 }: ImageDetailsMobileProps) {
     const { user } = useAuth();
-    const router = useRouter(); // Initialize router
-    const [likesCount, setLikesCount] = useState<number>(0);
-    const [downloadCount, setDownloadCount] = useState<number>(0);
+    const router = useRouter(); 
     const [isDownloading, setIsDownloading] = useState(false);
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
-    // Fetch detailed image data (likes)
-    useEffect(() => {
-        const controller = new AbortController();
-        const fetchImageDetails = async () => {
-            try {
-                const res = await api.get(`/image/image-data/${image.id}`, {
-                    signal: controller.signal
-                });
-                if (res.data && typeof res.data.imageLikes === 'number') {
-                    setLikesCount(res.data.imageLikes);
-                }
-                if (res.data && typeof res.data.totalDownloads === 'number') {
-                    setDownloadCount(res.data.totalDownloads);
-                }
-            } catch (err: any) {
-                if (err.name !== 'CanceledError' && err.code !== "ERR_CANCELED") {
-                    console.error("Failed to fetch image details:", err);
-                }
-            }
-        };
-        fetchImageDetails();
-        return () => controller.abort();
-    }, [image.id]);
+    const isPremiumLocked = image.is_paid && !hasPurchased;
 
     const handleDownload = async (url: string, filename: string) => {
         if (!url) {
@@ -226,11 +210,20 @@ export default function ImageDetailsMobile({
                 )}
             </div>
 
-            {/* Static Download Button for Mobile */}
+            {/* Static Download / Purchase Button for Mobile */}
             <div className="w-full p-4 mt-auto">
-                <div className="relative" ref={null}>
+                {isPremiumLocked ? (
                     <button
-                        onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                        onClick={() => alert('Purchase flow to be integrated')}
+                        className="w-full py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-xl active:scale-[0.98] transition-transform"
+                    >
+                        <Lock size={20} className="text-black/80" />
+                        <span>Unlock Premium | ${fetchedPrice ?? image.price ?? '2.99'}</span>
+                    </button>
+                ) : (
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowDownloadMenu(!showDownloadMenu)}
                         disabled={isDownloading}
                         className="w-full py-4 bg-[var(--foreground)] text-[var(--background)] rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-xl active:scale-[0.98] transition-transform"
                     >
@@ -271,6 +264,7 @@ export default function ImageDetailsMobile({
                         </div>
                     )}
                 </div>
+                )}
             </div>
         </div>
     );
