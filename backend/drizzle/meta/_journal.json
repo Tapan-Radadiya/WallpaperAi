@@ -162,6 +162,13 @@
       "when": 1773597002491,
       "tag": "0022_woozy_synch",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1774173513302,
+      "tag": "0023_robust_ghost_rider",
+      "breakpoints": true
     }
   ]
 }

@@ -49,7 +49,8 @@ export class ImageService {
                     userName: schema.tbl_user.user_name,
                     userAvatar: schema.tbl_user.avatar,
                     userId: schema.tbl_user.id,
-                    title: schema.tbl_image.title
+                    title: schema.tbl_image.title,
+                    is_paid: schema.tbl_image.is_paid
                 })
                 .from(schema.tbl_image)
                 .leftJoin(

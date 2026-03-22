@@ -1,4 +1,5 @@
-import { Body, Controller, Get, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import type { RawBodyRequest } from "@nestjs/common"
 import type { Response, Request } from 'express';
 import { APIResponse, craftResponseData } from 'src/utils/common';
 import { StripeService } from './stripe.service';
@@ -37,8 +38,18 @@ export class StripeController {
             responseData.data = data.data ?? {}
             responseData.err = data.err ?? {}
         } catch (error) {
-            return res.status(responseData.statusCode).json(responseData.data)
+            return res.status(responseData.statusCode).json(responseData)
         }
-        return res.status(responseData.statusCode).json(responseData.data)
+        return res.status(responseData.statusCode).json(responseData)
+    }
+
+    @Post('/webhook')
+    async stripeWebhook(
+        @Headers('stripe-signature') signature: string,
+        @Req() req: RawBodyRequest<Request>,
+        @Res() res: Response,
+    ) {
+        console.log("helo world")
+        const data = await this.stripeService.stripeWebhookService(req, signature)
     }
 }
