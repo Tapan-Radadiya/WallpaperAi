@@ -49,7 +49,19 @@ export class StripeController {
         @Req() req: RawBodyRequest<Request>,
         @Res() res: Response,
     ) {
-        console.log("helo world")
-        const data = await this.stripeService.stripeWebhookService(req, signature)
+
+        let responseData = craftResponseData()
+        try {
+
+            const data = await this.stripeService.stripeWebhookService(req, signature)
+            responseData.statusCode = data.statusCode
+            responseData.message = data.message
+            responseData.data = data.data ?? {}
+            responseData.err = data.err ?? {}
+        } catch (error) {
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+            responseData.message = "Internal Server Error"
+        }
+        return res.status(responseData.statusCode).json(responseData)
     }
 }
