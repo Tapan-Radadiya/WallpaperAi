@@ -1,15 +1,24 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import session from "express-session";
-import { initRedis, redisClient } from './redis-client/redis-client';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as bodyParser from "body-parser";
 import { RedisStore } from 'connect-redis';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AwsServicesService } from './aws-services/aws-services.service';
+import session from "express-session";
+import { AppModule } from './app.module';
+import { initRedis, redisClient } from './redis-client/redis-client';
 
 async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
+
+  app.use(bodyParser.json({
+    verify: (req: any, res, buf) => {
+      if (req.headers['stripe-signature']) {
+        req.rawBody = buf.toString();
+      }
+    }
+  }))
+
   const port = process.env.PORT ?? 3002;
 
   await initRedis()
