@@ -14,3 +14,9 @@ export {
 export {
     aws_sqs_image_data_status
 } from "../aws-services/schema/schema"
+
+export {
+    payment_status,
+    tbl_payments,
+    tbl_purchases
+} from "../stripe/schema/schema"
