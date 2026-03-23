@@ -77,9 +77,13 @@ export class StripeService {
                     message: "Error creating purchase try after sometime"
                 })
             }
-
             const stripeData = await this.stripe.checkout.sessions.create({
                 mode: 'payment',
+                metadata: {
+                    payment_id: paymentData[0].id,
+                    buyer_id: paymentData[0].buyer_id,
+                    seller_id: paymentData[0].seller_id,
+                },
                 line_items: [
                     {
                         price_data: {
@@ -89,13 +93,8 @@ export class StripeService {
                                 name: "Test Image"
                             },
                         },
-                        quantity: 1,
-                        metadata: {
-                            payment_id: paymentData[0].id,
-                            buyer_id: paymentData[0].buyer_id,
-                            seller_id: paymentData[0].seller_id,
-                        }
-                    }
+                        quantity: 1
+                    },
                 ],
                 success_url: 'http://192.168.56.1:3000/'
             })
@@ -116,21 +115,104 @@ export class StripeService {
         }
     }
 
-    async stripeWebhookService(body: any, stripeSign: string) {
+    async stripeWebhookService(body: any, stripeSign: string): Promise<APIResponseInterface> {
         const payload = body.rawBody
         if (!payload) {
-            return
+            return APIResponse({
+                message: "Invalid Payload",
+                statusCode: HttpStatus.BAD_REQUEST
+            })
         }
         const event = this.stripe.webhooks.constructEvent(
             payload,
             stripeSign,
             process.env.STRIPE_WEBHOOK_SECRET!
         )
-        console.log('event.data-->', event);
         if (event.type === 'checkout.session.completed') {
+            const {
+                amount_subtotal
+            } = event.data.object
+            const stripeMetaData = event?.data?.object as unknown as { metadata: { payment_id: string, buyer_id: string, seller_id: string } }
+            const { seller_id, buyer_id, payment_id } = stripeMetaData.metadata
+            const paymentData = await this.conn.query.tbl_payments.findFirst({
+                where: eq(
+                    schema.tbl_payments.id,
+                    payment_id
+                )
+            })
+            if (!paymentData) {
+                return APIResponse({
+                    message: "Invalid Payload",
+                    statusCode: HttpStatus.BAD_REQUEST
+                })
+            }
+            if (paymentData.amount !== amount_subtotal) {
+                return APIResponse({
+                    message: "Invalid Payload",
+                    statusCode: HttpStatus.BAD_REQUEST
+                })
+            }
+            if (paymentData.status === 'SUCCESS') {
+                return APIResponse({
+                    message: "Invalid Payload",
+                    statusCode: HttpStatus.BAD_REQUEST
+                })
+            }
+
+            const updatePayment = await this.updatePaymentStatus({
+                payment_id,
+                status: 'SUCCESS'
+            })
+
+            if (updatePayment) {
+                return APIResponse({
+                    message: "Ok",
+                    statusCode: HttpStatus.OK
+                })
+            } else {
+                return APIResponse({
+                    message: "Invalid Payload",
+                    statusCode: HttpStatus.BAD_REQUEST
+                })
+            }
         }
+        if (event.type === 'checkout.session.expired') {
+            const { payment_id } = event.data.object.metadata as { payment_id: string, buyer_id: string, seller_id: string }
+            await this.updatePaymentStatus({
+                payment_id,
+                status: 'FAILED'
+            })
+        }
+        if (event.type === 'checkout.session.async_payment_failed') {
+            const { payment_id } = event.data.object.metadata as { payment_id: string, buyer_id: string, seller_id: string }
+
+            await this.updatePaymentStatus({
+                payment_id,
+                status: 'FAILED'
+            })
+
+            return APIResponse({
+                message: "Invalid Payload",
+                statusCode: HttpStatus.BAD_REQUEST
+            })
+        }
+
+        return APIResponse({
+            message: "Invalid Payload",
+            statusCode: HttpStatus.BAD_REQUEST
+        })
     }
 
+    private async updatePaymentStatus({ payment_id, status }: { payment_id: string, status: 'PENDING' | 'SUCCESS' | 'FAILED' }): Promise<Boolean> {
+        const updatePayment = await this.conn.update(tbl_payments).set({
+            status: status
+        }).where(eq(tbl_payments.id, payment_id))
+        if (updatePayment) {
+            return true
+        } else {
+            return false
+        }
+    }
     private getUserAndPlatformCutValue(imagePrice: number): { platFormCut: number, userCut: number } {
         const currentPlatformCutPercentage: number = parseInt(process.env.PLATFORM_CUT!)
 
