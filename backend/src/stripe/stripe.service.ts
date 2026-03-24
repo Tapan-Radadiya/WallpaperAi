@@ -40,6 +40,12 @@ export class StripeService {
             const imageData = await this.conn.query.tbl_image.findFirst({
                 where: eq(schema.tbl_image.id, image_id)
             })
+            if (imageData?.user_id === userId) {
+                return APIResponse({
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    message: "User is not allowed to purchase its own image"
+                })
+            }
             if (!imageData) {
                 return APIResponse({
                     statusCode: HttpStatus.BAD_REQUEST,
@@ -163,8 +169,14 @@ export class StripeService {
                 payment_id,
                 status: 'SUCCESS'
             })
-
             if (updatePayment) {
+                await this.conn
+                    .insert(schema.tbl_purchases)
+                    .values({
+                        buyer_id: updatePayment.buyer_id,
+                        image_id: updatePayment.image_id,
+                        payment_id: updatePayment.payment_id,
+                    })
                 return APIResponse({
                     message: "Ok",
                     statusCode: HttpStatus.OK
@@ -203,14 +215,27 @@ export class StripeService {
         })
     }
 
-    private async updatePaymentStatus({ payment_id, status }: { payment_id: string, status: 'PENDING' | 'SUCCESS' | 'FAILED' }): Promise<Boolean> {
+    private async updatePaymentStatus({ payment_id, status }: { payment_id: string, status: 'PENDING' | 'SUCCESS' | 'FAILED' }): Promise<{
+        payment_id: string,
+        buyer_id: string,
+        seller_id: string,
+        image_id: string
+    } | null> {
         const updatePayment = await this.conn.update(tbl_payments).set({
             status: status
-        }).where(eq(tbl_payments.id, payment_id))
-        if (updatePayment) {
-            return true
+        })
+            .where(eq(tbl_payments.id, payment_id))
+            .returning({
+                payment_id: tbl_payments.id,
+                buyer_id: tbl_payments.buyer_id,
+                seller_id: tbl_payments.seller_id,
+                image_id: tbl_payments.image_id,
+            })
+
+        if (updatePayment.length > 0) {
+            return updatePayment[0]
         } else {
-            return false
+            return null
         }
     }
     private getUserAndPlatformCutValue(imagePrice: number): { platFormCut: number, userCut: number } {
