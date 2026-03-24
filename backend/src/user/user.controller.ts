@@ -154,6 +154,30 @@ export class UserController {
         return res.status(responseData.statusCode).json(responseData)
     }
 
+    @Get('/purchased-images')
+    async getPurchasedImages(
+        @Req() req: Request,
+        @Res() res: Response
+    ) {
+        const userId = req?.session?.userId
+        if (!userId || !isUUID(userId)) {
+            return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Id" }))
+        }
+        const responseData = craftResponseData()
+        try {
+            const data = await this.userService.getUserPurchasedImagesService(userId)
+            responseData.statusCode = data.statusCode
+            responseData.message = data.message
+            responseData.data = data.data
+            responseData.err = data.err
+        } catch (error) {
+            responseData.err = error
+            responseData.message = "Internal Server Error"
+            responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        return res.status(responseData.statusCode).json(responseData)
+    }
+
 
     @Put('update-user')
     @UseInterceptors(FileInterceptor('user_avatar'))
