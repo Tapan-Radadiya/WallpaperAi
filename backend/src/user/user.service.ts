@@ -227,4 +227,43 @@ export class UserService {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error" })
         }
     }
+
+
+    async getUserPurchasedImagesService(userId: string): Promise<APIResponseInterface> {
+        try {
+            const data = await this.conn
+                .select({
+                    userName: schema.tbl_user.user_name,
+                    imageRawPath: schema.tbl_image.raw_url,
+                    thumbnail_url: schema.tbl_image.thumbnail_url,
+                    description: schema.tbl_image.description,
+                    title: schema.tbl_image.title,
+                    userProfileImage: schema.tbl_user.avatar
+                })
+                .from(schema.tbl_purchases)
+                .leftJoin(
+                    schema.tbl_user,
+                    eq(
+                        schema.tbl_user.id,
+                        schema.tbl_purchases.buyer_id
+                    )
+                )
+                .leftJoin(
+                    schema.tbl_image,
+                    eq(
+                        schema.tbl_image.id,
+                        schema.tbl_purchases.image_id
+                    )
+                )
+                .where(
+                    eq(
+                        schema.tbl_purchases.buyer_id,
+                        userId
+                    )
+                )
+            return APIResponse({ statusCode: HttpStatus.OK, message: "", data })
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error" })
+        }
+    }
 }
