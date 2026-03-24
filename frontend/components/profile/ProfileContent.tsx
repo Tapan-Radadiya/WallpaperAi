@@ -21,6 +21,7 @@ import ProfileStats from './ProfileStats';
 import LikedTab from './tabs/LikedTab';
 import CollectionsTab from './tabs/CollectionsTab';
 import UploadsTab from './tabs/UploadsTab';
+import PurchasedTab from './tabs/PurchasedTab';
 
 const CLOUDFRONT_URL = "https://djrp6t1rc7td.cloudfront.net/";
 
@@ -48,6 +49,10 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     const [uploadedImages, setUploadedImages] = useState<WallpaperImage[]>([]);
     const [isUploadsLoading, setIsUploadsLoading] = useState(false);
     const [hasFetchedUploads, setHasFetchedUploads] = useState(false);
+
+    const [purchasedImages, setPurchasedImages] = useState<WallpaperImage[]>([]);
+    const [isPurchasedLoading, setIsPurchasedLoading] = useState(false);
+    const [hasFetchedPurchased, setHasFetchedPurchased] = useState(false);
     const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -112,6 +117,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     useEffect(() => {
         setHasFetchedUploads(false);
         setUploadedImages([]);
+        setHasFetchedPurchased(false);
+        setPurchasedImages([]);
     }, [viewedUserId]);
 
     const processImageUrl = (url: string) => {
@@ -161,6 +168,40 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
         fetchUploadedImages();
     }, [activeTab, hasFetchedUploads, user]);
 
+    // Fetch Purchased Images
+    useEffect(() => {
+        const fetchPurchasedImages = async () => {
+            if (activeTab === 'purchased' && !hasFetchedPurchased && user && isOwnProfile) {
+                setIsPurchasedLoading(true);
+                try {
+                    const response = await api.get('/user/purchased-images');
+                    if (response.data && response.data.data) {
+                        const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => ({
+                            id: img.imageRawPath,
+                            width: 800,
+                            height: 1200,
+                            rawUrl: processImageUrl(img.imageRawPath),
+                            thumbnailUrl: processImageUrl(img.thumbnail_url),
+                            description: img.description || 'Purchased Image',
+                            userName: img.userName || 'Unknown',
+                            userAvatar: img.userProfileImage ? processImageUrl(img.userProfileImage) : '',
+                            userId: '',
+                            title: img.title
+                        }));
+                        setPurchasedImages(mappedImages);
+                    }
+                    setHasFetchedPurchased(true);
+                } catch (error) {
+                    console.error("Failed to fetch purchased images", error);
+                } finally {
+                    setIsPurchasedLoading(false);
+                }
+            }
+        };
+
+        fetchPurchasedImages();
+    }, [activeTab, hasFetchedPurchased, user, isOwnProfile]);
+
     const likedImages: WallpaperImage[] = useMemo(() => {
         return profileData?.likedImages?.map((img) => ({
             id: img.image_id,
@@ -176,12 +217,15 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
         })) || [];
     }, [profileData]);
 
-    const displayImages = activeTab === 'uploads' ? uploadedImages : likedImages;
+    const displayImages = activeTab === 'uploads' ? uploadedImages : 
+                          activeTab === 'purchased' ? purchasedImages : 
+                          likedImages;
 
     const allTabs = [
         { id: 'uploads', label: 'Uploads' },
         { id: 'liked', label: 'Liked' },
         { id: 'collections', label: 'Collections' },
+        { id: 'purchased', label: 'Purchased' },
     ];
 
     const tabs = isOwnProfile ? allTabs : allTabs.filter(t => t.id === 'uploads');
@@ -301,6 +345,16 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
                     <UploadsTab
                         images={uploadedImages}
                         isLoading={isUploadsLoading}
+                        onImageClick={handleImageClick}
+                        isLiked={isLiked}
+                        onToggleLike={toggleLike}
+                    />
+                )}
+
+                {activeTab === 'purchased' && (
+                    <PurchasedTab
+                        images={purchasedImages}
+                        isLoading={isPurchasedLoading}
                         onImageClick={handleImageClick}
                         isLiked={isLiked}
                         onToggleLike={toggleLike}
