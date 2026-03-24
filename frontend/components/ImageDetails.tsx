@@ -29,7 +29,8 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     // Purchase & detailed state
     const [hasPurchased, setHasPurchased] = useState(false);
     const [fetchedPrice, setFetchedPrice] = useState<number | null>(null);
-    const isPremiumLocked = image.is_paid && !hasPurchased;
+    const isOwner = user?.id === image.userId;
+    const isPremiumLocked = image.is_paid && !hasPurchased && !isOwner;
 
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -308,7 +309,12 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
 
                         {/* Download / Purchase Button */}
                         <div className="mt-auto pt-4">
-                            {isPremiumLocked ? (
+                            {isOwner ? (
+                                <button disabled className="w-full py-4 bg-[var(--muted)]/20 text-[var(--muted)] rounded-2xl font-bold text-lg flex items-center justify-center gap-2 cursor-not-allowed">
+                                    <Check size={20} />
+                                    <span>Your Owned Image</span>
+                                </button>
+                            ) : isPremiumLocked ? (
                                 <button
                                     onClick={() => alert('Purchase flow to be integrated')}
                                     className="w-full py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-yellow-500/20"

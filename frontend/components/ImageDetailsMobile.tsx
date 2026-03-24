@@ -40,7 +40,8 @@ export default function ImageDetailsMobile({
     const [isDownloading, setIsDownloading] = useState(false);
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
-    const isPremiumLocked = image.is_paid && !hasPurchased;
+    const isOwner = user?.id === image.userId;
+    const isPremiumLocked = image.is_paid && !hasPurchased && !isOwner;
 
     const handleDownload = async (url: string, filename: string) => {
         if (!url) {
@@ -212,7 +213,12 @@ export default function ImageDetailsMobile({
 
             {/* Static Download / Purchase Button for Mobile */}
             <div className="w-full p-4 mt-auto">
-                {isPremiumLocked ? (
+                {isOwner ? (
+                    <button disabled className="w-full py-4 bg-[var(--muted)]/20 text-[var(--muted)] rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-sm cursor-not-allowed border border-[var(--muted)]/10">
+                        <Check size={20} />
+                        <span>Your Owned Image</span>
+                    </button>
+                ) : isPremiumLocked ? (
                     <button
                         onClick={() => alert('Purchase flow to be integrated')}
                         className="w-full py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-xl active:scale-[0.98] transition-transform"
