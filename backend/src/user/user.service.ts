@@ -238,7 +238,11 @@ export class UserService {
                     thumbnail_url: schema.tbl_image.thumbnail_url,
                     description: schema.tbl_image.description,
                     title: schema.tbl_image.title,
-                    userProfileImage: schema.tbl_user.avatar
+                    userProfileImage: schema.tbl_user.avatar,
+                    image_id: schema.tbl_image.id,
+                    height: schema.tbl_image.height,
+                    width: schema.tbl_image.width,
+                    is_paid: schema.tbl_image.is_paid
                 })
                 .from(schema.tbl_purchases)
                 .leftJoin(
