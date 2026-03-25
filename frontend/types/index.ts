@@ -20,7 +20,8 @@ export interface APIImageOwner {
 export interface APILikedImage {
     image_id: string;
     title?: string;
-    is_paid: boolean;
+    is_paid?: boolean;
+    price?: number;
     description: string;
     width: number;
     height: number;

@@ -2,11 +2,19 @@ import { useState, useCallback, useEffect } from 'react';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
-export function useLikes(initialLikedIds: string[] = []) {
+export interface UseLikesOptions {
+    initialLikedIds?: string[];
+    skipFetch?: boolean;
+}
+
+export function useLikes(options: UseLikesOptions = {}) {
+    const { initialLikedIds = [], skipFetch = false } = options;
     const { user } = useAuth();
     const [likedImageIds, setLikedImageIds] = useState<Set<string>>(new Set(initialLikedIds));
 
     useEffect(() => {
+        if (skipFetch) return;
+
         if (!user) {
             setLikedImageIds(new Set());
             return;

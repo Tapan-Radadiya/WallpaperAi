@@ -18,5 +18,5 @@ export const ALLOWED_IMAGES = [
 ];
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-export const MIN_WALLPAPER_SIZE = 3 * 1024 * 1024; // 3MB
+export const MIN_WALLPAPER_SIZE = 1 * 1024 * 1024; // 1MB
 export const MAX_WALLPAPER_SIZE = 20 * 1024 * 1024; // 20MB

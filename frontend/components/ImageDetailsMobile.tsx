@@ -38,6 +38,7 @@ export default function ImageDetailsMobile({
     const { user } = useAuth();
     const router = useRouter(); 
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isPurchasing, setIsPurchasing] = useState(false);
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
     const isOwner = user?.id === image.userId;
@@ -78,6 +79,27 @@ export default function ImageDetailsMobile({
             window.open(url, '_blank');
         } finally {
             setIsDownloading(false);
+        }
+    };
+
+    const handlePurchase = async () => {
+        try {
+            setIsPurchasing(true);
+            const res = await api.post('/stripe/payment', {
+                image_id: image.id
+            });
+            
+            if (res.data?.data?.stripe_payment_url) {
+                window.location.href = res.data.data.stripe_payment_url;
+            } else {
+                console.error("Failed to get payment URL", res.data);
+                alert("Payment initialization failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Payment error:", error);
+            alert("An error occurred during payment initialization.");
+        } finally {
+            setIsPurchasing(false);
         }
     };
 
@@ -220,11 +242,16 @@ export default function ImageDetailsMobile({
                     </button>
                 ) : isPremiumLocked ? (
                     <button
-                        onClick={() => alert('Purchase flow to be integrated')}
-                        className="w-full py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-xl active:scale-[0.98] transition-transform"
+                        onClick={handlePurchase}
+                        disabled={isPurchasing}
+                        className="w-full py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-xl active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <Lock size={20} className="text-black/80" />
-                        <span>Unlock Premium | ${fetchedPrice ?? image.price ?? '2.99'}</span>
+                        {isPurchasing ? (
+                            <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <Lock size={20} className="text-black/80" />
+                        )}
+                        <span>{isPurchasing ? 'Processing...' : `Unlock Premium | $${fetchedPrice ?? image.price ?? '2.99'}`}</span>
                     </button>
                 ) : (
                     <div className="relative">
