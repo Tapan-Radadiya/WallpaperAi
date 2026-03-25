@@ -25,7 +25,8 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     const [likesCount, setLikesCount] = useState<number>(0);
     const [downloadCount, setDownloadCount] = useState<number>(0);
     const [isDownloading, setIsDownloading] = useState(false);
-    
+    const [isPurchasing, setIsPurchasing] = useState(false);
+
     // Purchase & detailed state
     const [hasPurchased, setHasPurchased] = useState(false);
     const [fetchedPrice, setFetchedPrice] = useState<number | null>(null);
@@ -121,6 +122,27 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
         return () => controller.abort();
     }, [image.id]);
 
+    const handlePurchase = async () => {
+        try {
+            setIsPurchasing(true);
+            const res = await api.post('/stripe/payment', {
+                image_id: image.id
+            });
+
+            if (res.data?.data?.stripe_payment_url) {
+                window.location.href = res.data.data.stripe_payment_url;
+            } else {
+                console.error("Failed to get payment URL", res.data);
+                alert("Payment initialization failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Payment error:", error);
+            alert("An error occurred during payment initialization.");
+        } finally {
+            setIsPurchasing(false);
+        }
+    };
+
 
     // Mock data for UI that is not in the data model yet
     const stats = [
@@ -129,7 +151,6 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
         { label: 'Likes', value: likesCount.toLocaleString() },
         { label: 'Downloads', value: downloadCount.toLocaleString() },
     ];
-    console.log("image", image)
     return (
         <>
             {/* Mobile View */}
@@ -316,60 +337,65 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                                 </button>
                             ) : isPremiumLocked ? (
                                 <button
-                                    onClick={() => alert('Purchase flow to be integrated')}
-                                    className="w-full py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-yellow-500/20"
+                                    onClick={handlePurchase}
+                                    disabled={isPurchasing}
+                                    className="w-full py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <Lock size={20} className="text-black/80" />
-                                    <span>Unlock Premium | ${fetchedPrice ?? image.price ?? '2.99'}</span>
+                                    {isPurchasing ? (
+                                        <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <Lock size={20} className="text-black/80" />
+                                    )}
+                                    <span>{isPurchasing ? 'Processing...' : `Unlock Premium | $${fetchedPrice ?? image.price ?? '2.99'}`}</span>
                                 </button>
                             ) : (
                                 <div className="relative" ref={downloadMenuRef}>
                                     <button
                                         onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-                                    disabled={isDownloading}
-                                    className="w-full py-4 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-[var(--foreground)]/10 group disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isDownloading ? (
-                                        <div className="w-6 h-6 border-2 border-[var(--background)] border-t-transparent rounded-full animate-spin" />
-                                    ) : (
-                                        <>
-                                            <span>Download Free</span>
-                                            <ChevronDown size={20} className={`opacity-70 transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`} />
-                                        </>
-                                    )}
-                                </button>
+                                        disabled={isDownloading}
+                                        className="w-full py-4 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-[var(--foreground)]/10 group disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isDownloading ? (
+                                            <div className="w-6 h-6 border-2 border-[var(--background)] border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                            <>
+                                                <span>Download Free</span>
+                                                <ChevronDown size={20} className={`opacity-70 transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`} />
+                                            </>
+                                        )}
+                                    </button>
 
-                                {/* Download Menu */}
-                                {showDownloadMenu && (
-                                    <div className="absolute bottom-full left-0 w-full mb-2 bg-[var(--card-bg)] border border-[var(--muted)]/20 rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom-2 z-50">
-                                        <div className="p-2">
+                                    {/* Download Menu */}
+                                    {showDownloadMenu && (
+                                        <div className="absolute bottom-full left-0 w-full mb-2 bg-[var(--card-bg)] border border-[var(--muted)]/20 rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom-2 z-50">
                                             <div className="p-2">
-                                                <button
-                                                    onClick={() => handleDownload(image.rawUrl, `wallpaper-${image.id}-original.jpg`)}
-                                                    className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-[var(--muted)]/10 transition-colors group/item"
-                                                >
-                                                    <div className="flex flex-col items-start">
-                                                        <span className="font-bold text-[var(--foreground)] text-sm">Original</span>
-                                                        <span className="text-xs text-[var(--muted)]">{image.width} x {image.height}</span>
-                                                    </div>
-                                                    <Download size={18} className="text-[var(--muted)] group-hover/item:text-[var(--foreground)] transition-colors" />
-                                                </button>
+                                                <div className="p-2">
+                                                    <button
+                                                        onClick={() => handleDownload(image.rawUrl, `wallpaper-${image.id}-original.jpg`)}
+                                                        className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-[var(--muted)]/10 transition-colors group/item"
+                                                    >
+                                                        <div className="flex flex-col items-start">
+                                                            <span className="font-bold text-[var(--foreground)] text-sm">Original</span>
+                                                            <span className="text-xs text-[var(--muted)]">{image.width} x {image.height}</span>
+                                                        </div>
+                                                        <Download size={18} className="text-[var(--muted)] group-hover/item:text-[var(--foreground)] transition-colors" />
+                                                    </button>
 
-                                                <button
-                                                    onClick={() => handleDownload(image.thumbnailUrl, `wallpaper-${image.id}-small.jpg`)}
-                                                    className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-[var(--muted)]/10 transition-colors group/item"
-                                                >
-                                                    <div className="flex flex-col items-start">
-                                                        <span className="font-bold text-[var(--foreground)] text-sm">Small</span>
-                                                        <span className="text-xs text-[var(--muted)]">Thumbnail</span>
-                                                    </div>
-                                                    <Download size={18} className="text-[var(--muted)] group-hover/item:text-[var(--foreground)] transition-colors" />
-                                                </button>
+                                                    <button
+                                                        onClick={() => handleDownload(image.thumbnailUrl, `wallpaper-${image.id}-small.jpg`)}
+                                                        className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-[var(--muted)]/10 transition-colors group/item"
+                                                    >
+                                                        <div className="flex flex-col items-start">
+                                                            <span className="font-bold text-[var(--foreground)] text-sm">Small</span>
+                                                            <span className="text-xs text-[var(--muted)]">Thumbnail</span>
+                                                        </div>
+                                                        <Download size={18} className="text-[var(--muted)] group-hover/item:text-[var(--foreground)] transition-colors" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>

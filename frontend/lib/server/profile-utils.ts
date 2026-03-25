@@ -43,3 +43,28 @@ export async function getProfileData(userId?: string): Promise<APIResponseData |
         return null;
     }
 }
+
+export async function getUploadedImages(userId?: string): Promise<any[]> {
+    try {
+        const cookieStore = await cookies();
+        const allCookies = cookieStore.getAll();
+        const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join(';');
+
+        let url = `${API_BASE_URL}/user/uploaded-images`;
+        if (userId) {
+            url = `${API_BASE_URL}/user/uploaded-images?userId=${userId}`;
+        }
+
+        const res = await axios.get(url, {
+            headers: { Cookie: cookieHeader },
+            withCredentials: true
+        });
+
+        if (res.status === 200 && res.data && res.data.data) {
+            return res.data.data;
+        }
+        return [];
+    } catch (error) {
+        return [];
+    }
+}

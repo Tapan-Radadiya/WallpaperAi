@@ -25,17 +25,23 @@ import PurchasedTab from './tabs/PurchasedTab';
 
 const CLOUDFRONT_URL = "https://djrp6t1rc7td.cloudfront.net/";
 
+const processImageUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${CLOUDFRONT_URL}${url}`;
+};
+
 interface ProfileContentProps {
     initialProfileData: APIResponseData | null;
     viewedUserId?: string;
+    initialUploadedImagesRaw?: any[];
 }
 
-export default function ProfileContent({ initialProfileData, viewedUserId }: ProfileContentProps) {
+export default function ProfileContent({ initialProfileData, viewedUserId, initialUploadedImagesRaw }: ProfileContentProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('uploads');
     const [selectedImage, setSelectedImage] = useState<WallpaperImage | null>(null);
     const [profileData, setProfileData] = useState<APIResponseData | null>(initialProfileData);
-
     const { user, login, logout, isLoading: authLoading } = useAuth();
 
     // Determine if we are viewing our own profile
@@ -46,9 +52,25 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     // Actually if initialProfileData is present, we are good.
     const [loading, setLoading] = useState(!initialProfileData);
 
-    const [uploadedImages, setUploadedImages] = useState<WallpaperImage[]>([]);
+    const [uploadedImages, setUploadedImages] = useState<WallpaperImage[]>(() => {
+        if (!initialUploadedImagesRaw) return [];
+        return initialUploadedImagesRaw.map((img: any) => ({
+            id: img.image_id,
+            width: img.width ?? '',
+            height: img.height ?? '',
+            rawUrl: processImageUrl(img.raw_url),
+            thumbnailUrl: processImageUrl(img.thumbnail_url),
+            description: img.description || 'Wallpaper',
+            userName: img.ownerData?.userName || 'Unknown',
+            userAvatar: processImageUrl(img.ownerData?.avatar),
+            userId: img.ownerData?.id || '',
+            title: img.title,
+            is_paid: img.is_paid,
+            price: img.price
+        }));
+    });
     const [isUploadsLoading, setIsUploadsLoading] = useState(false);
-    const [hasFetchedUploads, setHasFetchedUploads] = useState(false);
+    const [hasFetchedUploads, setHasFetchedUploads] = useState(!!initialUploadedImagesRaw);
 
     const [purchasedImages, setPurchasedImages] = useState<WallpaperImage[]>([]);
     const [isPurchasedLoading, setIsPurchasedLoading] = useState(false);
@@ -56,7 +78,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
     const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const { isLiked, toggleLike, syncLikes } = useLikes();
+    const { isLiked, toggleLike, syncLikes } = useLikes({ skipFetch: true });
 
     // Sync likes coming from server
     useEffect(() => {
@@ -115,17 +137,29 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
 
     // Reset uploads fetch state when switching users
     useEffect(() => {
-        setHasFetchedUploads(false);
-        setUploadedImages([]);
+        if (initialUploadedImagesRaw) {
+            setUploadedImages(initialUploadedImagesRaw.map((img: any) => ({
+                id: img.image_id,
+                width: img.width ?? '',
+                height: img.height ?? '',
+                rawUrl: processImageUrl(img.raw_url),
+                thumbnailUrl: processImageUrl(img.thumbnail_url),
+                description: img.description || 'Wallpaper',
+                userName: img.ownerData?.userName || 'Unknown',
+                userAvatar: processImageUrl(img.ownerData?.avatar),
+                userId: img.ownerData?.id || '',
+                title: img.title,
+                is_paid: img.is_paid,
+                price: img.price
+            })));
+            setHasFetchedUploads(true);
+        } else {
+            setHasFetchedUploads(false);
+            setUploadedImages([]);
+        }
         setHasFetchedPurchased(false);
         setPurchasedImages([]);
-    }, [viewedUserId]);
-
-    const processImageUrl = (url: string) => {
-        if (!url) return '';
-        if (url.startsWith('http')) return url;
-        return `${CLOUDFRONT_URL}${url}`;
-    };
+    }, [viewedUserId, initialUploadedImagesRaw]);
 
     // Fetch Uploaded Images
     useEffect(() => {
@@ -152,7 +186,9 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
                             userName: img.ownerData?.userName || 'Unknown',
                             userAvatar: processImageUrl(img.ownerData?.avatar),
                             userId: img.ownerData?.id || '',
-                            title: img.title
+                            title: img.title,
+                            is_paid: img.is_paid,
+                            price: img.price
                         }));
                         setUploadedImages(mappedImages);
                     }
@@ -177,16 +213,18 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
                     const response = await api.get('/user/purchased-images');
                     if (response.data && response.data.data) {
                         const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => ({
-                            id: img.imageRawPath,
-                            width: 800,
-                            height: 1200,
+                            id: img.image_id,
+                            width: img.width,
+                            height: img.height,
                             rawUrl: processImageUrl(img.imageRawPath),
                             thumbnailUrl: processImageUrl(img.thumbnail_url),
                             description: img.description || 'Purchased Image',
                             userName: img.userName || 'Unknown',
                             userAvatar: img.userProfileImage ? processImageUrl(img.userProfileImage) : '',
                             userId: '',
-                            title: img.title
+                            title: img.title,
+                            is_paid: img.is_paid,
+                            price: img.price
                         }));
                         setPurchasedImages(mappedImages);
                     }
@@ -213,13 +251,15 @@ export default function ProfileContent({ initialProfileData, viewedUserId }: Pro
             userName: img.ownerData?.userName || 'Unknown',
             userAvatar: processImageUrl(img.ownerData?.avatar),
             userId: img.ownerData?.id || '',
-            title: img.title
+            title: img.title,
+            is_paid: img.is_paid,
+            price: img.price
         })) || [];
     }, [profileData]);
 
-    const displayImages = activeTab === 'uploads' ? uploadedImages : 
-                          activeTab === 'purchased' ? purchasedImages : 
-                          likedImages;
+    const displayImages = activeTab === 'uploads' ? uploadedImages :
+        activeTab === 'purchased' ? purchasedImages :
+            likedImages;
 
     const allTabs = [
         { id: 'uploads', label: 'Uploads' },

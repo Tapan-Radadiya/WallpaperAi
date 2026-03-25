@@ -33,7 +33,6 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
             }, 250);
         }
     };
-
     return (
         <div
             className="group relative mb-4 break-inside-avoid rounded-xl overflow-hidden bg-card-bg shadow-sm hover:shadow-xl transition-all duration-300 border border-muted/10 cursor-pointer"

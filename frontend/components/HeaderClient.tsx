@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import Link from 'next/link';
 import { LogIn, User as UserIcon, Upload, X, LogOut, Loader2, Search } from 'lucide-react';
@@ -26,6 +26,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isSynced, setIsSynced] = useState(false);
+    const headerRef = useRef<HTMLElement>(null);
     const pathname = usePathname();
     const router = useRouter();
     const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/reset-password';
@@ -39,6 +40,44 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
         }
         setIsSynced(true);
     }, [initialUser, login]);
+
+    // High-performance vanilla JS scroll listener
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        
+        const headerEl = headerRef.current;
+        if (!headerEl) return;
+        
+        let lastScrollY = window.pageYOffset || document.documentElement.scrollTop;
+        let ticking = false;
+
+        const updateHeader = () => {
+            const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (currentScrollY < 60) {
+                headerEl.style.transform = 'translateY(0)';
+            } else if (currentScrollY > lastScrollY && currentScrollY > 60) {
+                // Scroll down
+                headerEl.style.transform = 'translateY(-100%)';
+            } else if (currentScrollY < lastScrollY - 5) {
+                // Scroll up
+                headerEl.style.transform = 'translateY(0)';
+            }
+            
+            lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY;
+            ticking = false;
+        };
+
+        const onScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(updateHeader);
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     const user = isSynced ? contextUser : initialUser;
 
@@ -75,7 +114,10 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
     };
 
     return (
-        <header className="sticky top-0 z-10 backdrop-blur-md bg-[var(--background)]/80 border-b border-[var(--muted)]/20">
+        <header 
+            ref={headerRef}
+            className={`sticky top-0 z-50 backdrop-blur-md bg-[var(--background)]/80 border-b border-[var(--muted)]/20 transition-transform duration-300 ease-in-out`}
+        >
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 <Link href="/" className="text-2xl kedebideri-bold tracking-tight bg-gradient-to-r from-[var(--foreground)] to-[var(--muted)] bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer">
                     WallpaperAI
