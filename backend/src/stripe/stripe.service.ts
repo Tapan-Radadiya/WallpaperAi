@@ -109,7 +109,7 @@ export class StripeService {
                 message: "Okk",
                 statusCode: HttpStatus.OK,
                 data: {
-                    navigate_url: stripeData.url
+                    stripe_payment_url: stripeData.url
                 }
             })
         } catch (error) {
