@@ -54,7 +54,6 @@ export class StripeService {
             }
 
             const { id, user_id: imageOwnerId, is_paid, price } = imageData
-
             if (!is_paid || !price || !(price >= 0)) {
                 return APIResponse({
                     statusCode: HttpStatus.CONFLICT,
@@ -85,18 +84,20 @@ export class StripeService {
             }
             const stripeData = await this.stripe.checkout.sessions.create({
                 mode: 'payment',
-                metadata: {
-                    payment_id: paymentData[0].id,
-                    buyer_id: paymentData[0].buyer_id,
-                    seller_id: paymentData[0].seller_id,
+                payment_intent_data: {
+                    metadata: {
+                        payment_id: paymentData[0].id,
+                        buyer_id: paymentData[0].buyer_id,
+                        seller_id: paymentData[0].seller_id,
+                    },
                 },
                 line_items: [
                     {
                         price_data: {
-                            unit_amount: price,
-                            currency: 'usd',
+                            unit_amount: price * 100,
+                            currency: 'inr',
                             product_data: {
-                                name: "Test Image"
+                                name: "Test Image",
                             },
                         },
                         quantity: 1
@@ -134,11 +135,18 @@ export class StripeService {
             stripeSign,
             process.env.STRIPE_WEBHOOK_SECRET!
         )
-        if (event.type === 'checkout.session.completed') {
+        if (event.type === 'payment_intent.succeeded') {
             const {
-                amount_subtotal
+                amount_received,
+                latest_charge
             } = event.data.object
-            const stripeMetaData = event?.data?.object as unknown as { metadata: { payment_id: string, buyer_id: string, seller_id: string } }
+            const stripeMetaData = event?.data?.object as unknown as {
+                metadata: {
+                    payment_id: string, buyer_id:
+                    string, seller_id: string
+                }
+            }
+
             const { seller_id, buyer_id, payment_id } = stripeMetaData.metadata
             const paymentData = await this.conn.query.tbl_payments.findFirst({
                 where: eq(
@@ -146,15 +154,17 @@ export class StripeService {
                     payment_id
                 )
             })
+
             if (!paymentData) {
                 return APIResponse({
                     message: "Invalid Payload",
                     statusCode: HttpStatus.BAD_REQUEST
                 })
             }
-            if (paymentData.amount !== amount_subtotal) {
+
+            if (paymentData.amount * 100 !== amount_received) {
                 return APIResponse({
-                    message: "Invalid Payload",
+                    message: "Invalid Amount Received",
                     statusCode: HttpStatus.BAD_REQUEST
                 })
             }
@@ -164,10 +174,12 @@ export class StripeService {
                     statusCode: HttpStatus.BAD_REQUEST
                 })
             }
-
+            console.log('latest_charge-->', latest_charge);
+            console.log("dsadas", typeof latest_charge)
             const updatePayment = await this.updatePaymentStatus({
                 payment_id,
-                status: 'SUCCESS'
+                status: 'SUCCESS',
+                transaction_id: latest_charge?.toString()
             })
             if (updatePayment) {
                 await this.conn
@@ -215,28 +227,45 @@ export class StripeService {
         })
     }
 
-    private async updatePaymentStatus({ payment_id, status }: { payment_id: string, status: 'PENDING' | 'SUCCESS' | 'FAILED' }): Promise<{
+    private async updatePaymentStatus({ payment_id, status, transaction_id }: { payment_id: string, status: 'PENDING' | 'SUCCESS' | 'FAILED', transaction_id?: string }): Promise<{
         payment_id: string,
         buyer_id: string,
         seller_id: string,
         image_id: string
     } | null> {
-        const updatePayment = await this.conn.update(tbl_payments).set({
-            status: status
-        })
-            .where(eq(tbl_payments.id, payment_id))
-            .returning({
-                payment_id: tbl_payments.id,
-                buyer_id: tbl_payments.buyer_id,
-                seller_id: tbl_payments.seller_id,
-                image_id: tbl_payments.image_id,
+        if (transaction_id) {
+            const updatePayment = await this.conn.update(tbl_payments).set({
+                status: status,
+                transaction_id
             })
+                .where(eq(tbl_payments.id, payment_id))
+                .returning({
+                    payment_id: tbl_payments.id,
+                    buyer_id: tbl_payments.buyer_id,
+                    seller_id: tbl_payments.seller_id,
+                    image_id: tbl_payments.image_id,
+                })
 
-        if (updatePayment.length > 0) {
-            return updatePayment[0]
+            if (updatePayment.length > 0) {
+                return updatePayment[0]
+            }
         } else {
-            return null
+            const updatePayment = await this.conn.update(tbl_payments).set({
+                status: status
+            })
+                .where(eq(tbl_payments.id, payment_id))
+                .returning({
+                    payment_id: tbl_payments.id,
+                    buyer_id: tbl_payments.buyer_id,
+                    seller_id: tbl_payments.seller_id,
+                    image_id: tbl_payments.image_id,
+                })
+
+            if (updatePayment.length > 0) {
+                return updatePayment[0]
+            }
         }
+        return null
     }
     private getUserAndPlatformCutValue(imagePrice: number): { platFormCut: number, userCut: number } {
         const currentPlatformCutPercentage: number = parseInt(process.env.PLATFORM_CUT!)
