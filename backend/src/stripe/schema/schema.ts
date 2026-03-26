@@ -1,4 +1,5 @@
 import { real } from "drizzle-orm/pg-core";
+import { varchar } from "drizzle-orm/pg-core";
 import { index, integer, pgEnum, pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { tbl_image, tbl_user } from "src/Schema/schema";
 
@@ -13,6 +14,7 @@ export const tbl_payments = pgTable('tbl_payments', {
     buyer_id: uuid('buyer_id').references(() => tbl_user.id).notNull(),
     seller_id: uuid('seller_id').references(() => tbl_user.id).notNull(),
     image_id: uuid('image_id').references(() => tbl_image.id).notNull(),
+    transaction_id: varchar('transaction_id'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').$onUpdate(() => new Date())
 })
