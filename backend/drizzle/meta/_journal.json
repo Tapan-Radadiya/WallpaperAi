@@ -183,6 +183,13 @@
       "when": 1774201564562,
       "tag": "0025_furry_leo",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1774548057924,
+      "tag": "0026_condemned_iron_fist",
+      "breakpoints": true
     }
   ]
 }
