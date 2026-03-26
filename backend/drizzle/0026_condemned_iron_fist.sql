@@ -1,0 +1,1 @@
+ALTER TABLE "tbl_payments" ADD COLUMN "transaction_id" varchar;
