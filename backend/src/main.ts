@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as bodyParser from "body-parser";
@@ -6,6 +6,8 @@ import { RedisStore } from 'connect-redis';
 import session from "express-session";
 import { AppModule } from './app.module';
 import { initRedis, redisClient } from './redis-client/redis-client';
+import { Logger } from 'nestjs-pino';
+import { NativeLogger, nativeLoggerOptions } from 'nestjs-pino';
 
 async function bootstrap() {
 
