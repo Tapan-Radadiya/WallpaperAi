@@ -37,6 +37,7 @@ export class ImageService {
         //     return APIResponse({ statusCode: HttpStatus.OK, message: "Cached Data", data: randomData })
         // }
 
+        const showPaidImages = process.env.SHOW_PREMIUM_IMAGE === 'true' ? true : false
         try {
             const newData = await this.conn
                 .select({
@@ -57,6 +58,9 @@ export class ImageService {
                     schema.tbl_user,
                     eq(schema.tbl_user.id, schema.tbl_image.user_id)
                 )
+                .where(
+                    eq(schema.tbl_image.is_paid, showPaidImages)
+                )
                 .offset(offset)
                 .limit(this.PAGE_LENGTH)
 
@@ -75,7 +79,6 @@ export class ImageService {
             const randomData = this.randomizeData(updatedData)
             return APIResponse({ statusCode: HttpStatus.OK, message: "", data: randomData })
         } catch (error) {
-            console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error", err: error })
         }
 
@@ -239,7 +242,7 @@ export class ImageService {
             return APIResponse({ statusCode: HttpStatus.OK, message: "Ok", data: imageData })
         } catch (error) {
             console.log('error-->', error);
-            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error" })
+            return APIResponse({ statusCode: HttpStatus.UNPROCESSABLE_ENTITY, message: "Unable to process your request try after sometime" })
         }
     }
 

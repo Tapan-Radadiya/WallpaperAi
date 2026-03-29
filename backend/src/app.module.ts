@@ -28,8 +28,15 @@ import { LangchainModule } from './langchain/langchain.module';
 import { LangchainService } from './langchain/langchain.service';
 import { ImageSearchModule } from './image-search/image-search.module';
 import { StripeModule } from './stripe/stripe.module';
+import { LoggerModule } from 'nestjs-pino';
+import { nativeLoggerOptions } from 'nestjs-pino';
+import { LoggingModule } from './logging/logging.module';
+
 @Module({
   imports: [
+    // LoggerModule.forRoot({
+    //   pinoHttp: nativeLoggerOptions
+    // }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -59,6 +66,7 @@ import { StripeModule } from './stripe/stripe.module';
     LangchainModule,
     ImageSearchModule,
     StripeModule,
+    LoggingModule,
   ],
   controllers: [AppController, UserVerificationController, DataSeedController],
   providers: [
@@ -67,7 +75,7 @@ import { StripeModule } from './stripe/stripe.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard
-    }
+    },
   ],
 })
 export class AppModule implements NestModule {
