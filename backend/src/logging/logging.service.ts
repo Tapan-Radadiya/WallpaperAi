@@ -12,7 +12,6 @@ export class LoggingService {
     }
 
     async getMetrics(): Promise<string> {
-        console.log("Data Queried by prometheus:")
         return this.register.metrics()
     }
 }
