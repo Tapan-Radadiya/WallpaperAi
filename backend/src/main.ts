@@ -6,10 +6,13 @@ import { RedisStore } from 'connect-redis';
 import session from "express-session";
 import { AppModule } from './app.module';
 import { initRedis, redisClient } from './redis-client/redis-client';
+import { MetricsInterceptor } from './metrics/metrics.interceptor';
 
 async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
+
+  // const metricsInterceptor = app.get(MetricsInterceptor)
 
   app.use(bodyParser.json({
     verify: (req: any, res, buf) => {
@@ -32,6 +35,9 @@ async function bootstrap() {
     origin: 'http://192.168.56.1:3000/',
     credentials: true
   })
+
+
+  // app.useGlobalInterceptors(metricsInterceptor)
 
   app.setGlobalPrefix('api/v1')
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
