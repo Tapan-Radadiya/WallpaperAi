@@ -6,8 +6,6 @@ import { RedisStore } from 'connect-redis';
 import session from "express-session";
 import { AppModule } from './app.module';
 import { initRedis, redisClient } from './redis-client/redis-client';
-import { Logger } from 'nestjs-pino';
-import { NativeLogger, nativeLoggerOptions } from 'nestjs-pino';
 
 async function bootstrap() {
 

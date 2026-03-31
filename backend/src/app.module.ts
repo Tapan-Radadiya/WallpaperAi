@@ -1,42 +1,40 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { PrometheusModule } from "@willsoto/nestjs-prometheus";
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { DrizzleModule } from './drizzle/drizzle.module';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { UserModule } from './user/user.module';
-import { GeminiModule } from './gemini/gemini.module';
-import { RedisCacheModule } from './redis_cache/redis_cache.module';
-import { ImageModule } from './image/image.module';
-import { ScheduleModule } from '@nestjs/schedule';
-import { WorkerModule } from './worker/worker.module';
-import { FileuploadModule } from './fileupload/fileupload.module';
-import { AuthMiddleware } from './middleware/auth/auth.middleware';
 import { AuthModule } from './auth/auth.module';
-import { ImageController } from './image/image.controller';
-import { UserController } from './user/user.controller';
-import { UserVerificationController } from './user_verification/user_verification.controller';
-import { UserVerificationService } from './user_verification/user_verification.service';
-import { UserVerificationModule } from './user_verification/user_verification.module';
-import { MailModule } from './mail/mail.module';
 import { AwsServicesModule } from './aws-services/aws-services.module';
 import { DataSeedController } from './data_seed/data_seed.controller';
 import { DataSeedModule } from './data_seed/data_seed.module';
-import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler"
-import { APP_GUARD } from '@nestjs/core';
-import { LangchainModule } from './langchain/langchain.module';
-import { LangchainService } from './langchain/langchain.service';
+import { DrizzleModule } from './drizzle/drizzle.module';
+import { FileuploadModule } from './fileupload/fileupload.module';
+import { GeminiModule } from './gemini/gemini.module';
 import { ImageSearchModule } from './image-search/image-search.module';
-import { StripeModule } from './stripe/stripe.module';
-import { LoggerModule } from 'nestjs-pino';
-import { nativeLoggerOptions } from 'nestjs-pino';
+import { ImageController } from './image/image.controller';
+import { ImageModule } from './image/image.module';
+import { LangchainModule } from './langchain/langchain.module';
 import { LoggingModule } from './logging/logging.module';
+import { MailModule } from './mail/mail.module';
+import { AuthMiddleware } from './middleware/auth/auth.middleware';
+import { RedisCacheModule } from './redis_cache/redis_cache.module';
+import { StripeModule } from './stripe/stripe.module';
+import { UserController } from './user/user.controller';
+import { UserModule } from './user/user.module';
+import { UserVerificationController } from './user_verification/user_verification.controller';
+import { UserVerificationModule } from './user_verification/user_verification.module';
+import { UserVerificationService } from './user_verification/user_verification.service';
+import { WorkerModule } from './worker/worker.module';
 
 @Module({
   imports: [
-    // LoggerModule.forRoot({
-    //   pinoHttp: nativeLoggerOptions
-    // }),
+    PrometheusModule.register({
+      path: "/api/v1/logging/metrics/prometheus/logs"
+    }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
