@@ -29,11 +29,12 @@ import { UserVerificationController } from './user_verification/user_verificatio
 import { UserVerificationModule } from './user_verification/user_verification.module';
 import { UserVerificationService } from './user_verification/user_verification.service';
 import { WorkerModule } from './worker/worker.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
     PrometheusModule.register({
-      path: "/api/v1/logging/metrics/prometheus/logs"
+      path: "/logging/metrics/prometheus/logs"
     }),
     ThrottlerModule.forRoot({
       throttlers: [
@@ -64,7 +65,8 @@ import { WorkerModule } from './worker/worker.module';
     LangchainModule,
     ImageSearchModule,
     StripeModule,
-    LoggingModule,
+    // LoggingModule,
+    MetricsModule,
   ],
   controllers: [AppController, UserVerificationController, DataSeedController],
   providers: [
