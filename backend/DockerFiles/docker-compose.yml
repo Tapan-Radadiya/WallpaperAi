@@ -36,8 +36,17 @@ services:
       - "5000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
+  
+  grafana-loki:
+    image: grafana/loki:3.7.0
+    container_name: grafana-loki-log-collector
+    ports:
+      - "3100:3100"
+    volumes:
+      - grafana-loki-data:/var/lib/grafana-loki
 volumes:
   postgres_data:
   redis_data:
   prometheus_data:
   grafana-data:
+  grafana-loki-data:

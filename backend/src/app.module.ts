@@ -30,9 +30,22 @@ import { UserVerificationModule } from './user_verification/user_verification.mo
 import { UserVerificationService } from './user_verification/user_verification.service';
 import { WorkerModule } from './worker/worker.module';
 import { MetricsModule } from './metrics/metrics.module';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
+import LokiTransport from 'winston-loki';
 
 @Module({
   imports: [
+    WinstonModule.forRoot({
+      transports: [
+        new LokiTransport({
+          host: 'http://192.168.1.31:3100',
+          labels: { app: 'wallpaper_backend_app' },
+          json: true
+        }),
+        new winston.transports.Console()
+      ]
+    }),
     PrometheusModule.register({
       path: "/logging/metrics/prometheus/logs"
     }),
@@ -65,7 +78,7 @@ import { MetricsModule } from './metrics/metrics.module';
     LangchainModule,
     ImageSearchModule,
     StripeModule,
-    // LoggingModule,
+    LoggingModule,
     MetricsModule,
   ],
   controllers: [AppController, UserVerificationController, DataSeedController],

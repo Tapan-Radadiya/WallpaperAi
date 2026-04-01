@@ -1,17 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import * as client from "prom-client"
+import { ConsoleLogger, Injectable } from '@nestjs/common';
 
 @Injectable()
-export class LoggingService {
-    private readonly register: client.Registry
-
-    constructor() {
-        this.register = new client.Registry()
-        this.register.setDefaultLabels({ app: 'backend-wallpaper' })
-        client.collectDefaultMetrics({ register: this.register })
-    }
-
-    async getMetrics(): Promise<string> {
-        return this.register.metrics()
-    }
+export class LoggingService extends ConsoleLogger {
+    private static lokiURL = process.env.LOKI_URL
 }
