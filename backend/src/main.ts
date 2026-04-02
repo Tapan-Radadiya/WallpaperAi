@@ -1,18 +1,22 @@
-import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as bodyParser from "body-parser";
 import { RedisStore } from 'connect-redis';
 import session from "express-session";
 import { AppModule } from './app.module';
+import { LoggingService } from './logging/logging.service';
 import { initRedis, redisClient } from './redis-client/redis-client';
-import { MetricsInterceptor } from './metrics/metrics.interceptor';
+import { GlobalExceptionHandler } from './utils/global_exception_handler.filter';
 
 async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  // const metricsInterceptor = app.get(MetricsInterceptor)
+  app.useGlobalFilters(new GlobalExceptionHandler(
+    app.get(HttpAdapterHost),
+    app.get(LoggingService)
+  ))
 
   app.use(bodyParser.json({
     verify: (req: any, res, buf) => {
