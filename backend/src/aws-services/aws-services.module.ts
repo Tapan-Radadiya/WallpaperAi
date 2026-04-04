@@ -4,10 +4,13 @@ import { SqsModule } from "@ssut/nestjs-sqs";
 import { AwsServicesService } from './aws-services.service';
 import { SqsConsumerService } from './sqs-consumer.service';
 import { LangchainService } from '@src/langchain/langchain.service';
+import { LoggingService } from '@src/logging/logging.service';
+import { LoggingModule } from '@src/logging/logging.module';
 
 @Module({
   imports: [
     ConfigModule,
+    LoggingModule,
     SqsModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -31,7 +34,7 @@ import { LangchainService } from '@src/langchain/langchain.service';
       })
     })
   ],
-  providers: [AwsServicesService, ConfigService, SqsConsumerService, LangchainService],
+  providers: [AwsServicesService, ConfigService, SqsConsumerService, LangchainService, LoggingService],
   exports: [AwsServicesService],
 })
 export class AwsServicesModule { }
