@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { SqsService } from "@ssut/nestjs-sqs";
 import { validateInput } from "@src/utils/common";
 import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
+import { LoggingService } from "@src/logging/logging.service";
 @Injectable()
 export class AwsServicesService {
     private s3Client: S3Client
@@ -15,7 +16,8 @@ export class AwsServicesService {
 
     constructor(
         private readonly configService: ConfigService,
-        private readonly sqsService: SqsService
+        private readonly sqsService: SqsService,
+        private readonly loggingService: LoggingService
     ) {
         this.s3Client = new S3Client({
             region: this.configService.getOrThrow("AWS_REGION"),
@@ -94,7 +96,13 @@ export class AwsServicesService {
     async sqsImageProcessingDataPush(imageData: SQSImageProcessDTO) {
         const validatedData = await validateInput(imageData, SQSImageProcessDTO)
         if (validatedData.length > 0) {
-            this.logger.log("Invalide Data Passed To Image Processing Queue")
+            const loggerMessage = {
+                message: "Invalid Data Passed To Image Processing Queue",
+                imageData,
+                validatedData
+            }
+            this.loggingService.warn(JSON.stringify(loggerMessage))
+            this.logger.log(loggerMessage.message)
             return
         }
 
