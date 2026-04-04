@@ -1,8 +1,8 @@
 import { HttpStatus } from "@nestjs/common"
-import { APIResponseInterface, SharpImageMetaDataType } from "src/types/common.types"
+import { APIResponseInterface, SharpImageMetaDataType } from "@src/types/common.types"
 import * as bcrypt from "bcrypt"
 import sharp from "sharp"
-import { ALLOWED_IMAGES_FORMAT } from "src/constants"
+import { ALLOWED_IMAGES_FORMAT } from "@src/constants"
 import { plainToInstance } from "class-transformer"
 import { validate } from "class-validator"
 export const APIResponse = ({ statusCode, message, data, err }: APIResponseInterface) => {

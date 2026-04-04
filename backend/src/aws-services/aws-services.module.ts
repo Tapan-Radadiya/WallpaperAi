@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SqsModule } from "@ssut/nestjs-sqs";
 import { AwsServicesService } from './aws-services.service';
 import { SqsConsumerService } from './sqs-consumer.service';
-import { LangchainService } from 'src/langchain/langchain.service';
+import { LangchainService } from '@src/langchain/langchain.service';
 
 @Module({
   imports: [

@@ -2,7 +2,7 @@ import { timestamp } from "drizzle-orm/pg-core";
 import { varchar } from "drizzle-orm/pg-core";
 import { uuid } from "drizzle-orm/pg-core";
 import { pgTable } from "drizzle-orm/pg-core";
-import { tbl_user } from "src/Schema/schema";
+import { tbl_user } from "@src/Schema/schema";
 
 export const aws_sqs_image_data_status = pgTable('aws_sqs_image_data_status', {
     id: uuid('id').defaultRandom(),

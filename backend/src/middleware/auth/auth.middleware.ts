@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { APIResponse } from 'src/utils/common';
+import { APIResponse } from '@src/utils/common';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {

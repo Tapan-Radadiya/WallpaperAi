@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ImageModule } from 'src/image/image.module';
+import { ImageModule } from '@src/image/image.module';
 import { StripeController } from './stripe.controller';
 import { StripeService } from './stripe.service';
 

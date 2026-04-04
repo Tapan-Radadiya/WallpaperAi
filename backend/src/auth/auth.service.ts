@@ -1,15 +1,15 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
+import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import * as schema from "../Schema/schema"
 import { and, eq } from 'drizzle-orm';
-import { UserDataType, APIResponseInterface, userLoginType } from 'src/types/common.types';
-import { APIResponse, compareHash, hashText } from 'src/utils/common';
+import { UserDataType, APIResponseInterface, userLoginType } from '@src/types/common.types';
+import { APIResponse, compareHash, hashText } from '@src/utils/common';
 import type { Request, Response } from 'express';
-import { UserVerificationService } from 'src/user_verification/user_verification.service';
-import { MailService } from 'src/mail/mail.service';
-import { UserResetPasswordDTO } from 'src/DTO/user.dto';
+import { UserVerificationService } from '@src/user_verification/user_verification.service';
+import { MailService } from '@src/mail/mail.service';
+import { UserResetPasswordDTO } from '@src/DTO/user.dto';
 
 @Injectable()
 export class AuthService {

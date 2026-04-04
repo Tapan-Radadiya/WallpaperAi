@@ -4,11 +4,11 @@ import type { Message } from '@aws-sdk/client-sqs';
 import { SqsService } from "@ssut/nestjs-sqs"
 import { AwsServicesService } from "./aws-services.service"
 import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
-import { LangchainService } from "src/langchain/langchain.service";
+import { LangchainService } from "@src/langchain/langchain.service";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "../Schema/schema"
-import { DRIZZLE } from "src/drizzle/drizzle.module";
-import { tbl_image_embeddings } from "src/image/schema/image.schema";
+import { DRIZZLE } from "@src/drizzle/drizzle.module";
+import { tbl_image_embeddings } from "@src/image/schema/image.schema";
 import { eq } from "drizzle-orm";
 
 

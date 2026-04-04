@@ -1,13 +1,13 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger, HttpStatus, Inject } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
+import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { catchError, lastValueFrom } from 'rxjs';
-import { APIResponse } from 'src/utils/common';
+import { APIResponse } from '@src/utils/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from "../Schema/schema"
 import { eq } from 'drizzle-orm';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/drizzle/drizzle.module';
 import json from "../../test.json"
 @Injectable()
 export class WorkerService {

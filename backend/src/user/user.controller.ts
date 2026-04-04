@@ -2,13 +2,13 @@ import { Body, Controller, Get, HttpStatus, Param, Put, Query, Req, Res, Uploade
 import { FileInterceptor } from '@nestjs/platform-express';
 import { isUUID } from 'class-validator';
 import type { Request, Response } from 'express';
-import { AwsServicesService } from 'src/aws-services/aws-services.service';
-import { UpdateUserDTO } from 'src/DTO/user.dto';
-import { UpdateUserType } from 'src/types/common.types';
-import { APIResponse, craftResponseData, SanitizeImageData } from 'src/utils/common';
+import { AwsServicesService } from '@src/aws-services/aws-services.service';
+import { UpdateUserDTO } from '@src/DTO/user.dto';
+import { UpdateUserType } from '@src/types/common.types';
+import { APIResponse, craftResponseData, SanitizeImageData } from '@src/utils/common';
 import { UserService } from './user.service';
 import * as uuid from "uuid"
-import { ALLOWED_IMAGES } from 'src/constants';
+import { ALLOWED_IMAGES } from '@src/constants';
 @Controller('user')
 export class UserController {
     constructor(
@@ -146,9 +146,9 @@ export class UserController {
             responseData.message = message
             responseData.statusCode = statusCode
             responseData.err = err
-        } catch (error) {
+        } catch (error: any) {
             // console.log('error-->', error);
-            responseData.err = error.message
+            responseData.err = error?.message
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
         }
         return res.status(responseData.statusCode).json(responseData)
@@ -219,7 +219,7 @@ export class UserController {
                 await this.awsServices.uploadFile(avatarPath, sanitizedBuffer.data.imageBuffer.buffer, file.mimetype)
                 responseData.data = {}
             }
-        } catch (error) {
+        } catch (error: any) {
             responseData.err = error.message
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
         }
