@@ -102,7 +102,8 @@ export class AppModule implements NestModule {
         { path: '/image/update-download-count/*path', method: RequestMethod.PATCH },
         { path: '/user/username-exists/*path', method: RequestMethod.GET },
         { path: '/user/useremail-exists/*path', method: RequestMethod.GET },
-        { path: '/data-seed', method: RequestMethod.GET }
+        { path: '/data-seed', method: RequestMethod.GET },
+        { path: '/image/process-image', method: RequestMethod.POST }
       )
       .forRoutes(ImageController, UserController)
   }
