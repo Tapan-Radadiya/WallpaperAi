@@ -27,6 +27,10 @@ export class LoggingService extends ConsoleLogger {
         this.logger.error(message, { context })
     }
 
+    warn(message: string, context?: any) {
+        this.logger.error(message, { context })
+    }
+
     info(message: string, context?: any) {
         this.logger.info(message, { context })
     }

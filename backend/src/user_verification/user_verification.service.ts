@@ -2,11 +2,11 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { randomInt } from "crypto";
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { MailService } from 'src/mail/mail.service';
-import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
-import { APIResponseInterface } from 'src/types/common.types';
-import { APIResponse } from 'src/utils/common';
+import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { MailService } from '@src/mail/mail.service';
+import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
+import { APIResponseInterface } from '@src/types/common.types';
+import { APIResponse } from '@src/utils/common';
 import * as schema from "../Schema/schema";
 @Injectable()
 export class UserVerificationService {

@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Req, Res } from '@nestjs/common';
 import { ImageSearchService } from './image-search.service';
-import { craftResponseData } from 'src/utils/common';
+import { craftResponseData } from '@src/utils/common';
 import type { Response, Request } from 'express';
 
 @Controller('image-search')

@@ -2,17 +2,17 @@ import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { and, count, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
-import { APIResponse } from 'src/utils/common';
+import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
+import { APIResponse } from '@src/utils/common';
 import * as schema from "../Schema/schema";
-import { APIResponseInterface } from 'src/types/common.types';
-import { ImageUploadBodyDTO, ImageUploadDTO, LikeImageDTO } from 'src/DTO/image.dto';
+import { APIResponseInterface } from '@src/types/common.types';
+import { ImageUploadBodyDTO, ImageUploadDTO, LikeImageDTO } from '@src/DTO/image.dto';
 import sharp from 'sharp';
-import { FileuploadService } from 'src/fileupload/fileupload.service';
-import { UserService } from 'src/user/user.service';
+import { FileuploadService } from '@src/fileupload/fileupload.service';
+import { UserService } from '@src/user/user.service';
 import { UUID } from 'crypto';
-import { AwsServicesService } from 'src/aws-services/aws-services.service';
+import { AwsServicesService } from '@src/aws-services/aws-services.service';
 
 @Injectable()
 export class ImageService {
