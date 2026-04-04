@@ -1,0 +1,60 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Test Email
+    style.
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 20px;
+      }
+      .header {
+        text-align: center;
+        background: #007BFF;
+        color: #ffffff;
+        padding: 10px 0;
+      }
+      .content {
+        margin: 20px 0;
+        color: #333333;
+        line-height: 1.5;
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 15px;
+        background: #28a745;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #777777;
+        margin-top: 20px;
+      }
+
+  body
+    .container
+      .header
+        h1 Test Email
+
+      .content
+        p Hello #{name || 'User'},
+        p This is a test email template created using Pug.
+        p You can customize this content dynamically.
+
+        a.button(href=ctaLink || "#") Click Here
+
+      .footer
+        p © #{new Date().getFullYear()} Your Company
+        p If you did not request this email, please ignore it.

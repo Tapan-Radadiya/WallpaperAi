@@ -1,5 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { APIResponseInterface } from '@src/types/common.types';
+import { APIResponse } from '@src/utils/common';
 
 @Injectable()
 export class MailService {
@@ -39,6 +41,34 @@ export class MailService {
         } catch (error) {
             console.log('error-->', error);
             this.logger.log("Error Sending Email")
+        }
+    }
+
+    async sendTestEmail(): Promise<APIResponseInterface> {
+        try {
+            const sendEmailparams = {
+                to: process.env.SMTP_USER,
+                from: process.env.SMTP_USER,
+                subject: 'Test Email',
+                template: './TestEmail.pug',
+                context: {
+                    name: 'Test'
+                }
+            }
+
+            const response = await this.mailerService.sendMail({ ...sendEmailparams })
+            this.logger.log("Email Sent Successfully", response)
+            return APIResponse({
+                message: "Test Email Sent",
+                statusCode: HttpStatus.OK
+            })
+
+        } catch (error) {
+            console.log("error-->", error)
+            return APIResponse({
+                message: "Error Sending Test Email",
+                statusCode: HttpStatus.BAD_REQUEST
+            })
         }
     }
 }
