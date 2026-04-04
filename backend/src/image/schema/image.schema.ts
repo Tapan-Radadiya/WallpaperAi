@@ -6,7 +6,7 @@ import { vector } from "drizzle-orm/pg-core";
 import { integer } from "drizzle-orm/pg-core";
 import { boolean } from "drizzle-orm/pg-core";
 import { pgTable, timestamp } from "drizzle-orm/pg-core";
-import { tbl_user } from "src/Schema/schema";
+import { tbl_user } from "@src/Schema/schema";
 
 export const tbl_image = pgTable('tbl_image', {
     id: uuid('id').defaultRandom().primaryKey(),

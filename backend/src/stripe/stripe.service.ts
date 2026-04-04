@@ -1,11 +1,11 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/drizzle/drizzle.module';
 import * as schema from "../Schema/schema"
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import Stripe from "stripe"
-import { APIResponseInterface } from 'src/types/common.types';
-import { APIResponse } from 'src/utils/common';
-import { ImageService } from 'src/image/image.service';
+import { APIResponseInterface } from '@src/types/common.types';
+import { APIResponse } from '@src/utils/common';
+import { ImageService } from '@src/image/image.service';
 import { eq, InferSelectModel } from "drizzle-orm"
 import { tbl_payments } from './schema/schema';
 import type { RawBodyRequest } from "@nestjs/common"

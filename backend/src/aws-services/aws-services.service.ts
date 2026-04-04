@@ -4,7 +4,7 @@ import { DeleteMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SqsService } from "@ssut/nestjs-sqs";
-import { validateInput } from "src/utils/common";
+import { validateInput } from "@src/utils/common";
 import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
 @Injectable()
 export class AwsServicesService {

@@ -4,14 +4,14 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request, Response } from 'express';
 import * as fs from 'fs';
 import sharp from 'sharp';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { ImageService } from 'src/image/image.service';
+import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { ImageService } from '@src/image/image.service';
 import * as schema from "../Schema/schema";
-import { ImageUploadBodyDTO } from 'src/DTO/image.dto';
-import { AwsServicesService } from 'src/aws-services/aws-services.service';
+import { ImageUploadBodyDTO } from '@src/DTO/image.dto';
+import { AwsServicesService } from '@src/aws-services/aws-services.service';
 import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
-import { LangchainService } from 'src/langchain/langchain.service';
-import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
+import { LangchainService } from '@src/langchain/langchain.service';
+import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 
 @Controller('data-seed')
 @Injectable()

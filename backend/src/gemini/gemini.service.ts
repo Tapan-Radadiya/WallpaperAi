@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/drizzle/drizzle.module';
 import * as schema from "../Schema/schema"
 import { GenerateContentResponse, GoogleGenAI } from "@google/genai"
 import * as fs from "fs"
