@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Headers, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import type { RawBodyRequest } from "@nestjs/common"
 import type { Response, Request } from 'express';
-import { APIResponse, craftResponseData } from 'src/utils/common';
+import { APIResponse, craftResponseData } from '@src/utils/common';
 import { StripeService } from './stripe.service';
 import { PaymentBody } from './dto/payment.dto';
 

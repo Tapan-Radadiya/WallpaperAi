@@ -2,12 +2,12 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { and, count, eq, isNotNull } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { alias } from 'drizzle-orm/pg-core';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { RedisCacheService } from 'src/redis_cache/redis_cache.service';
-import { APIResponseInterface, UpdateUserType } from 'src/types/common.types';
-import { APIResponse } from 'src/utils/common';
+import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
+import { APIResponseInterface, UpdateUserType } from '@src/types/common.types';
+import { APIResponse } from '@src/utils/common';
 import * as schema from "../Schema/schema";
-import { AwsServicesService } from 'src/aws-services/aws-services.service';
+import { AwsServicesService } from '@src/aws-services/aws-services.service';
 
 @Injectable()
 export class UserService {

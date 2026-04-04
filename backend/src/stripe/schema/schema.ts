@@ -1,7 +1,7 @@
 import { real } from "drizzle-orm/pg-core";
 import { varchar } from "drizzle-orm/pg-core";
 import { index, integer, pgEnum, pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
-import { tbl_image, tbl_user } from "src/Schema/schema";
+import { tbl_image, tbl_user } from "@src/Schema/schema";
 
 export const payment_status = pgEnum('payment_status', ['PENDING', 'SUCCESS', 'FAILED'])
 

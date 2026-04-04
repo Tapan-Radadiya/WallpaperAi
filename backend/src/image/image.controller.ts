@@ -1,13 +1,12 @@
 import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { ImageService } from './image.service';
-import { APIResponse, craftResponseData, getImageMetaData, SanitizeImageData } from 'src/utils/common';
+import { APIResponse, craftResponseData, getImageMetaData, SanitizeImageData } from '@src/utils/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ImageUploadBodyDTO, LikeImageDTO } from 'src/DTO/image.dto';
-import { ALLOWED_IMAGES, ALLOWED_IMAGES_FORMAT } from 'src/constants';
+import { ImageUploadBodyDTO, LikeImageDTO } from '@src/DTO/image.dto';
+import { ALLOWED_IMAGES, ALLOWED_IMAGES_FORMAT } from '@src/constants';
 import sharp from 'sharp';
-import { APIResponseInterface } from 'src/types/common.types';
-
+import { APIResponseInterface } from '@src/types/common.types';
 @Controller('image')
 export class ImageController {
     constructor(

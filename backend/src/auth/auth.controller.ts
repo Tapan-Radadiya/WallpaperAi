@@ -1,12 +1,12 @@
 import { Body, Controller, HttpStatus, Post, Req, Res, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from "@nestjs/platform-express";
 import type { Request, Response } from 'express';
-import { AuthService } from 'src/auth/auth.service';
-import { AwsServicesService } from 'src/aws-services/aws-services.service';
-import { ALLOWED_IMAGES } from 'src/constants';
-import { LoginUserDTO, RegisterUserDTO, ResetPasswordDTO, UserResetPasswordDTO } from 'src/DTO/user.dto';
-import { UserDataType, userLoginType } from 'src/types/common.types';
-import { APIResponse, craftResponseData, hashText, SanitizeImageData } from 'src/utils/common';
+import { AuthService } from '@src/auth/auth.service';
+import { AwsServicesService } from '@src/aws-services/aws-services.service';
+import { ALLOWED_IMAGES } from '@src/constants';
+import { LoginUserDTO, RegisterUserDTO, ResetPasswordDTO, UserResetPasswordDTO } from '@src/DTO/user.dto';
+import { UserDataType, userLoginType } from '@src/types/common.types';
+import { APIResponse, craftResponseData, hashText, SanitizeImageData } from '@src/utils/common';
 
 @Controller('auth')
 export class AuthController {

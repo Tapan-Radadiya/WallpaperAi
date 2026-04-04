@@ -1,8 +1,8 @@
 import { Body, Controller, Get, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { UserVerificationService } from './user_verification.service';
 import type { Request, Response } from 'express';
-import { craftResponseData } from 'src/utils/common';
-import { ResendVerificationEmailDTO, UserVerificationDTO } from 'src/DTO/user.dto';
+import { craftResponseData } from '@src/utils/common';
+import { ResendVerificationEmailDTO, UserVerificationDTO } from '@src/DTO/user.dto';
 
 @Controller('user-verification')
 export class UserVerificationController {
