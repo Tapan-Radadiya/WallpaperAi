@@ -39,7 +39,8 @@ export class AwsServicesService {
                 Bucket: this.configService.getOrThrow("AWS_BUCKET_NAME"),
                 Key: fileName,
                 Body: file,
-                ContentType
+                ContentType,
+                CacheControl: 'public, max-age=31536000, immutable'
             }))
 
         if (uploadedFile.$metadata.httpStatusCode === HttpStatus.OK) {

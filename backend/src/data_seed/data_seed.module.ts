@@ -1,7 +1,6 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { AwsServicesModule } from '@src/aws-services/aws-services.module';
-import { AwsServicesService } from '@src/aws-services/aws-services.service';
 import { ImageService } from '@src/image/image.service';
 import { LangchainModule } from '@src/langchain/langchain.module';
 import { LangchainService } from '@src/langchain/langchain.service';
