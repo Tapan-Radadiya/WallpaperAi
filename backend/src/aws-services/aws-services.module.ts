@@ -6,11 +6,13 @@ import { SqsConsumerService } from './sqs-consumer.service';
 import { LangchainService } from '@src/langchain/langchain.service';
 import { LoggingService } from '@src/logging/logging.service';
 import { LoggingModule } from '@src/logging/logging.module';
+import { LangchainModule } from '@src/langchain/langchain.module';
 
 @Module({
   imports: [
     ConfigModule,
     LoggingModule,
+    LangchainModule,
     SqsModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -34,7 +36,7 @@ import { LoggingModule } from '@src/logging/logging.module';
       })
     })
   ],
-  providers: [AwsServicesService, ConfigService, SqsConsumerService, LangchainService, LoggingService],
+  providers: [AwsServicesService, ConfigService, SqsConsumerService, LoggingService],
   exports: [AwsServicesService],
 })
 export class AwsServicesModule { }

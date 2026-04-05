@@ -9,7 +9,7 @@ import { RedisCacheModule } from '@src/redis_cache/redis_cache.module';
 import { UserService } from '@src/user/user.service';
 
 @Module({
-    imports: [RedisCacheModule, HttpModule, AwsServicesModule, LangchainModule],
-    providers: [ImageService, AwsServicesService, UserService, LangchainService]
+    imports: [RedisCacheModule, HttpModule, AwsServicesModule, LangchainModule, AwsServicesModule],
+    providers: [ImageService, UserService, LangchainService]
 })
 export class DataSeedModule { }
