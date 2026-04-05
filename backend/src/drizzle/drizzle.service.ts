@@ -13,7 +13,7 @@ export class DrizzleService implements OnModuleInit {
 
         try {
             await this.conn.execute("SELECT 1")
-            console.log("Database Connection Successfully ✅")
+            console.log(`Database Connection Successfully ✅ ${process.env.DATABASE_URL}`)
         } catch (error) {
             const DB_CONN_FAIL = {
                 message: `Unable to connect To DB ❌: ${process.env.DATABASE_URL}`,
