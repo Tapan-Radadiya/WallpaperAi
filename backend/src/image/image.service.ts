@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AwsServicesService } from '@src/aws-services/aws-services.service';
-import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/constants';
 import { ImageUploadBodyDTO, ImageUploadDTO, LikeImageDTO } from '@src/DTO/image.dto';
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { APIResponseInterface } from '@src/types/common.types';

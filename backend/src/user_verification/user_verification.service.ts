@@ -2,7 +2,7 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { randomInt } from "crypto";
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/constants';
 import { MailService } from '@src/mail/mail.service';
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { APIResponseInterface } from '@src/types/common.types';

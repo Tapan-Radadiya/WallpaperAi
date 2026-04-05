@@ -1,6 +1,6 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/constants';
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import * as schema from "../Schema/schema"
 import { and, eq } from 'drizzle-orm';

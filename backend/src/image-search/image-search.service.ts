@@ -1,7 +1,7 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { cosineDistance, desc, eq, gt, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/constants';
 import { LangchainService } from '@src/langchain/langchain.service';
 import { APIResponseInterface } from '@src/types/common.types';
 import { APIResponse } from '@src/utils/common';

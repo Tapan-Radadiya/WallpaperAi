@@ -1,5 +1,5 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/constants';
 import * as schema from "../Schema/schema"
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import Stripe from "stripe"

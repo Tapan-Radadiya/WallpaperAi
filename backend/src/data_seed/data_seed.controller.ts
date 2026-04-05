@@ -4,7 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request, Response } from 'express';
 import * as fs from 'fs';
 import sharp from 'sharp';
-import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/constants';
 import { ImageService } from '@src/image/image.service';
 import * as schema from "../Schema/schema";
 import { ImageUploadBodyDTO } from '@src/DTO/image.dto';
