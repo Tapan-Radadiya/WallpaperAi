@@ -36,7 +36,7 @@ export default function ImageDetailsMobile({
     fetchedPrice
 }: ImageDetailsMobileProps) {
     const { user } = useAuth();
-    const router = useRouter(); 
+    const router = useRouter();
     const [isDownloading, setIsDownloading] = useState(false);
     const [isPurchasing, setIsPurchasing] = useState(false);
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
@@ -56,10 +56,10 @@ export default function ImageDetailsMobile({
         try {
             setIsDownloading(true);
             setShowDownloadMenu(false);
-
             const res = await fetch(url, {
                 method: 'GET',
                 mode: 'cors',
+                cache: 'default'
             });
 
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -88,7 +88,7 @@ export default function ImageDetailsMobile({
             const res = await api.post('/stripe/payment', {
                 image_id: image.id
             });
-            
+
             if (res.data?.data?.stripe_payment_url) {
                 window.location.href = res.data.data.stripe_payment_url;
             } else {
@@ -257,46 +257,46 @@ export default function ImageDetailsMobile({
                     <div className="relative">
                         <button
                             onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-                        disabled={isDownloading}
-                        className="w-full py-4 bg-[var(--foreground)] text-[var(--background)] rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-xl active:scale-[0.98] transition-transform"
-                    >
-                        {isDownloading ? (
-                            <div className="w-6 h-6 border-2 border-[var(--background)] border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                            <>
-                                <span>Download Free</span>
-                                <ChevronDown size={20} className={`opacity-70 transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`} />
-                            </>
-                        )}
-                    </button>
-                    {/* Download Menu */}
-                    {showDownloadMenu && (
-                        <div className="absolute bottom-full left-0 right-0 mb-4 bg-[var(--card-bg)] border border-[var(--muted)]/20 rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom-2 z-50 mx-auto">
-                            <div className="p-2">
-                                <button
-                                    onClick={() => handleDownload(image.rawUrl, `wallpaper-${image.id}-original.jpg`)}
-                                    className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-[var(--muted)]/10 transition-colors"
-                                >
-                                    <div className="flex flex-col items-start">
-                                        <span className="font-bold text-[var(--foreground)]">Original</span>
-                                        <span className="text-xs text-[var(--muted)]">{image.width} x {image.height}</span>
-                                    </div>
-                                    <Download size={20} />
-                                </button>
-                                <button
-                                    onClick={() => handleDownload(image.thumbnailUrl, `wallpaper-${image.id}-small.jpg`)}
-                                    className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-[var(--muted)]/10 transition-colors border-t border-[var(--muted)]/10"
-                                >
-                                    <div className="flex flex-col items-start">
-                                        <span className="font-bold text-[var(--foreground)]">Small</span>
-                                        <span className="text-xs text-[var(--muted)]">Thumbnail</span>
-                                    </div>
-                                    <Download size={20} />
-                                </button>
+                            disabled={isDownloading}
+                            className="w-full py-4 bg-[var(--foreground)] text-[var(--background)] rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-xl active:scale-[0.98] transition-transform"
+                        >
+                            {isDownloading ? (
+                                <div className="w-6 h-6 border-2 border-[var(--background)] border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <>
+                                    <span>Download Free</span>
+                                    <ChevronDown size={20} className={`opacity-70 transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`} />
+                                </>
+                            )}
+                        </button>
+                        {/* Download Menu */}
+                        {showDownloadMenu && (
+                            <div className="absolute bottom-full left-0 right-0 mb-4 bg-[var(--card-bg)] border border-[var(--muted)]/20 rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom-2 z-50 mx-auto">
+                                <div className="p-2">
+                                    <button
+                                        onClick={() => handleDownload(image.rawUrl, `wallpaper-${image.id}-original.jpg`)}
+                                        className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-[var(--muted)]/10 transition-colors"
+                                    >
+                                        <div className="flex flex-col items-start">
+                                            <span className="font-bold text-[var(--foreground)]">Original</span>
+                                            <span className="text-xs text-[var(--muted)]">{image.width} x {image.height}</span>
+                                        </div>
+                                        <Download size={20} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDownload(image.thumbnailUrl, `wallpaper-${image.id}-small.jpg`)}
+                                        className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-[var(--muted)]/10 transition-colors border-t border-[var(--muted)]/10"
+                                    >
+                                        <div className="flex flex-col items-start">
+                                            <span className="font-bold text-[var(--foreground)]">Small</span>
+                                            <span className="text-xs text-[var(--muted)]">Thumbnail</span>
+                                        </div>
+                                        <Download size={20} />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
                 )}
             </div>
         </div>
