@@ -5,4 +5,4 @@ scrape_configs:
   - job_name: 'wallpaper-backend-service'
     metrics_path: /api/v1/logging/metrics/prometheus/logs
     static_configs:
-      - targets: ['192.168.1.31:3002']
+      - targets: ['192.168.1.31:3002','172.236.187.229:3002']
