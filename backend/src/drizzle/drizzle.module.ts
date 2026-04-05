@@ -18,7 +18,9 @@ import { DRIZZLE } from '@src/constants';
                 const DB_URL = configService.get("DATABASE_URL")
                 const pool = new Pool({
                     connectionString: DB_URL,
-                    ssl: false
+                    ssl: {
+                        rejectUnauthorized: false
+                    }
                 })
                 try {
                     await pool.query("SELECT 1")
