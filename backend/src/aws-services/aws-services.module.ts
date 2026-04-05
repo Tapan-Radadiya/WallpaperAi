@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LangchainModule } from '@src/langchain/langchain.module';
+import { LoggingModule } from '@src/logging/logging.module';
+import { LoggingService } from '@src/logging/logging.service';
 import { SqsModule } from "@ssut/nestjs-sqs";
 import { AwsServicesService } from './aws-services.service';
 import { SqsConsumerService } from './sqs-consumer.service';
-import { LangchainService } from '@src/langchain/langchain.service';
-import { LoggingService } from '@src/logging/logging.service';
-import { LoggingModule } from '@src/logging/logging.module';
-import { LangchainModule } from '@src/langchain/langchain.module';
 
 @Module({
   imports: [
