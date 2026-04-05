@@ -8,9 +8,10 @@ import { AppModule } from './app.module';
 import { LoggingService } from './logging/logging.service';
 import { initRedis, redisClient } from './redis-client/redis-client';
 import { GlobalExceptionHandler } from './utils/global_exception_handler.filter';
+import dns from 'dns'
 
 async function bootstrap() {
-
+  dns.setDefaultResultOrder('ipv4first')
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalFilters(new GlobalExceptionHandler(

@@ -28,6 +28,8 @@ COPY --from=builder /usr/src/app/dist ./dist
 
 COPY .env ./
 
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
+
 EXPOSE 3002
 
 CMD [ "pnpm" ,"run", "start:prod"]
