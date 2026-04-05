@@ -2,12 +2,14 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Pool } from 'pg';
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres"
+import { DrizzleService } from './drizzle.service';
 import * as schema from "../Schema/schema"
-
-export const DRIZZLE = Symbol("drizzle-connection")
+import { LoggingModule } from '@src/logging/logging.module';
+import { LoggingService } from '@src/logging/logging.service';
+import { DRIZZLE } from '@src/constants';
 @Global()
 @Module({
-    imports: [ConfigModule],
+    imports: [ConfigModule, LoggingModule],
     providers: [
         {
             provide: DRIZZLE,
@@ -18,9 +20,17 @@ export const DRIZZLE = Symbol("drizzle-connection")
                     connectionString: DB_URL,
                     ssl: false
                 })
+                try {
+                    await pool.query("SELECT 1")
+                    console.log("Database Connection Successfully ✅")
+                } catch (error) {
+                    console.log(`Unable to connect To DB ❌: ${DB_URL}`)
+                }
                 return drizzle(pool, { schema }) as NodePgDatabase<typeof schema>
             }
-        }
+        },
+        DrizzleService,
+        LoggingService
     ],
     exports: [DRIZZLE]
 })

@@ -7,7 +7,7 @@ import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
 import { LangchainService } from "@src/langchain/langchain.service";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "../Schema/schema"
-import { DRIZZLE } from "@src/drizzle/drizzle.module";
+import { DRIZZLE } from "@src/constants";
 import { tbl_image_embeddings } from "@src/image/schema/image.schema";
 import { eq } from "drizzle-orm";
 

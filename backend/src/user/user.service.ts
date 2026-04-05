@@ -2,7 +2,7 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { and, count, eq, isNotNull } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { alias } from 'drizzle-orm/pg-core';
-import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/constants';
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { APIResponseInterface, UpdateUserType } from '@src/types/common.types';
 import { APIResponse } from '@src/utils/common';

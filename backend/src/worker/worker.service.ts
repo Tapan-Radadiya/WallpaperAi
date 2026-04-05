@@ -7,7 +7,7 @@ import { APIResponse } from '@src/utils/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from "../Schema/schema"
 import { eq } from 'drizzle-orm';
-import { DRIZZLE } from '@src/drizzle/drizzle.module';
+import { DRIZZLE } from '@src/constants';
 import json from "../../test.json"
 @Injectable()
 export class WorkerService {
