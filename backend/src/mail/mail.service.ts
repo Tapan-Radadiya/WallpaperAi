@@ -2,14 +2,22 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { APIResponseInterface } from '@src/types/common.types';
 import { APIResponse } from '@src/utils/common';
-
+import { MailtrapClient } from "mailtrap"
 @Injectable()
 export class MailService {
     private readonly logger = new Logger(MailService.name);
-
+    private readonly MailtrapClient
     constructor(
-        private readonly mailerService: MailerService
-    ) { }
+        // private readonly mailerService: MailerService
+    ) {
+        const token = process.env.MAIL_TRAP_TOKEN;
+
+        console.log("TOKEN:", token);
+
+        this.MailtrapClient = new MailtrapClient({
+            token: token!,
+        });
+    }
 
     async sendEmail(
         subject: string,
@@ -36,8 +44,13 @@ export class MailService {
                 context
             }
 
-            const response = await this.mailerService.sendMail({ ...sendEmailparams })
-            this.logger.log("Email Sent Successfully", response)
+            // const response = await this.mailerService.sendMail({ ...sendEmailparams })
+            // this.logger.log("Email Sent Successfully", response)
+            this.MailtrapClient.send({
+                from: { email: 'tapanradadiya31@gmail.com' },
+                subject: '',
+                to: [{ email: to }]
+            })
         } catch (error) {
             console.log('error-->', error);
             this.logger.log("Error Sending Email")
@@ -46,18 +59,25 @@ export class MailService {
 
     async sendTestEmail(): Promise<APIResponseInterface> {
         try {
-            const sendEmailparams = {
-                to: process.env.SMTP_USER,
-                from: process.env.SMTP_USER,
-                subject: 'Test Email',
-                template: './TestEmail.pug',
-                context: {
-                    name: 'Test'
-                }
-            }
+            // const sendEmailparams = {
+            //     to: process.env.SMTP_USER,
+            //     from: process.env.SMTP_USER,
+            //     subject: 'Test Email',
+            //     template: './TestEmail.pug',
+            //     context: {
+            //         name: 'Test'
+            //     }
+            // }
 
-            const response = await this.mailerService.sendMail({ ...sendEmailparams })
-            this.logger.log("Email Sent Successfully", response)
+            // const response = await this.mailerService.sendMail({ ...sendEmailparams })
+            // this.logger.log("Email Sent Successfully", response)
+            console.log('this.MailtrapClient-->', this.MailtrapClient);
+            // this.MailtrapClient.send({
+            //     from: { email: 'hello@demomailtrap.com' },
+            //     subject: 'Test Mail Trap Email',
+            //     text: 'This Is For testing mail trap',
+            //     to: [{ email: process.env.SMTP_USER! }]
+            // })
             return APIResponse({
                 message: "Test Email Sent",
                 statusCode: HttpStatus.OK
