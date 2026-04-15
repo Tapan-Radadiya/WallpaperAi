@@ -18,14 +18,13 @@ import { DRIZZLE } from '@src/constants';
                 const DB_URL = configService.get("DATABASE_URL")
                 const pool = new Pool({
                     connectionString: DB_URL,
-                    ssl: {
-                        rejectUnauthorized: false
-                    }
+                    ssl: false
                 })
                 try {
                     await pool.query("SELECT 1")
                     console.log("Database Connection Successfully ✅")
                 } catch (error) {
+                    console.log('error-->', error);
                     console.log(`Unable to connect To DB ❌: ${DB_URL}`)
                 }
                 return drizzle(pool, { schema }) as NodePgDatabase<typeof schema>
