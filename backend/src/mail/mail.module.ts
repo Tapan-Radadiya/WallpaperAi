@@ -11,7 +11,7 @@ import { MailController } from './mail.controller';
         transport: {
           host: process.env.SMTP_HOST!,
           port: parseInt(process.env.SMTP_PORT!),
-          secure: true,
+          secure: process.env.SMTP_SECURE === 'true',
           tls: {
             rejectUnauthorized: false
           },
