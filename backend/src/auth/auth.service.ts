@@ -93,7 +93,7 @@ export class AuthService {
         }
     }
 
-    async resetPasswordEmailService(userEmail: string): Promise<APIResponseInterface> {
+    async resetPasswordEmailService(userEmail: string, hostName: string): Promise<APIResponseInterface> {
         try {
             const isUserExists = await this.conn.query.tbl_user.findFirst({
                 where: (
@@ -112,7 +112,7 @@ export class AuthService {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error generating reset link" })
             }
             else {
-                const userResetLink = `${process.env.FRONTEND_URL}/reset-password/?ticket=${userHash}`
+                const userResetLink = `${hostName ?? process.env.FRONTEND_URL}/reset-password/?ticket=${userHash}`
                 await this.mailService.sendEmail("Reset Password Link", './ResetPassword.pug', userEmail, {
                     username: isUserExists.user_name,
                     resetLink: userResetLink,
