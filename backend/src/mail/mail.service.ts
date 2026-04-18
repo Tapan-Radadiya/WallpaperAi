@@ -2,7 +2,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { APIResponseInterface } from '@src/types/common.types';
 import { APIResponse } from '@src/utils/common';
-import { MailtrapClient } from "mailtrap"
+
 @Injectable()
 export class MailService {
     private readonly logger = new Logger(MailService.name);
@@ -47,15 +47,14 @@ export class MailService {
     async sendTestEmail(): Promise<APIResponseInterface> {
         try {
             const sendEmailparams = {
-                to: process.env.SMTP_USER,
-                from: process.env.SMTP_USER,
+                to: process.env.SMTP_TEST_USER,
+                from: process.env.SMTP_TEST_USER,
                 subject: 'Test Email',
                 template: './TestEmail.pug',
                 context: {
                     name: 'Test'
                 }
             }
-
             const response = await this.mailerService.sendMail({ ...sendEmailparams })
             this.logger.log("Email Sent Successfully", response)
             return APIResponse({
