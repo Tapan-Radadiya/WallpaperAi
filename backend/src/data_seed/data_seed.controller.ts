@@ -40,355 +40,358 @@ export class DataSeedController {
 
     private testData: ImageUploadBodyDTO[] = [
         {
-            is_paid: false,
-            category: "Nature",
-            hashTags: "#river #nature #flow #landscape",
-            description: "A calm river flowing through green countryside.",
-            title: "Calm River Flow"
+            "is_paid": false,
+            "category": "Technology",
+            "hashTags": "#ai #innovation #futuretech #gadgets",
+            "description": "Exploring cutting-edge AI tools transforming everyday life.",
+            "title": "AI Tools Revolution"
         },
         {
-            is_paid: true,
-            category: "Nature",
-            hashTags: "#cliff #ocean #waves #coast",
-            description: "Ocean waves crashing against steep coastal cliffs.",
-            title: "Waves on Coastal Cliffs"
+            "is_paid": true,
+            "category": "Food",
+            "hashTags": "#streetfood #foodie #tasty #localflavors",
+            "description": "A journey through the most delicious street food spots.",
+            "title": "Street Food Fiesta"
         },
         {
-            is_paid: false,
-            category: "Urban",
-            hashTags: "#streetphotography #city #urban #daily",
-            description: "Everyday city life captured through street photography.",
-            title: "Urban Daily Life"
+            "is_paid": false,
+            "category": "Fitness",
+            "hashTags": "#workout #gym #healthylife #fit",
+            "description": "Daily workout routines to keep you active and healthy.",
+            "title": "Fitness Motivation"
         },
         {
-            is_paid: true,
-            category: "Urban",
-            hashTags: "#skyline #cityscape #sunset #buildings",
-            description: "City skyline during sunset with warm tones.",
-            title: "Sunset City Skyline"
+            "is_paid": true,
+            "category": "Education",
+            "hashTags": "#learning #onlinecourses #skills #education",
+            "description": "Top online courses to boost your career skills.",
+            "title": "Skill Up Online"
         },
         {
-            is_paid: false,
-            category: "Food",
-            hashTags: "#food #healthy #salad #fresh",
-            description: "Fresh vegetable salad prepared with natural ingredients.",
-            title: "Fresh Healthy Salad"
+            "is_paid": false,
+            "category": "Travel",
+            "hashTags": "#wanderlust #travelgram #adventure #explore",
+            "description": "Hidden gems around the world waiting to be explored.",
+            "title": "Hidden Travel Gems"
         },
         {
-            is_paid: true,
-            category: "Food",
-            hashTags: "#restaurant #finefood #gourmet #plating",
-            description: "Gourmet dish plated elegantly in a fine dining setting.",
-            title: "Fine Dining Presentation"
+            "is_paid": true,
+            "category": "Finance",
+            "hashTags": "#investing #money #finance #wealth",
+            "description": "Smart investment strategies for long-term wealth.",
+            "title": "Wealth Building Tips"
         },
         {
-            is_paid: false,
-            category: "Technology",
-            hashTags: "#laptop #workspace #coding #desk",
-            description: "Minimal coding workspace with laptop and desk items.",
-            title: "Minimal Coding Desk"
+            "is_paid": false,
+            "category": "Gaming",
+            "hashTags": "#gaming #esports #gamerlife #fun",
+            "description": "Latest trends and updates from the gaming world.",
+            "title": "Gaming Buzz"
         },
         {
-            is_paid: true,
-            category: "Technology",
-            hashTags: "#blockchain #crypto #technology #future",
-            description: "Conceptual illustration representing blockchain technology.",
-            title: "Blockchain Concept"
+            "is_paid": true,
+            "category": "Fashion",
+            "hashTags": "#style #fashion #trendy #outfits",
+            "description": "Seasonal fashion trends you shouldn’t miss.",
+            "title": "Trendy Looks 2026"
         },
         {
-            is_paid: false,
-            category: "People",
-            hashTags: "#people #candid #lifestyle #portrait",
-            description: "Candid portrait showing natural lifestyle moment.",
-            title: "Candid Lifestyle Portrait"
+            "is_paid": false,
+            "category": "Health",
+            "hashTags": "#wellness #healthtips #mindbody #selfcare",
+            "description": "Simple habits for a healthier lifestyle.",
+            "title": "Healthy Living Guide"
         },
         {
-            is_paid: true,
-            category: "People",
-            hashTags: "#corporate #portrait #professional #business",
-            description: "Professional corporate portrait with neutral background.",
-            title: "Corporate Profile Portrait"
-        },
-        {
-            is_paid: false,
-            category: "Travel",
-            hashTags: "#travel #backpacking #adventure #road",
-            description: "Backpacker walking along a scenic road.",
-            title: "Backpacking Adventure"
-        },
-        {
-            is_paid: true,
-            category: "Travel",
-            hashTags: "#europe #travel #architecture #tourism",
-            description: "Historic European street with classic architecture.",
-            title: "Historic European Street"
-        },
-        {
-            is_paid: false,
-            category: "Abstract",
-            hashTags: "#abstract #shapes #design #modern",
-            description: "Modern abstract shapes arranged creatively.",
-            title: "Modern Abstract Shapes"
-        },
-        {
-            is_paid: true,
-            category: "Abstract",
-            hashTags: "#abstract #dark #texture #background",
-            description: "Dark abstract texture suitable for premium backgrounds.",
-            title: "Dark Abstract Texture"
-        },
-        {
-            is_paid: false,
-            category: "Business",
-            hashTags: "#coworking #office #startup #team",
-            description: "Coworking space filled with startup teams.",
-            title: "Coworking Startup Space"
-        },
-        {
-            is_paid: true,
-            category: "Business",
-            hashTags: "#presentation #boardroom #business #meeting",
-            description: "Executive boardroom meeting with presentation screen.",
-            title: "Boardroom Presentation"
-        },
-        {
-            is_paid: false,
-            category: "Animals",
-            hashTags: "#pets #dog #cute #home",
-            description: "Pet dog relaxing comfortably at home.",
-            title: "Relaxing Pet Dog"
-        },
-        {
-            is_paid: true,
-            category: "Animals",
-            hashTags: "#wildlife #elephant #nature #safari",
-            description: "Elephant walking through natural safari environment.",
-            title: "Elephant in the Wild"
-        },
-        {
-            is_paid: false,
-            category: "Lifestyle",
-            hashTags: "#morning #routine #coffee #home",
-            description: "Peaceful morning routine with coffee and sunlight.",
-            title: "Morning Coffee Routine"
-        },
-        {
-            is_paid: true,
-            category: "Lifestyle",
-            hashTags: "#luxury #lifestyle #interior #design",
-            description: "Luxury interior showcasing elegant lifestyle design.",
-            title: "Luxury Living Space"
-        },
-        {
-            is_paid: false,
-            category: "Sports",
-            hashTags: "#cycling #fitness #outdoor #sport",
-            description: "Cyclist riding on a scenic outdoor trail.",
-            title: "Outdoor Cycling Trail"
-        },
-        {
-            is_paid: true,
-            category: "Sports",
-            hashTags: "#gym #workout #fitness #strength",
-            description: "Intense gym workout session focused on strength training.",
-            title: "Strength Training Workout"
-        },
-        {
-            is_paid: false,
-            category: "Education",
-            hashTags: "#education #classroom #students #learning",
-            description: "Students engaged in learning inside a classroom.",
-            title: "Classroom Learning"
-        },
-        {
-            is_paid: true,
-            category: "Education",
-            hashTags: "#graduation #education #success #achievement",
-            description: "Graduation ceremony celebrating academic success.",
-            title: "Graduation Celebration"
-        },
-        {
-            is_paid: false,
-            category: "Weather",
-            hashTags: "#fog #morning #weather #mist",
-            description: "Foggy morning scene with low visibility.",
-            title: "Foggy Morning Scene"
-        },
-        {
-            is_paid: true,
-            category: "Weather",
-            hashTags: "#snowfall #winter #weather #cold",
-            description: "Snowfall covering trees and streets in winter.",
-            title: "Winter Snowfall"
-        },
-        {
-            is_paid: false,
-            category: "Art",
-            hashTags: "#sketch #drawing #art #creative",
-            description: "Hand-drawn sketch created using pencil.",
-            title: "Pencil Sketch Art"
-        },
-        {
-            is_paid: true,
-            category: "Art",
-            hashTags: "#streetart #graffiti #urban #art",
-            description: "Colorful graffiti street art on a city wall.",
-            title: "Urban Graffiti Art"
-        },
-        {
-            is_paid: false,
-            category: "Cars",
-            hashTags: "#classiccar #vintage #automobile #retro",
-            description: "Vintage classic car parked on an empty road.",
-            title: "Vintage Classic Car"
-        },
-        {
-            is_paid: true,
-            category: "Cars",
-            hashTags: "#electriccar #ev #future #automotive",
-            description: "Modern electric car showcasing futuristic design.",
-            title: "Electric Car Future"
-        },
-        {
-            is_paid: false,
-            category: "Fashion",
-            hashTags: "#streetfashion #style #outfit #urban",
-            description: "Street fashion outfit captured in an urban setting.",
-            title: "Urban Street Fashion"
-        },
-        {
-            is_paid: true,
-            category: "Fashion",
-            hashTags: "#runway #fashionweek #designer #luxury",
-            description: "High-end fashion runway show during fashion week.",
-            title: "Fashion Runway Show"
-        },
-        {
-            is_paid: false,
-            category: "Backgrounds",
-            hashTags: "#paper #texture #background #simple",
-            description: "Paper texture suitable for subtle backgrounds.",
-            title: "Paper Texture Background"
-        },
-        {
-            is_paid: true,
-            category: "Backgrounds",
-            hashTags: "#neon #background #abstract #glow",
-            description: "Neon glowing abstract background with vibrant colors.",
-            title: "Neon Glow Background"
-        },
-        {
-            is_paid: false,
-            category: "Events",
-            hashTags: "#conference #event #business #people",
-            description: "Business conference with attendees networking.",
-            title: "Business Conference Event"
-        },
-        {
-            is_paid: true,
-            category: "Events",
-            hashTags: "#festival #music #crowd #celebration",
-            description: "Outdoor music festival with energetic crowd.",
-            title: "Music Festival Crowd"
-        },
-        {
-            is_paid: false,
-            category: "Health",
-            hashTags: "#health #running #fitness #wellness",
-            description: "Person jogging in a park for fitness and wellness.",
-            title: "Park Jogging Session"
-        },
-        {
-            is_paid: true,
-            category: "Health",
-            hashTags: "#nutrition #healthyfood #diet #wellness",
-            description: "Healthy nutrition meal prepared with balanced ingredients.",
-            title: "Healthy Nutrition Meal"
-        },
-        {
-            is_paid: false,
-            category: "Nature",
-            hashTags: "#trees #autumn #leaves #season",
-            description: "Autumn trees with colorful falling leaves.",
-            title: "Autumn Trees"
-        },
-        {
-            is_paid: true,
-            category: "Nature",
-            hashTags: "#volcano #landscape #nature #dramatic",
-            description: "Dramatic volcano landscape with smoke and lava.",
-            title: "Volcanic Landscape"
+            "is_paid": true,
+            "category": "Photography",
+            "hashTags": "#photography #camera #creative #shots",
+            "description": "Tips to capture stunning photos like a pro.",
+            "title": "Photography Mastery"
         },
 
         {
-            is_paid: false,
-            category: "Nature",
-            hashTags: "#meadow #grass #nature #peaceful",
-            description: "Open green meadow under a clear blue sky.",
-            title: "Green Meadow View"
+            "is_paid": false,
+            "category": "Music",
+            "hashTags": "#musiclover #playlist #songs #vibes",
+            "description": "Curated playlists for every mood and moment.",
+            "title": "Daily Music Vibes"
         },
         {
-            is_paid: true,
-            category: "Nature",
-            hashTags: "#glacier #ice #mountains #cold",
-            description: "Massive glacier surrounded by icy mountains.",
-            title: "Frozen Glacier Landscape"
+            "is_paid": true,
+            "category": "Business",
+            "hashTags": "#startup #entrepreneur #business #growth",
+            "description": "Insights to grow and scale your startup.",
+            "title": "Startup Success"
         },
         {
-            is_paid: false,
-            category: "Technology",
-            hashTags: "#mobile #app #technology #ui",
-            description: "Smartphone displaying a modern mobile application UI.",
-            title: "Mobile App Interface"
+            "is_paid": false,
+            "category": "DIY",
+            "hashTags": "#diy #crafts #creative #homemade",
+            "description": "Fun and creative DIY ideas for your home.",
+            "title": "DIY Creations"
         },
         {
-            is_paid: true,
-            category: "Technology",
-            hashTags: "#robotics #automation #ai #future",
-            description: "Robotic arm working in an automated environment.",
-            title: "Robotic Automation"
+            "is_paid": true,
+            "category": "Parenting",
+            "hashTags": "#parenting #kids #family #tips",
+            "description": "Helpful parenting tips for modern families.",
+            "title": "Smart Parenting"
         },
         {
-            is_paid: false,
-            category: "People",
-            hashTags: "#friends #group #lifestyle #outdoor",
-            description: "Group of friends enjoying time outdoors together.",
-            title: "Friends Outdoor Moment"
+            "is_paid": false,
+            "category": "Automotive",
+            "hashTags": "#cars #automotive #driving #vehicles",
+            "description": "Latest updates and reviews from the car industry.",
+            "title": "Auto Insights"
         },
         {
-            is_paid: true,
-            category: "People",
-            hashTags: "#leadership #business #confidence #professional",
-            description: "Confident business leader standing in office environment.",
-            title: "Business Leadership Portrait"
+            "is_paid": true,
+            "category": "Real Estate",
+            "hashTags": "#realestate #property #investment #homes",
+            "description": "Guide to smart property investments.",
+            "title": "Property Guide"
         },
         {
-            is_paid: false,
-            category: "Travel",
-            hashTags: "#train #journey #travel #window",
-            description: "View from a train window during a long journey.",
-            title: "Train Journey View"
+            "is_paid": false,
+            "category": "Art",
+            "hashTags": "#art #creative #design #artist",
+            "description": "Showcasing inspiring artwork from around the world.",
+            "title": "Art Showcase"
         },
         {
-            is_paid: true,
-            category: "Travel",
-            hashTags: "#hotairballoon #adventure #sky #travel",
-            description: "Hot air balloons floating during sunrise.",
-            title: "Hot Air Balloon Adventure"
+            "is_paid": true,
+            "category": "Movies",
+            "hashTags": "#movies #cinema #film #entertainment",
+            "description": "Latest movie reviews and recommendations.",
+            "title": "Movie Mania"
         },
         {
-            is_paid: false,
-            category: "Lifestyle",
-            hashTags: "#reading #relax #home #comfort",
-            description: "Person reading a book in a cozy home setup.",
-            title: "Cozy Reading Time"
+            "is_paid": false,
+            "category": "Science",
+            "hashTags": "#science #research #innovation #discovery",
+            "description": "New scientific discoveries shaping the future.",
+            "title": "Science Today"
         },
         {
-            is_paid: true,
-            category: "Lifestyle",
-            hashTags: "#luxurytravel #resort #vacation #premium",
-            description: "Luxury resort offering a premium vacation experience.",
-            title: "Luxury Resort Stay"
+            "is_paid": true,
+            "category": "Spirituality",
+            "hashTags": "#meditation #spiritual #mindfulness #peace",
+            "description": "Practices to bring peace and clarity to your life.",
+            "title": "Mindful Living"
+        },
+
+        {
+            "is_paid": false,
+            "category": "Pets",
+            "hashTags": "#pets #animals #cute #petcare",
+            "description": "Tips to take better care of your furry friends.",
+            "title": "Pet Care Guide"
+        },
+        {
+            "is_paid": true,
+            "category": "Gardening",
+            "hashTags": "#plants #gardening #nature #green",
+            "description": "Grow your own garden with these simple tips.",
+            "title": "Green Living"
+        },
+        {
+            "is_paid": false,
+            "category": "History",
+            "hashTags": "#history #past #culture #stories",
+            "description": "Exploring fascinating events from the past.",
+            "title": "History Uncovered"
+        },
+        {
+            "is_paid": true,
+            "category": "Marketing",
+            "hashTags": "#marketing #digital #branding #ads",
+            "description": "Modern marketing strategies that drive results.",
+            "title": "Marketing Hacks"
+        },
+        {
+            "is_paid": false,
+            "category": "Writing",
+            "hashTags": "#writing #blogging #content #creative",
+            "description": "Improve your writing skills with these tips.",
+            "title": "Writing Skills Boost"
+        },
+        {
+            "is_paid": true,
+            "category": "Coding",
+            "hashTags": "#coding #programming #developer #tech",
+            "description": "Learn coding with practical real-world examples.",
+            "title": "Code Smarter"
+        },
+        {
+            "is_paid": false,
+            "category": "Relationships",
+            "hashTags": "#love #relationships #advice #dating",
+            "description": "Advice for building strong relationships.",
+            "title": "Relationship Talk"
+        },
+        {
+            "is_paid": true,
+            "category": "Interior Design",
+            "hashTags": "#interior #design #home #decor",
+            "description": "Stylish ideas to decorate your living space.",
+            "title": "Home Decor Ideas"
+        },
+        {
+            "is_paid": false,
+            "category": "Sports",
+            "hashTags": "#sports #fitness #games #athlete",
+            "description": "Latest highlights from the sports world.",
+            "title": "Sports Update"
+        },
+        {
+            "is_paid": true,
+            "category": "Productivity",
+            "hashTags": "#productivity #focus #work #efficiency",
+            "description": "Boost your productivity with proven techniques.",
+            "title": "Work Smart"
+        },
+
+        {
+            "is_paid": false,
+            "category": "Language",
+            "hashTags": "#language #learning #communication #skills",
+            "description": "Tips to learn new languages faster.",
+            "title": "Language Hacks"
+        },
+        {
+            "is_paid": true,
+            "category": "Events",
+            "hashTags": "#events #festivals #fun #celebration",
+            "description": "Discover exciting events happening near you.",
+            "title": "Event Highlights"
+        },
+        {
+            "is_paid": false,
+            "category": "Environment",
+            "hashTags": "#environment #eco #green #sustainability",
+            "description": "Ways to live a more sustainable lifestyle.",
+            "title": "Eco Living"
+        },
+        {
+            "is_paid": true,
+            "category": "Luxury",
+            "hashTags": "#luxury #premium #exclusive #lifestyle",
+            "description": "Experience the finest things life has to offer.",
+            "title": "Luxury Lifestyle"
+        },
+        {
+            "is_paid": false,
+            "category": "Education Tech",
+            "hashTags": "#edtech #learning #technology #future",
+            "description": "How technology is transforming education.",
+            "title": "EdTech Trends"
+        },
+        {
+            "is_paid": true,
+            "category": "Freelancing",
+            "hashTags": "#freelance #remote #work #career",
+            "description": "Build a successful freelancing career.",
+            "title": "Freelance Guide"
+        },
+        {
+            "is_paid": false,
+            "category": "Comedy",
+            "hashTags": "#funny #comedy #laugh #entertainment",
+            "description": "Daily dose of humor to make you laugh.",
+            "title": "Laugh Out Loud"
+        },
+        {
+            "is_paid": true,
+            "category": "News",
+            "hashTags": "#news #updates #world #currentaffairs",
+            "description": "Stay updated with the latest global news.",
+            "title": "Daily News"
+        },
+        {
+            "is_paid": false,
+            "category": "Astrology",
+            "hashTags": "#astrology #horoscope #stars #zodiac",
+            "description": "Daily horoscope and zodiac insights.",
+            "title": "Star Guide"
+        },
+        {
+            "is_paid": true,
+            "category": "E-commerce",
+            "hashTags": "#shopping #ecommerce #deals #online",
+            "description": "Best deals and tips for online shopping.",
+            "title": "Smart Shopping"
+        },
+
+        {
+            "is_paid": false,
+            "category": "Cybersecurity",
+            "hashTags": "#security #cyber #privacy #dataprotection",
+            "description": "Learn how to protect your data in the digital world.",
+            "title": "Stay Secure Online"
+        },
+        {
+            "is_paid": true,
+            "category": "Blockchain",
+            "hashTags": "#blockchain #crypto #technology #web3",
+            "description": "Understanding blockchain and its real-world applications.",
+            "title": "Blockchain Basics"
+        },
+        {
+            "is_paid": false,
+            "category": "Cooking",
+            "hashTags": "#cooking #recipes #foodlover #kitchen",
+            "description": "Simple and delicious recipes you can try at home.",
+            "title": "Home Cooking Ideas"
+        },
+        {
+            "is_paid": true,
+            "category": "Mental Health",
+            "hashTags": "#mentalhealth #wellbeing #selfcare #mind",
+            "description": "Tips and techniques to improve mental well-being.",
+            "title": "Mind Matters"
+        },
+        {
+            "is_paid": false,
+            "category": "Adventure",
+            "hashTags": "#adventure #outdoors #explore #thrill",
+            "description": "Exciting outdoor adventures for thrill seekers.",
+            "title": "Adventure Awaits"
+        },
+        {
+            "is_paid": true,
+            "category": "Beauty",
+            "hashTags": "#beauty #skincare #makeup #glow",
+            "description": "Latest beauty tips and skincare routines.",
+            "title": "Beauty Secrets"
+        },
+        {
+            "is_paid": false,
+            "category": "Robotics",
+            "hashTags": "#robotics #automation #ai #future",
+            "description": "Discover how robots are changing industries.",
+            "title": "Rise of Robots"
+        },
+        {
+            "is_paid": true,
+            "category": "Public Speaking",
+            "hashTags": "#speaking #confidence #communication #skills",
+            "description": "Improve your public speaking and confidence.",
+            "title": "Speak with Confidence"
+        },
+        {
+            "is_paid": false,
+            "category": "Photography Gear",
+            "hashTags": "#camera #gear #photography #lens",
+            "description": "Best gear recommendations for photographers.",
+            "title": "Camera Gear Guide"
+        },
+        {
+            "is_paid": true,
+            "category": "Space",
+            "hashTags": "#space #universe #nasa #exploration",
+            "description": "Exploring the mysteries of the universe.",
+            "title": "Space Discoveries"
         }
     ]
 
@@ -490,8 +493,8 @@ export class DataSeedController {
                 return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
             }
             const userId = req.session.userId
-            const start = 0
-            const end = 50
+            const start = 51
+            const end = 2
             const isUserExists = await this.conn.query.tbl_user.findFirst({
                 where: eq(
                     schema.tbl_user.id, userId
@@ -501,7 +504,7 @@ export class DataSeedController {
             if (!isUserExists) {
                 return res.json("User Not Exists")
             }
-            if (this.testData.length !== end - start) {
+            if (this.testData.length < end - start) {
                 return res.json("Insufficient Data")
             }
 
