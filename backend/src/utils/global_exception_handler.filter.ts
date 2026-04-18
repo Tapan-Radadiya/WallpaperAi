@@ -22,7 +22,8 @@ export class GlobalExceptionHandler implements ExceptionFilter {
         const responseBody = {
             httpStatus,
             timeStamp: new Date().toISOString(),
-            path: httpAdapter.getRequestUrl(ctx.getRequest())
+            path: httpAdapter.getRequestUrl(ctx.getRequest()),
+            error: exception.toString()
         }
 
         // Log Error For Loki

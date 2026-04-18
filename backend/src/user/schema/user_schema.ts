@@ -41,7 +41,7 @@ export const tbl_unsplash_images = pgTable('tbl_unsplash_images', {
 
 export const tbl_email_verfications = pgTable('tbl_email_verfications', {
     id: uuid('id').defaultRandom().primaryKey(),
-    user_id: uuid('user_id').references(() => tbl_user.id).notNull(),
+    user_id: uuid('user_id').references(() => tbl_user.id, { onDelete: 'cascade' }).notNull(),
     email_code: varchar('email_code').notNull(),
     expires_at: timestamp('expires_at').default(sql`NOW() + INTERVAL '10 minutes'`),
     user_attempts: integer('user_attempts').notNull().default(0),
