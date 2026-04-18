@@ -112,7 +112,7 @@ export class AuthService {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error generating reset link" })
             }
             else {
-                const userResetLink = `${hostName ?? process.env.FRONTEND_URL}/reset-password/?ticket=${userHash}`
+                const userResetLink = `${process.env.FRONTEND_URL ?? hostName}/reset-password/?ticket=${userHash}`
                 await this.mailService.sendEmail("Reset Password Link", './ResetPassword.pug', userEmail, {
                     username: isUserExists.user_name,
                     resetLink: userResetLink,
