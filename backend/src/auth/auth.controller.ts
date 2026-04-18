@@ -120,9 +120,10 @@ export class AuthController {
         @Res() res: Response,
         @Body() body: ResetPasswordDTO
     ) {
+
         let responseData = craftResponseData()
         try {
-            const { message, statusCode, data, err } = await this.AuthService.resetPasswordEmailService(body.emailId)
+            const { message, statusCode, data, err } = await this.AuthService.resetPasswordEmailService(body.emailId, req.hostname)
             responseData.message = message
             responseData.statusCode = statusCode
             responseData.data = data
