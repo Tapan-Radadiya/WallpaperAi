@@ -34,7 +34,7 @@ services:
     ports:
       - "5000:3000"
     volumes:
-      - grafana-data:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
   
   grafana-loki:
     image: grafana/loki:3.7.0
@@ -47,5 +47,5 @@ volumes:
   postgres_data:
   redis_data:
   prometheus_data:
-  grafana-data:
+  grafana_data:
   grafana-loki-data:
