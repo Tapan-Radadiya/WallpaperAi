@@ -127,6 +127,7 @@ export class UserService {
 
     async getUserUploadedImages(userId: string) {
         try {
+            const showPaidImages = process.env.SHOW_PREMIUM_IMAGE === 'true' ? true : false
             const userImageData = await this.conn
                 .select({
                     image_id: schema.tbl_image.id,
@@ -153,7 +154,8 @@ export class UserService {
                 .where(
                     and(
                         eq(schema.tbl_user.id, userId),
-                        isNotNull(schema.tbl_image.id)
+                        isNotNull(schema.tbl_image.id),
+                        eq(schema.tbl_image.is_paid, showPaidImages)
                     )
                 )
             return APIResponse({ statusCode: HttpStatus.OK, message: '', data: userImageData })
