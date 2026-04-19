@@ -50,7 +50,8 @@ export class ImageService {
                 userAvatar: schema.tbl_user.avatar,
                 userId: schema.tbl_user.id,
                 title: schema.tbl_image.title,
-                is_paid: schema.tbl_image.is_paid
+                is_paid: schema.tbl_image.is_paid,
+                publishedOn: schema.tbl_image.created_at
             })
             .from(schema.tbl_image)
             .leftJoin(
@@ -97,7 +98,7 @@ export class ImageService {
                 this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
                 this.awsServices.uploadFile(imageFullPath, fullImageBuffer, fileData.mimetype)
             ])
-            console.log('reqBody-->', reqBody);
+
             const imageData: ImageUploadDTO = {
                 id: imageUuid,
                 category: reqBody.category,
@@ -235,6 +236,7 @@ export class ImageService {
                 .where(eq(schema.tbl_image_downloads.image_id, imageId))
             const imageData = {
                 ...isImageExists,
+                publishedOn: isImageExists.created_at,
                 imageLikes: totalLikedImage?.[0]?.totalLike,
                 totalDownloads: totalDownlaods?.[0]?.totalDownload ?? 0
             }
