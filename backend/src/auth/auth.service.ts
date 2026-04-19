@@ -22,7 +22,7 @@ export class AuthService {
 
     async registerUserService(userData: UserDataType): Promise<APIResponseInterface> {
         // Insert User Data
-        const { avatar, userName, emailId, password, user_bio, instagram_id = '', portfolio_url = '' } = userData
+        const { id, avatar, userName, emailId, password, user_bio, instagram_id = '', portfolio_url = '' } = userData
         try {
             const userExists = await this.conn.query.tbl_user.findFirst({
                 where: and(
@@ -34,6 +34,7 @@ export class AuthService {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "User with this name or emailid already exists" })
             }
             const newUser = await this.conn.insert(schema.tbl_user).values({
+                id,
                 avatar,
                 user_name: userName,
                 email_id: emailId,
@@ -111,6 +112,7 @@ export class AuthService {
             if (!saveToTable) {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error generating reset link" })
             }
+
             else {
                 const userResetLink = `${hostName ?? process.env.FRONTEND_URL}/reset-password/?ticket=${userHash}`
                 await this.mailService.sendEmail("Reset Password Link", './ResetPassword.pug', userEmail, {
