@@ -114,7 +114,6 @@ export class AwsServicesService {
     }
 
     async sqsMessageDelete(messageId: string) {
-        console.log(`Deleteting: ${messageId} `)
         const data = await this.sqsClient.send(
             new DeleteMessageCommand({
                 QueueUrl: this.configService.getOrThrow("AWS_SQS_STD_QUEUE_URL"),

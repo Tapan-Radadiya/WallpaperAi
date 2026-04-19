@@ -3,17 +3,17 @@ import { IsEmailDomainAllowed } from '@src/Custom_DTO/valid_email_domain.decorat
 
 export class RegisterUserDTO {
     @IsString({ message: "Invalid Display Name" })
-    userName: string
+    userName!: string
 
     @IsEmail()
     @IsEmailDomainAllowed()
-    emailId: string
+    emailId!: string
 
     @IsStrongPassword()
-    password: string
+    password!: string
 
     @IsString({ message: "Invalid value for bio" })
-    user_bio: string
+    user_bio!: string
 
     @IsOptional()
     @IsUrl()
@@ -26,29 +26,29 @@ export class RegisterUserDTO {
 
 export class LoginUserDTO {
     @IsEmail()
-    emailId: string
+    emailId!: string
 
     @IsString()
-    password: string
+    password!: string
 }
 
 export class ResendVerificationEmailDTO {
     @IsEmail()
-    emailId: string
+    emailId!: string
 }
 
 export class UserVerificationDTO {
     @IsEmail()
-    emailId: string
+    emailId!: string
 
     @IsString()
     @Length(6, 6, { message: "Invalid VerificationCode" })
-    verificationCode: string
+    verificationCode!: string
 }
 
 export class UpdateUserDTO {
     @IsString({ message: "Invalid value for bio" })
-    user_bio: string
+    user_bio!: string
 
     @IsUrl()
     @IsOptional({ message: "Invalid URL" })
@@ -61,13 +61,13 @@ export class UpdateUserDTO {
 
 export class ResetPasswordDTO {
     @IsEmail()
-    emailId: string
+    emailId!: string
 }
 
 export class UserResetPasswordDTO {
     @IsString()
-    user_ticket: string
+    user_ticket!: string
 
     @IsStrongPassword()
-    new_password: string
+    new_password!: string
 }

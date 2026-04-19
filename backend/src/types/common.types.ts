@@ -8,7 +8,7 @@ export interface APIResponseInterface {
 }
 
 export type UserDataType = {
-    id?: string
+    id: string
     userName: string
     emailId: string
     avatar: string
