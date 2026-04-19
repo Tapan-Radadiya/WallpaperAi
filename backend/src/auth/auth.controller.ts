@@ -7,6 +7,7 @@ import { ALLOWED_IMAGES } from '@src/constants';
 import { LoginUserDTO, RegisterUserDTO, ResetPasswordDTO, UserResetPasswordDTO } from '@src/DTO/user.dto';
 import { UserDataType, userLoginType } from '@src/types/common.types';
 import { APIResponse, craftResponseData, hashText, SanitizeImageData } from '@src/utils/common';
+import { randomUUID } from 'crypto';
 
 @Controller('auth')
 export class AuthController {
@@ -31,13 +32,15 @@ export class AuthController {
             return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid Or Corrupted Image Found" }))
         }
 
+        const userId = randomUUID()
         let responseData = craftResponseData()
-        const filePath = `${body.userName}-${body.emailId.split('@')[0]}`
+        const filePath = `${process.env.S3_PREFIX}/${userId}/profile/${body.userName}-${body.emailId.split('@')[0]}`
         if (!filePath) {
             return res.status(HttpStatus.CONFLICT).json(APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error creating user try after sometime" }))
         }
 
         const userData: UserDataType = {
+            id: userId,
             avatar: filePath,
             userName: body.userName,
             emailId: body.emailId,
@@ -54,8 +57,9 @@ export class AuthController {
             responseData.data = data ?? {}
             responseData.err = err ?? {}
 
-            if (statusCode === HttpStatus.CREATED)
+            if (statusCode === HttpStatus.CREATED) {
                 await this.awsService.uploadFile(filePath, sanitizedBuffer.data.imageBuffer.buffer, file.mimetype)
+            }
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
