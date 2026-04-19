@@ -1,65 +1,65 @@
-import { IsBoolean, IsEmail, IsNumber, IsOptional, IsString, IsStrongPassword, IsUrl, IsUUID } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { IsBoolean, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import * as crypto from 'crypto';
 
 export class ImageUploadBodyDTO {
-    @Transform(({ value }) => Boolean(value))
+    @Transform(({ value }) => value === 'true' ? true : false)
     @IsBoolean({ message: "Invalid value for paid" })
-    is_paid: boolean
+    is_paid!: boolean
 
     @IsOptional()
-    category: string
+    category!: string
 
     @IsString()
-    hashTags: string
+    hashTags!: string
 
     @IsString()
-    description: string
+    description!: string
 
     @IsString()
-    title: string
+    title!: string
 }
 
 
 export class ImageUploadDTO {
     @IsUUID()
-    id: crypto.UUID
+    id!: crypto.UUID
 
     @IsBoolean({ message: "Invalid value for paid" })
-    is_paid: boolean
+    is_paid!: boolean
 
     @IsOptional()
-    category: string
+    category!: string
 
     @IsString()
-    hashTags: string
+    hashTags!: string
 
     @IsString()
-    description: string
+    description!: string
 
     @IsUUID()
-    user_id: string
+    user_id!: string
 
     @IsNumber()
-    width: number
+    width!: number
 
     @IsNumber()
-    height: number
+    height!: number
 
     @IsString()
-    raw_url: string
+    raw_url!: string
 
     @IsString()
-    thumbnail_url: string
+    thumbnail_url!: string
 
     @IsString()
-    title: string
+    title!: string
 }
 
 export class LikeImageDTO {
     @IsUUID()
-    imageId: crypto.UUID
+    imageId!: crypto.UUID
 
     @IsBoolean({ message: "Invalid value for like" })
-    like: boolean
+    like!: boolean
 }
