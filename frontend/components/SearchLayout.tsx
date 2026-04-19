@@ -59,7 +59,8 @@ export default function SearchLayout() {
                         userName: img.userName || 'Unknown User',
                         userAvatar: '',
                         userId: img.userId || 'unknown',
-                        title: img.imageTitle || img.imageDescription || 'Untitled'
+                        title: img.imageTitle || img.imageDescription || 'Untitled',
+                        publishedOn: img.publishedOn
                     };
                 });
 
