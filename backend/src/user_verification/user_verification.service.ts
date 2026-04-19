@@ -1,6 +1,6 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { randomInt } from "crypto";
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@src/constants';
 import { MailService } from '@src/mail/mail.service';
@@ -27,16 +27,29 @@ export class UserVerificationService {
             if (userData) {
                 const { email_id, user_name } = userData
                 const verificationCode = randomInt(100000, 999999)
-                const res = await this.conn.insert(schema.tbl_email_verfications).values({
-                    email_code: verificationCode.toString(),
-                    user_id: userId,
-                })
 
-                if (res) {
-                    this.mailService.sendEmail('User Verification', './SignUpVerification.pug', email_id, {
-                        username: user_name,
-                        code: verificationCode,
-                        year: new Date().getFullYear(),
+                const isUserExists = await this.conn.query.tbl_email_verfications.findFirst({
+                    where: eq(schema.tbl_email_verfications.user_id, userId)
+                })
+                if (isUserExists) {
+                    await this.conn.update(schema.tbl_email_verfications).set({
+                        resend_attempts: sql`${schema.tbl_email_verfications.resend_attempts} + 1`,
+                        email_code: verificationCode.toString()
+                    })
+                    this.sendEmail({
+                        user_name,
+                        email_id,
+                        verificationCode: verificationCode.toString()
+                    })
+                } else {
+                    await this.conn.insert(schema.tbl_email_verfications).values({
+                        email_code: verificationCode.toString(),
+                        user_id: userId,
+                    })
+                    this.sendEmail({
+                        user_name,
+                        email_id,
+                        verificationCode: verificationCode.toString()
                     })
                 }
             }
@@ -75,8 +88,9 @@ export class UserVerificationService {
                 return APIResponse({ statusCode: HttpStatus.TOO_MANY_REQUESTS, message: "You Have Reached Maximum Email Verification Limit Try After Some Time" })
             }
 
-            // delete The Currenct Code Record As sendVerificationEmailService will insert new record
-            await this.conn.delete(schema.tbl_email_verfications).where(eq(schema.tbl_email_verfications.user_id, userData.id))
+            // await this.conn.delete(schema.tbl_email_verfications).where(eq(schema.tbl_email_verfications.user_id, userData.id))
+
+            // This will update the user resend count or insert new record
             this.sendVerificationEmailService(userData.id)
 
             return APIResponse({ statusCode: HttpStatus.OK, message: "Email Resended" })
@@ -138,5 +152,13 @@ export class UserVerificationService {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error" })
         }
+    }
+
+    private sendEmail({ user_name, email_id, verificationCode }: { user_name: string, email_id: string, verificationCode: string }) {
+        this.mailService.sendEmail('User Verification', './SignUpVerification.pug', email_id, {
+            username: user_name,
+            code: verificationCode,
+            year: new Date().getFullYear(),
+        })
     }
 }

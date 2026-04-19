@@ -87,7 +87,8 @@ export class UserService {
                         id: this.TABLE_USER_ALIAS.id,
                         avatar: this.TABLE_USER_ALIAS.avatar,
                         userName: this.TABLE_USER_ALIAS.user_name
-                    }
+                    },
+                    publishedOn: schema.tbl_image.created_at
                 })
                 .from(schema.tbl_user)
                 .leftJoin(
@@ -130,6 +131,7 @@ export class UserService {
             const showPaidImages = process.env.SHOW_PREMIUM_IMAGE === 'true' ? true : false
             const userImageData = await this.conn
                 .select({
+                    title: schema.tbl_image.title,
                     image_id: schema.tbl_image.id,
                     is_paid: schema.tbl_image.is_paid,
                     description: schema.tbl_image.description,
@@ -141,7 +143,8 @@ export class UserService {
                         id: schema.tbl_user.id,
                         avatar: schema.tbl_user.avatar,
                         userName: schema.tbl_user.user_name
-                    }
+                    },
+                    publishedOn: schema.tbl_image.created_at
                 })
                 .from(schema.tbl_image)
                 .leftJoin(
