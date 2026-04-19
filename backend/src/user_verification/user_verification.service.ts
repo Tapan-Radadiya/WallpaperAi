@@ -85,7 +85,27 @@ export class UserVerificationService {
             }
 
             if (userVerificationData.resend_attempts > 5) {
-                return APIResponse({ statusCode: HttpStatus.TOO_MANY_REQUESTS, message: "You Have Reached Maximum Email Verification Limit Try After Some Time" })
+                // Check for time is user allowed to resend mail
+                const pastRequestedDate = new Date(userVerificationData.updated_at!).getTime()
+                const currTime = new Date().getTime()
+
+                const time = process.env.TIME_FOR_EMAIL_RESEND_AFTER_MULTIPLE_TRIES
+                if (!time)
+                    return APIResponse({ statusCode: HttpStatus.TOO_MANY_REQUESTS, message: "Maximum Limit Reached Try Resending Email" })
+
+                const milliSeconds = parseInt(time) * 60000
+
+                if (!((currTime - pastRequestedDate) > milliSeconds)) {
+
+                    const data = Math.floor((currTime - pastRequestedDate) / 60000)
+                    const afterUserCanSendMailTime = (milliSeconds / 60000) - data
+                    return APIResponse({ statusCode: HttpStatus.TOO_MANY_REQUESTS, message: `You Have Reached Maximum Email Verification Limit Try After ${afterUserCanSendMailTime} Minutes` })
+                }
+
+                // Set The limit again  to 0 for next interval of resend
+                await this.conn.update(schema.tbl_email_verfications).set({
+                    resend_attempts: 0
+                }).where(eq(schema.tbl_email_verfications.id, userVerificationData.id))
             }
 
             // await this.conn.delete(schema.tbl_email_verfications).where(eq(schema.tbl_email_verfications.user_id, userData.id))
