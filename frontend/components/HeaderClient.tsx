@@ -44,16 +44,16 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
     // High-performance vanilla JS scroll listener
     useEffect(() => {
         if (typeof window === 'undefined') return;
-        
+
         const headerEl = headerRef.current;
         if (!headerEl) return;
-        
+
         let lastScrollY = window.pageYOffset || document.documentElement.scrollTop;
         let ticking = false;
 
         const updateHeader = () => {
             const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
-            
+
             if (currentScrollY < 60) {
                 headerEl.style.transform = 'translateY(0)';
             } else if (currentScrollY > lastScrollY && currentScrollY > 60) {
@@ -63,7 +63,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                 // Scroll up
                 headerEl.style.transform = 'translateY(0)';
             }
-            
+
             lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY;
             ticking = false;
         };
@@ -114,9 +114,10 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
     };
 
     return (
-        <header 
+        <>
+        <header
             ref={headerRef}
-            className={`sticky top-0 z-50 backdrop-blur-md bg-[var(--background)]/80 border-b border-[var(--muted)]/20 transition-transform duration-300 ease-in-out`}
+            className={`fixed w-full left-0 top-0 z-50 backdrop-blur-md bg-[var(--background)]/80 border-b border-[var(--muted)]/20 transition-transform duration-300 ease-in-out`}
         >
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 <Link href="/" className="text-2xl kedebideri-bold tracking-tight bg-gradient-to-r from-[var(--foreground)] to-[var(--muted)] bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer">
@@ -246,5 +247,8 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                 </div>
             </Modal>
         </header>
+        {/* Spacer to prevent layout shifts since header is now fixed */}
+        <div className="h-16 w-full shrink-0" aria-hidden="true" />
+        </>
     );
 }

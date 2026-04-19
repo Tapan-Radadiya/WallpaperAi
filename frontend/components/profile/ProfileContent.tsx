@@ -66,7 +66,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
             userId: img.ownerData?.id || '',
             title: img.title,
             is_paid: img.is_paid,
-            price: img.price
+            price: img.price,
+            publishedOn: img.publishedOn
         }));
     });
     const [isUploadsLoading, setIsUploadsLoading] = useState(false);
@@ -150,7 +151,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                 userId: img.ownerData?.id || '',
                 title: img.title,
                 is_paid: img.is_paid,
-                price: img.price
+                price: img.price,
+                publishedOn: img.publishedOn
             })));
             setHasFetchedUploads(true);
         } else {
@@ -188,7 +190,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                             userId: img.ownerData?.id || '',
                             title: img.title,
                             is_paid: img.is_paid,
-                            price: img.price
+                            price: img.price,
+                            publishedOn: img.publishedOn
                         }));
                         setUploadedImages(mappedImages);
                     }
@@ -224,7 +227,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                             userId: '',
                             title: img.title,
                             is_paid: img.is_paid,
-                            price: img.price
+                            price: img.price,
+                            publishedOn: img.publishedOn
                         }));
                         setPurchasedImages(mappedImages);
                     }
@@ -253,7 +257,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
             userId: img.ownerData?.id || '',
             title: img.title,
             is_paid: img.is_paid,
-            price: img.price
+            price: img.price,
+            publishedOn: img.publishedOn
         })) || [];
     }, [profileData]);
 
