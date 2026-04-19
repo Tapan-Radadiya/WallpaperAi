@@ -48,7 +48,6 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
             formData.append('hashTags', hashtags);
             formData.append('title', title);
             formData.append('description', description);
-
             await api.post('/image/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
