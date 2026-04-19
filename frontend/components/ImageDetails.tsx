@@ -148,7 +148,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     const stats = [
         { label: 'Resolution', value: `${image.width} x ${image.height}` },
         { label: 'Size', value: '14.2 MB' },
-        { label: 'Likes', value: likesCount.toLocaleString() },
+        { label: 'Published', value: image.publishedOn ? new Date(image.publishedOn).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown' },
         { label: 'Downloads', value: downloadCount.toLocaleString() },
     ];
     return (
@@ -310,6 +310,10 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
 
                         {/* Title & Description */}
                         <div className="mb-8">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--muted)]/10 text-[var(--foreground)] text-sm font-semibold mb-3 w-fit border border-[var(--muted)]/5 shadow-sm">
+                                <Heart size={16} className="fill-[var(--foreground)] text-[var(--foreground)]" />
+                                <span>{likesCount.toLocaleString()}</span>
+                            </div>
                             <h2 className="text-2xl font-bold text-[var(--foreground)] mb-3 kedebideri-bold tracking-tight">
                                 {image.title || "Untitled Artwork"}
                             </h2>

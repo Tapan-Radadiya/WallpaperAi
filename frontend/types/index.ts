@@ -22,6 +22,7 @@ export interface APILikedImage {
     title?: string;
     is_paid?: boolean;
     price?: number;
+    publishedOn?: string;
     description: string;
     width: number;
     height: number;
