@@ -37,50 +37,50 @@ export class ImageService {
         // }
 
         const showPaidImages = process.env.SHOW_PREMIUM_IMAGE === 'true' ? true : false
-        // try {
-        const newData = await this.conn
-            .select({
-                id: schema.tbl_image.id,
-                rawUrl: schema.tbl_image.raw_url,
-                thumbnailUrl: schema.tbl_image.thumbnail_url,
-                width: schema.tbl_image.width,
-                height: schema.tbl_image.height,
-                description: schema.tbl_image.description,
-                userName: schema.tbl_user.user_name,
-                userAvatar: schema.tbl_user.avatar,
-                userId: schema.tbl_user.id,
-                title: schema.tbl_image.title,
-                is_paid: schema.tbl_image.is_paid,
-                publishedOn: schema.tbl_image.created_at
+        try {
+            const newData = await this.conn
+                .select({
+                    id: schema.tbl_image.id,
+                    rawUrl: schema.tbl_image.raw_url,
+                    thumbnailUrl: schema.tbl_image.thumbnail_url,
+                    width: schema.tbl_image.width,
+                    height: schema.tbl_image.height,
+                    description: schema.tbl_image.description,
+                    userName: schema.tbl_user.user_name,
+                    userAvatar: schema.tbl_user.avatar,
+                    userId: schema.tbl_user.id,
+                    title: schema.tbl_image.title,
+                    is_paid: schema.tbl_image.is_paid,
+                    publishedOn: schema.tbl_image.created_at
+                })
+                .from(schema.tbl_image)
+                .leftJoin(
+                    schema.tbl_user,
+                    eq(schema.tbl_user.id, schema.tbl_image.user_id)
+                )
+                .where(
+                    eq(schema.tbl_image.is_paid, showPaidImages)
+                )
+                .offset(offset)
+                .limit(this.PAGE_LENGTH)
+
+
+            const updatedData = newData.map((ele) => {
+                return {
+                    ...ele,
+                    rawUrl: `${process.env.AWS_CLOUDFRONT}${ele.rawUrl}`,
+                    thumbnailUrl: `${process.env.AWS_CLOUDFRONT}${ele.thumbnailUrl}`,
+                    userAvatar: `${process.env.AWS_CLOUDFRONT}${ele.userAvatar}`
+                }
             })
-            .from(schema.tbl_image)
-            .leftJoin(
-                schema.tbl_user,
-                eq(schema.tbl_user.id, schema.tbl_image.user_id)
-            )
-            .where(
-                eq(schema.tbl_image.is_paid, showPaidImages)
-            )
-            .offset(offset)
-            .limit(this.PAGE_LENGTH)
 
-
-        const updatedData = newData.map((ele) => {
-            return {
-                ...ele,
-                rawUrl: `${process.env.AWS_CLOUDFRONT}${ele.rawUrl}`,
-                thumbnailUrl: `${process.env.AWS_CLOUDFRONT}${ele.thumbnailUrl}`,
-                userAvatar: `${process.env.AWS_CLOUDFRONT}${ele.userAvatar}`
-            }
-        })
-
-        // cache new req for other users 
-        await this.redis.setRedisKey(redisKey, JSON.stringify(updatedData), this.DEFAULT_TTL_IMAGE)
-        const randomData = this.randomizeData(updatedData)
-        return APIResponse({ statusCode: HttpStatus.OK, message: "", data: randomData })
-        // } catch (error) {
-        //     return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error", err: error })
-        // }
+            // cache new req for other users 
+            await this.redis.setRedisKey(redisKey, JSON.stringify(updatedData), this.DEFAULT_TTL_IMAGE)
+            const randomData = this.randomizeData(updatedData)
+            return APIResponse({ statusCode: HttpStatus.OK, message: "", data: randomData })
+        } catch (error) {
+            return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error", err: error })
+        }
 
     }
 
@@ -89,9 +89,16 @@ export class ImageService {
         const imageThumbnailPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/thumbnail.webp`
         const imageRawPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/raw.${imageMetaData.format}`
         const imageFullPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/preview.webp`
+        const testPath = `${process.env.S3_PREFIX}/test/${imageUuid}/preview.webp`
         try {
             const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
             const fullImageBuffer = await this.convertImageToPreview(fileData)
+            const waterMarkerdImage = await this.getWatermarkedImage(fileData, imageMetaData)
+            // const data = await Promise.allSettled([
+            //     this.awsServices.uploadFile(testPath, waterMarkerdImage, fileData.mimetype),
+            //     this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
+            //     this.awsServices.uploadFile(imageFullPath, fullImageBuffer, fileData.mimetype)
+            // ])
 
             const data = await Promise.allSettled([
                 this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
@@ -353,5 +360,22 @@ export class ImageService {
         }
         return plainData
 
+    }
+
+    private async getWatermarkedImage(imageData: Express.Multer.File, imageMetaData: sharp.Metadata) {
+        const waterMark = await sharp('src/public/watermark.png')
+            .resize(Math.floor(imageMetaData.width * 0.6))
+            .ensureAlpha(0.3)
+            .toBuffer()
+
+        const waterMarkedImage = await sharp(imageData.buffer)
+            .composite([{
+                input: waterMark,
+                gravity: 'center',
+                blend: 'overlay'
+            }])
+            .toBuffer()
+
+        return waterMarkedImage
     }
 }
