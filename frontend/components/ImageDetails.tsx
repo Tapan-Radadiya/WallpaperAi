@@ -210,7 +210,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                                 onClick={() => { if (!isPremiumLocked) setIsFullSize(true); }}
                             >
                                 <img
-                                    src={image.rawUrl}
+                                    src={(isPremiumLocked && image.waterMarked_url) ? image.waterMarked_url : image.rawUrl}
                                     alt={image.description || 'Wallpaper'}
                                     className="max-h-[60vh] w-auto max-w-full h-auto object-contain shadow-sm rounded-lg"
                                 />
@@ -223,7 +223,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                             onClick={() => { if (!isPremiumLocked) setIsFullSize(true); }}
                         >
                             <Image
-                                src={image.rawUrl}
+                                src={(isPremiumLocked && image.waterMarked_url) ? image.waterMarked_url : image.rawUrl}
                                 alt={image.description || 'Wallpaper'}
                                 fill
                                 className="object-contain"
@@ -242,7 +242,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                             >
                                 <div className="relative w-full h-full">
                                     <Image
-                                        src={image.rawUrl}
+                                        src={(isPremiumLocked && image.waterMarked_url) ? image.waterMarked_url : image.rawUrl}
                                         alt={image.description || 'Wallpaper'}
                                         fill
                                         className="object-contain"

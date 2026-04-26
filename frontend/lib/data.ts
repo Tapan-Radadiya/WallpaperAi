@@ -14,6 +14,7 @@ export interface WallpaperImage {
     is_paid?: boolean;
     price?: number;
     publishedOn?: string;
+    waterMarked_url?: string;
 }
 
 export async function getImages(page: number = 0): Promise<WallpaperImage[]> {
@@ -32,6 +33,7 @@ export async function getImages(page: number = 0): Promise<WallpaperImage[]> {
             is_paid: img.is_paid,
             price: img.price,
             publishedOn: img.publishedOn,
+            waterMarked_url: img.waterMarked_url,
         }));
     } catch (error) {
         console.error('Error fetching images:', error);

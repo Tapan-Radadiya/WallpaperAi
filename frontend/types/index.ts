@@ -29,6 +29,7 @@ export interface APILikedImage {
     thumbnail_url: string;
     raw_url: string;
     ownerData: APIImageOwner;
+    waterMarked_url?: string;
 }
 
 export interface APIResponseData {
