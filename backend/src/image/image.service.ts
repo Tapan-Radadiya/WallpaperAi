@@ -43,6 +43,7 @@ export class ImageService {
                     id: schema.tbl_image.id,
                     rawUrl: schema.tbl_image.raw_url,
                     thumbnailUrl: schema.tbl_image.thumbnail_url,
+                    waterMarked_url: schema.tbl_image.waterMarked_url,
                     width: schema.tbl_image.width,
                     height: schema.tbl_image.height,
                     description: schema.tbl_image.description,
@@ -70,7 +71,8 @@ export class ImageService {
                     ...ele,
                     rawUrl: `${process.env.AWS_CLOUDFRONT}${ele.rawUrl}`,
                     thumbnailUrl: `${process.env.AWS_CLOUDFRONT}${ele.thumbnailUrl}`,
-                    userAvatar: `${process.env.AWS_CLOUDFRONT}${ele.userAvatar}`
+                    userAvatar: `${process.env.AWS_CLOUDFRONT}${ele.userAvatar}`,
+                    waterMarked_url: ele.is_paid && ele.waterMarked_url ? `${process.env.AWS_CLOUDFRONT}${ele.waterMarked_url}` : null
                 }
             })
 
@@ -86,38 +88,44 @@ export class ImageService {
 
     async uploadUserImageService(reqBody: ImageUploadBodyDTO, imageMetaData: sharp.Metadata, userId: string, fileData: Express.Multer.File): Promise<APIResponseInterface> {
         const imageUuid = crypto.randomUUID()
-        const imageThumbnailPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/thumbnail.webp`
-        const imageRawPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/raw.${imageMetaData.format}`
-        const imageFullPath = `${process.env.S3_PREFIX}/${userId}/${imageUuid}/preview.webp`
-        const testPath = `${process.env.S3_PREFIX}/test/${imageUuid}/preview.webp`
+        const { imagePreviewPath, imageRawPath, imageThumbnailPath, waterMarkedImagePath } = this.getImagepaths({ is_paid: reqBody.is_paid, imageUuid, userId, format: imageMetaData.format })
+
+        const imageData: ImageUploadDTO = {
+            id: imageUuid,
+            category: reqBody.category,
+            description: reqBody.description,
+            hashTags: reqBody.hashTags,
+            height: imageMetaData.height,
+            width: Math.round(imageMetaData.width),
+            is_paid: reqBody.is_paid,
+            user_id: userId,
+            raw_url: imageRawPath,
+            thumbnail_url: imageThumbnailPath,
+            preview_url: imagePreviewPath,
+            waterMarked_url: waterMarkedImagePath,
+            title: reqBody.title
+        }
+
         try {
             const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
             const fullImageBuffer = await this.convertImageToPreview(fileData)
-            const waterMarkerdImage = await this.getWatermarkedImage(fileData, imageMetaData)
-            // const data = await Promise.allSettled([
-            //     this.awsServices.uploadFile(testPath, waterMarkerdImage, fileData.mimetype),
-            //     this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-            //     this.awsServices.uploadFile(imageFullPath, fullImageBuffer, fileData.mimetype)
-            // ])
+            if (reqBody.is_paid) {
+                // If User uploaded image is premium then create a watermarked image 
+                const waterMarkerdImage = await this.getWatermarkedImage(fileData, imageMetaData)
 
-            const data = await Promise.allSettled([
-                this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
-                this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-                this.awsServices.uploadFile(imageFullPath, fullImageBuffer, fileData.mimetype)
-            ])
+                const data = await Promise.allSettled([
+                    this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
+                    this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
+                    this.awsServices.uploadFile(imagePreviewPath, fullImageBuffer, fileData.mimetype),
+                    this.awsServices.uploadFile(waterMarkedImagePath!, waterMarkerdImage, fileData.mimetype)
+                ])
 
-            const imageData: ImageUploadDTO = {
-                id: imageUuid,
-                category: reqBody.category,
-                description: reqBody.description,
-                hashTags: reqBody.hashTags,
-                height: imageMetaData.height,
-                width: Math.round(imageMetaData.width),
-                is_paid: reqBody.is_paid,
-                user_id: userId,
-                raw_url: imageRawPath,
-                thumbnail_url: imageThumbnailPath,
-                title: reqBody.title
+            } else {
+                const data = await Promise.allSettled([
+                    this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
+                    this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
+                    this.awsServices.uploadFile(imagePreviewPath, fullImageBuffer, fileData.mimetype)
+                ])
             }
 
             const insertImage = await this.conn.insert(schema.tbl_image).values({
@@ -125,8 +133,10 @@ export class ImageService {
                 category: imageData.category,
                 hashTags: imageData.hashTags,
                 height: imageData.height,
+                preview_url: imageData.preview_url,
                 raw_url: imageData.raw_url,
                 thumbnail_url: imageData.thumbnail_url,
+                waterMarked_url: imageData.waterMarked_url,
                 user_id: imageData.user_id,
                 width: imageData.width,
                 id: imageData.id,
@@ -377,5 +387,31 @@ export class ImageService {
             .toBuffer()
 
         return waterMarkedImage
+    }
+
+    private getImagepaths({ is_paid, userId, imageUuid, format }: { is_paid: boolean, userId: string, imageUuid: string, format: string }): {
+        imageThumbnailPath: string,
+        imageRawPath: string,
+        imagePreviewPath: string,
+        waterMarkedImagePath?: string
+    } {
+
+        const PREFIX_PATH = `${process.env.S3_PREFIX}/${userId}/${imageUuid}`
+        if (is_paid) {
+            return {
+                imagePreviewPath: `${PREFIX_PATH}/preview.webp`,
+                imageRawPath: `${PREFIX_PATH}/raw.${format}`,
+                imageThumbnailPath: `${PREFIX_PATH}/premium/thumbnail.webp`,
+                waterMarkedImagePath: `${PREFIX_PATH}/premium/waterMarkedImage.webp`
+
+            }
+        } else {
+            return {
+                imagePreviewPath: `${PREFIX_PATH}/preview.webp`,
+                imageRawPath: `${PREFIX_PATH}/raw.${format}`,
+                imageThumbnailPath: `${PREFIX_PATH}/thumbnail.webp`,
+                waterMarkedImagePath: ''
+            }
+        }
     }
 }
