@@ -3,9 +3,13 @@ import { IsBoolean, IsNumber, IsOptional, IsString, IsUUID } from 'class-validat
 import * as crypto from 'crypto';
 
 export class ImageUploadBodyDTO {
-    @Transform(({ value }) => value === 'true' ? true : false)
+    @Transform(({ value }) => {
+        if (value === true || value === 'true') return true;
+        if (value === false || value === 'false') return false;
+        return false;
+    })
     @IsBoolean({ message: "Invalid value for paid" })
-    is_paid!: boolean
+    is_paid!: boolean;
 
     @IsOptional()
     category!: string
@@ -53,7 +57,13 @@ export class ImageUploadDTO {
     thumbnail_url!: string
 
     @IsString()
+    preview_url!: string
+
+    @IsString()
     title!: string
+
+    @IsOptional()
+    waterMarked_url?: string
 }
 
 export class LikeImageDTO {

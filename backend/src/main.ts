@@ -45,7 +45,9 @@ async function bootstrap() {
   // app.useGlobalInterceptors(metricsInterceptor)
 
   app.setGlobalPrefix('api/v1')
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+  }))
 
 
   app.use(
