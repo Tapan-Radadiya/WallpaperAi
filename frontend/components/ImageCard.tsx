@@ -33,6 +33,7 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
             }, 250);
         }
     };
+
     return (
         <div
             className="group relative mb-4 break-inside-avoid rounded-xl overflow-hidden bg-card-bg shadow-sm hover:shadow-xl transition-all duration-300 border border-muted/10 cursor-pointer"
@@ -40,7 +41,7 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
         >
             <div className="relative w-full">
                 <Image
-                    src={`${image.rawUrl}`}
+                    src={(image.is_paid && image.waterMarked_url) ? image.waterMarked_url : image.rawUrl}
                     alt={image.description || 'Wallpaper'}
                     width={image.width}
                     height={image.height}
