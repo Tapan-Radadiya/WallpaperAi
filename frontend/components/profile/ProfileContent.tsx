@@ -25,7 +25,7 @@ import PurchasedTab from './tabs/PurchasedTab';
 
 const CLOUDFRONT_URL = "https://djrp6t1rc7td.cloudfront.net/";
 
-const processImageUrl = (url: string) => {
+const processImageUrl = (url?: string) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     return `${CLOUDFRONT_URL}${url}`;
@@ -56,8 +56,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
         if (!initialUploadedImagesRaw) return [];
         return initialUploadedImagesRaw.map((img: any) => ({
             id: img.image_id,
-            width: img.width ?? '',
-            height: img.height ?? '',
+            width: Number(img.width) || 0,
+            height: Number(img.height) || 0,
             rawUrl: processImageUrl(img.raw_url),
             thumbnailUrl: processImageUrl(img.thumbnail_url),
             description: img.description || 'Wallpaper',
@@ -67,7 +67,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
             title: img.title,
             is_paid: img.is_paid,
             price: img.price,
-            publishedOn: img.publishedOn
+            publishedOn: img.publishedOn,
+            waterMarked_url: processImageUrl(img.waterMarked_url)
         }));
     });
     const [isUploadsLoading, setIsUploadsLoading] = useState(false);
@@ -141,8 +142,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
         if (initialUploadedImagesRaw) {
             setUploadedImages(initialUploadedImagesRaw.map((img: any) => ({
                 id: img.image_id,
-                width: img.width ?? '',
-                height: img.height ?? '',
+                width: Number(img.width) || 0,
+                height: Number(img.height) || 0,
                 rawUrl: processImageUrl(img.raw_url),
                 thumbnailUrl: processImageUrl(img.thumbnail_url),
                 description: img.description || 'Wallpaper',
@@ -152,7 +153,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                 title: img.title,
                 is_paid: img.is_paid,
                 price: img.price,
-                publishedOn: img.publishedOn
+                publishedOn: img.publishedOn,
+                waterMarked_url: processImageUrl(img.waterMarked_url)
             })));
             setHasFetchedUploads(true);
         } else {
@@ -180,8 +182,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                     if (response.data && response.data.data) {
                         const mappedImages: WallpaperImage[] = response.data.data.map((img: APILikedImage) => ({
                             id: img.image_id,
-                            width: img.width ?? '',
-                            height: img.height ?? '',
+                            width: Number(img.width) || 0,
+                            height: Number(img.height) || 0,
                             rawUrl: processImageUrl(img.raw_url),
                             thumbnailUrl: processImageUrl(img.thumbnail_url),
                             description: img.description || 'Wallpaper',
@@ -191,7 +193,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                             title: img.title,
                             is_paid: img.is_paid,
                             price: img.price,
-                            publishedOn: img.publishedOn
+                            publishedOn: img.publishedOn,
+                            waterMarked_url: processImageUrl(img.waterMarked_url)
                         }));
                         setUploadedImages(mappedImages);
                     }
@@ -217,8 +220,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                     if (response.data && response.data.data) {
                         const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => ({
                             id: img.image_id,
-                            width: img.width,
-                            height: img.height,
+                            width: Number(img.width) || 0,
+                            height: Number(img.height) || 0,
                             rawUrl: processImageUrl(img.imageRawPath),
                             thumbnailUrl: processImageUrl(img.thumbnail_url),
                             description: img.description || 'Purchased Image',
@@ -228,7 +231,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                             title: img.title,
                             is_paid: img.is_paid,
                             price: img.price,
-                            publishedOn: img.publishedOn
+                            publishedOn: img.publishedOn,
+                            waterMarked_url: processImageUrl(img.waterMarked_url)
                         }));
                         setPurchasedImages(mappedImages);
                     }
@@ -247,8 +251,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
     const likedImages: WallpaperImage[] = useMemo(() => {
         return profileData?.likedImages?.map((img) => ({
             id: img.image_id,
-            width: img.width ?? '',
-            height: img.height ?? '',
+            width: Number(img.width) || 0,
+            height: Number(img.height) || 0,
             rawUrl: processImageUrl(img.raw_url),
             thumbnailUrl: processImageUrl(img.thumbnail_url),
             description: img.description || 'Wallpaper',
@@ -258,7 +262,8 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
             title: img.title,
             is_paid: img.is_paid,
             price: img.price,
-            publishedOn: img.publishedOn
+            publishedOn: img.publishedOn,
+            waterMarked_url: processImageUrl(img.waterMarked_url)
         })) || [];
     }, [profileData]);
 

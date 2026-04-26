@@ -60,7 +60,9 @@ export default function SearchLayout() {
                         userAvatar: '',
                         userId: img.userId || 'unknown',
                         title: img.imageTitle || img.imageDescription || 'Untitled',
-                        publishedOn: img.publishedOn
+                        publishedOn: img.publishedOn,
+                        is_paid: img.is_paid,
+                        waterMarked_url: img.waterMarked_url ? (img.waterMarked_url.startsWith('http') ? img.waterMarked_url : `${CLOUDFRONT_URL}${img.waterMarked_url.startsWith('/') ? '' : '/'}${img.waterMarked_url}`) : undefined
                     };
                 });
 
