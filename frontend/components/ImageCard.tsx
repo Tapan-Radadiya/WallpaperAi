@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { WallpaperImage } from '@/lib/data';
-import { Maximize2, Heart, Crown } from 'lucide-react';
+import { Maximize2, Heart, Crown, Sparkles } from 'lucide-react';
 import { useState, useRef } from 'react';
 
 interface ImageCardProps {
@@ -41,7 +41,7 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
         >
             <div className="relative w-full">
                 <Image
-                    src={(image.is_paid && image.waterMarked_url) ? image.waterMarked_url : image.rawUrl}
+                    src={image.is_paid ? (image.waterMarked_url || image.rawUrl) : (image.preview_url || image.rawUrl)}
                     alt={image.description || 'Wallpaper'}
                     width={image.width}
                     height={image.height}
@@ -81,12 +81,15 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
                         e.stopPropagation();
                         onToggleLike?.();
                     }}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-sm transition-all duration-300 z-10 opacity-0 group-hover:opacity-100"
+                    className="absolute top-3 right-3 flex items-center gap-2 p-2 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-sm transition-all duration-300 z-10 opacity-0 group-hover:opacity-100"
                 >
                     <Heart
                         size={20}
                         className={`transition-colors duration-300 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`}
                     />
+                    {image.preview_url && (
+                        <Sparkles size={16} className="text-yellow-400 fill-yellow-400 animate-pulse" />
+                    )}
                 </button>
             </div>
 

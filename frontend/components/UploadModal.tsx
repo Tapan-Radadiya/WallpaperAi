@@ -159,22 +159,17 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
 
                         {/* Paid Toggle */}
-                        <div className={`flex flex-col gap-3 ${process.env.NEXT_PUBLIC_SHOW_PREMIUM_IMAGE !== 'true' ? 'opacity-50 grayscale' : ''}`}>
+                        <div className="flex flex-col gap-3">
                             <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--background)] border border-[var(--muted)]/20">
-                                <span className={`text-s font-semibold text-[var(--foreground)] capitalize tracking-wide flex items-center gap-2`}>
+                                <span className="text-s font-semibold text-[var(--foreground)] capitalize tracking-wide flex items-center gap-2">
                                     Paid Wallpaper ?
-                                    {process.env.NEXT_PUBLIC_SHOW_PREMIUM_IMAGE !== 'true' && (
-                                        <span className="text-xs text-[var(--muted)] font-normal ml-2">(Disabled)</span>
-                                    )}
                                 </span>
                                 <button
                                     type="button"
-                                    onClick={() => process.env.NEXT_PUBLIC_SHOW_PREMIUM_IMAGE === 'true' && setIsPaid(!isPaid)}
-                                    disabled={process.env.NEXT_PUBLIC_SHOW_PREMIUM_IMAGE !== 'true'}
+                                    onClick={() => setIsPaid(!isPaid)}
                                     className={`
-                                        relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--foreground)] focus:ring-offset-2 focus:ring-offset-[var(--background)]
+                                        relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--foreground)] focus:ring-offset-2 focus:ring-offset-[var(--background)] cursor-pointer
                                         ${isPaid ? 'bg-[var(--foreground)]' : 'bg-[var(--muted)]/30'}
-                                        ${process.env.NEXT_PUBLIC_SHOW_PREMIUM_IMAGE !== 'true' ? 'cursor-not-allowed' : 'cursor-pointer'}
                                     `}
                                 >
                                     <span
