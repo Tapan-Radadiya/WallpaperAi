@@ -30,14 +30,16 @@ export function useWallpaperData(initialImages: WallpaperImage[]) {
             setLoading(true);
             try {
                 const newImages = await getImages(page);
-                if (newImages.length !== 100) {
-                    setHasMore(false);
-                } else {
+                if (newImages.length > 0) {
                     setImages(prev => {
                         const existingIds = new Set(prev.map(img => img.id));
                         const uniqueNewImages = newImages.filter(img => !existingIds.has(img.id));
                         return [...prev, ...uniqueNewImages];
                     });
+                }
+                
+                if (newImages.length < 100) {
+                    setHasMore(false);
                 }
             } catch (error) {
                 console.error("Failed to load more images", error);
