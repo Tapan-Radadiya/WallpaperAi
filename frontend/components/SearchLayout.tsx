@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';
-import { WallpaperImage } from '@/lib/data';
+import { WallpaperImage, formatImageUrl } from '@/lib/data';
 import api from '@/lib/api';
 import Modal from './Modal';
 import ImageDetails from './ImageDetails';
@@ -39,30 +39,27 @@ export default function SearchLayout() {
                 const dataArray = response.data?.data || response.data || [];
 
                 // Map API data to WallpaperImage interface
-                const CLOUDFRONT_URL = 'https://djrp6t1rc7td.cloudfront.net';
                 const mappedResults: WallpaperImage[] = dataArray.map((img: any) => {
-                    const src = img.imageSource || '';
-                    // Prefix with CloudFront URL if it's a relative path
-                    let validSrc = src;
-                    if (src && !src.startsWith('http')) {
-                        validSrc = src.startsWith('/') ? `${CLOUDFRONT_URL}${src}` : `${CLOUDFRONT_URL}/${src}`;
-                    }
+                    const rawUrl = formatImageUrl(img.imageSource || img.rawUrl || '');
+                    const waterMarked_url = formatImageUrl(img.waterMarked_url);
+                    const preview_url = formatImageUrl(img.preview_url);
+                    const thumbnailUrl = formatImageUrl(img.thumbnailUrl || img.imageSource || '');
 
                     return {
-                        // Use imageSource or generate a random one if missing for React key
-                        id: src || Math.random().toString(36).substring(7),
-                        width: 800, // Default width since API doesn't provide it yet
-                        height: 600, // Default height
-                        rawUrl: validSrc,
-                        thumbnailUrl: validSrc,
-                        description: img.imageDescription || '',
+                        id: img.id || img.imageSource || Math.random().toString(36).substring(7),
+                        width: img.width || 800,
+                        height: img.height || 600,
+                        rawUrl,
+                        thumbnailUrl,
+                        preview_url,
+                        description: img.imageDescription || img.description || '',
                         userName: img.userName || 'Unknown User',
-                        userAvatar: '',
+                        userAvatar: formatImageUrl(img.userAvatar),
                         userId: img.userId || 'unknown',
-                        title: img.imageTitle || img.imageDescription || 'Untitled',
+                        title: img.imageTitle || img.title || img.imageDescription || 'Untitled',
                         publishedOn: img.publishedOn,
                         is_paid: img.is_paid,
-                        waterMarked_url: img.waterMarked_url ? (img.waterMarked_url.startsWith('http') ? img.waterMarked_url : `${CLOUDFRONT_URL}${img.waterMarked_url.startsWith('/') ? '' : '/'}${img.waterMarked_url}`) : undefined
+                        waterMarked_url
                     };
                 });
 

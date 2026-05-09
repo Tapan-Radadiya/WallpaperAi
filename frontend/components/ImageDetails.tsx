@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
-import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check, Lock } from 'lucide-react';
+import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check, Lock, Sparkles } from 'lucide-react';
 import ImageCard from './ImageCard';
 import ImageDetailsMobile from './ImageDetailsMobile';
 
@@ -151,6 +151,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
         { label: 'Published', value: image.publishedOn ? new Date(image.publishedOn).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown' },
         { label: 'Downloads', value: downloadCount.toLocaleString() },
     ];
+
     return (
         <>
             {/* Mobile View */}
@@ -210,7 +211,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                                 onClick={() => { if (!isPremiumLocked) setIsFullSize(true); }}
                             >
                                 <img
-                                    src={(isPremiumLocked && image.waterMarked_url) ? image.waterMarked_url : image.rawUrl}
+                                    src={isPremiumLocked ? (image.waterMarked_url || image.rawUrl) : (image.preview_url || image.rawUrl)}
                                     alt={image.description || 'Wallpaper'}
                                     className="max-h-[60vh] w-auto max-w-full h-auto object-contain shadow-sm rounded-lg"
                                 />
@@ -223,7 +224,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                             onClick={() => { if (!isPremiumLocked) setIsFullSize(true); }}
                         >
                             <Image
-                                src={(isPremiumLocked && image.waterMarked_url) ? image.waterMarked_url : image.rawUrl}
+                                src={isPremiumLocked ? (image.waterMarked_url || image.rawUrl) : (image.preview_url || image.rawUrl)}
                                 alt={image.description || 'Wallpaper'}
                                 fill
                                 className="object-contain"
@@ -242,7 +243,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                             >
                                 <div className="relative w-full h-full">
                                     <Image
-                                        src={(isPremiumLocked && image.waterMarked_url) ? image.waterMarked_url : image.rawUrl}
+                                        src={isPremiumLocked ? (image.waterMarked_url || image.rawUrl) : (image.preview_url || image.rawUrl)}
                                         alt={image.description || 'Wallpaper'}
                                         fill
                                         className="object-contain"
@@ -266,9 +267,12 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                         <div className="absolute top-6 right-6 flex flex-col gap-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <button
                                 onClick={(e) => { e.stopPropagation(); onLike?.(); }}
-                                className="p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
+                                className="flex items-center gap-2 p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
                             >
                                 <Heart size={20} className={isLiked ? "fill-red-500 text-red-500" : ""} />
+                                {image.preview_url && (
+                                    <Sparkles size={16} className="text-yellow-400 fill-yellow-400 animate-pulse" />
+                                )}
                             </button>
                             <button className="p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm">
                                 <Bookmark size={20} />
@@ -313,6 +317,9 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--muted)]/10 text-[var(--foreground)] text-sm font-semibold mb-3 w-fit border border-[var(--muted)]/5 shadow-sm">
                                 <Heart size={16} className="fill-[var(--foreground)] text-[var(--foreground)]" />
                                 <span>{likesCount.toLocaleString()}</span>
+                                {image.preview_url && (
+                                    <Sparkles size={14} className="text-yellow-400 fill-yellow-400 ml-1 animate-pulse" />
+                                )}
                             </div>
                             <h2 className="text-2xl font-bold text-[var(--foreground)] mb-3 kedebideri-bold tracking-tight">
                                 {image.title || "Untitled Artwork"}
