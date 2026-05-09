@@ -100,7 +100,6 @@ export class ImageController {
             return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid Or Corrupted File Found" }))
         }
         try {
-            console.log('body-->', body);
             const data = await this.imageService.uploadUserImageService(body, imageMetaData, req.session.userId, { ...file, buffer: sanitizedBuffer.data.imageBuffer })
             responseData.statusCode = data.statusCode
             responseData.message = data.message
