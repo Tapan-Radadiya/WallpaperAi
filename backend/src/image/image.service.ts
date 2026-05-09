@@ -52,7 +52,8 @@ export class ImageService {
                     userId: schema.tbl_user.id,
                     title: schema.tbl_image.title,
                     is_paid: schema.tbl_image.is_paid,
-                    publishedOn: schema.tbl_image.created_at
+                    publishedOn: schema.tbl_image.created_at,
+                    preview_url: schema.tbl_image.preview_url
                 })
                 .from(schema.tbl_image)
                 .leftJoin(
@@ -60,11 +61,10 @@ export class ImageService {
                     eq(schema.tbl_user.id, schema.tbl_image.user_id)
                 )
                 .where(
-                    eq(schema.tbl_image.is_paid, showPaidImages)
+                    !showPaidImages ? eq(schema.tbl_image.is_paid, showPaidImages) : undefined
                 )
                 .offset(offset)
                 .limit(this.PAGE_LENGTH)
-
 
             const updatedData = newData.map((ele) => {
                 return {
@@ -77,7 +77,7 @@ export class ImageService {
             })
 
             // cache new req for other users 
-            await this.redis.setRedisKey(redisKey, JSON.stringify(updatedData), this.DEFAULT_TTL_IMAGE)
+            // await this.redis.setRedisKey(redisKey, JSON.stringify(updatedData), this.DEFAULT_TTL_IMAGE)
             const randomData = this.randomizeData(updatedData)
             return APIResponse({ statusCode: HttpStatus.OK, message: "", data: randomData })
         } catch (error) {

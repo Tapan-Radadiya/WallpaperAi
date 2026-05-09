@@ -158,7 +158,7 @@ export class UserService {
                     and(
                         eq(schema.tbl_user.id, userId),
                         isNotNull(schema.tbl_image.id),
-                        eq(schema.tbl_image.is_paid, showPaidImages)
+                        !showPaidImages ? eq(schema.tbl_image.is_paid, showPaidImages) : undefined
                     )
                 )
             return APIResponse({ statusCode: HttpStatus.OK, message: '', data: userImageData })
