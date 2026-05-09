@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
-import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check, ArrowLeft, MoreHorizontal, Lock } from 'lucide-react';
+import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check, ArrowLeft, MoreHorizontal, Lock, Sparkles } from 'lucide-react';
 import ImageCard from './ImageCard';
 
 interface ImageDetailsMobileProps {
@@ -135,7 +135,7 @@ export default function ImageDetailsMobile({
             <div className="relative w-full bg-black/5 flex justify-center">
                 <div className="relative w-full max-h-[75vh]">
                     <img
-                        src={(isPremiumLocked && image.waterMarked_url) ? image.waterMarked_url : image.rawUrl}
+                        src={isPremiumLocked ? (image.waterMarked_url || image.rawUrl) : (image.preview_url || image.rawUrl)}
                         alt={image.description || 'Wallpaper'}
                         className="w-full h-auto max-h-[75vh] object-contain mx-auto"
                     />
@@ -144,9 +144,12 @@ export default function ImageDetailsMobile({
                     <div className="absolute bottom-4 right-4 flex flex-col gap-3">
                         <button
                             onClick={onLike}
-                            className="p-3 rounded-full bg-black/40 backdrop-blur-md text-white transition-all shadow-sm"
+                            className="flex items-center gap-2 p-3 rounded-full bg-black/40 backdrop-blur-md text-white transition-all shadow-sm"
                         >
                             <Heart size={24} className={isLiked ? "fill-red-500 text-red-500" : ""} />
+                            {image.preview_url && (
+                                <Sparkles size={18} className="text-yellow-400 fill-yellow-400 animate-pulse" />
+                            )}
                         </button>
                         <button className="p-3 rounded-full bg-black/40 backdrop-blur-md text-white transition-all shadow-sm">
                             <Bookmark size={24} />
@@ -183,6 +186,9 @@ export default function ImageDetailsMobile({
                     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--muted)]/10 text-[var(--foreground)] text-sm font-semibold mb-3 w-fit border border-[var(--muted)]/5 shadow-sm">
                         <Heart size={16} className="fill-[var(--foreground)] text-[var(--foreground)]" />
                         <span>{likesCount.toLocaleString()}</span>
+                        {image.preview_url && (
+                            <Sparkles size={14} className="text-yellow-400 fill-yellow-400 ml-1 animate-pulse" />
+                        )}
                     </div>
                     <h1 className="text-3xl font-bold text-[var(--foreground)] mb-3 kedebideri-bold tracking-tight">
                         {image.title || "Untitled Artwork"}
