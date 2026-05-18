@@ -174,7 +174,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                 className="hidden lg:flex flex-col bg-[var(--card-bg)] rounded-3xl overflow-hidden max-w-7xl w-full h-[95vh] shadow-2xl overflow-y-auto custom-scrollbar"
             >
                 {/* Split View Container */}
-                <div className="flex flex-col lg:flex-row w-full min-h-[800px] md:h-auto">
+                <div className="flex flex-col lg:flex-row w-full min-h-[80vh]">
 
                     {/* Mobile/Tablet Header (Visible only on < lg screens) */}
                     <div className="lg:hidden p-6 pb-0 flex flex-col gap-4">
