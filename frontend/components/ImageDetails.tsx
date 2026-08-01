@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
+import { getErrorMessage } from '@/lib/errorParser';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
 import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check, Lock, Sparkles } from 'lucide-react';
@@ -21,6 +23,7 @@ interface ImageDetailsProps {
 
 export default function ImageDetails({ image, relatedImages = [], onLike, isLiked, onRelatedImageClick, onClose }: ImageDetailsProps) {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [isFullSize, setIsFullSize] = useState(false);
     const [likesCount, setLikesCount] = useState<number>(0);
     const [downloadCount, setDownloadCount] = useState<number>(0);
@@ -133,11 +136,11 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                 window.location.href = res.data.data.stripe_payment_url;
             } else {
                 console.error("Failed to get payment URL", res.data);
-                alert("Payment initialization failed. Please try again.");
+                showToast("Payment initialization failed. Please try again.", 'error');
             }
         } catch (error) {
             console.error("Payment error:", error);
-            alert("An error occurred during payment initialization.");
+            showToast(getErrorMessage(error, "An error occurred during payment initialization."), 'error');
         } finally {
             setIsPurchasing(false);
         }
