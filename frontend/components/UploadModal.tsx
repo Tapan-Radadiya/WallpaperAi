@@ -6,6 +6,7 @@ import { Upload, X, Loader2 } from 'lucide-react';
 
 import api, { validateImage } from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
+import { getErrorMessage } from '@/lib/errorParser';
 import ImageDropzone from './ui/ImageDropzone';
 import { MIN_WALLPAPER_SIZE, MAX_WALLPAPER_SIZE } from '@/constants';
 
@@ -69,8 +70,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
             setPrice('');
         } catch (error: any) {
             console.error('Upload failed:', error);
-            const errorMessage = error.response?.data?.message || 'Failed to upload wallpaper';
-            showToast(errorMessage, 'error');
+            showToast(getErrorMessage(error, 'Failed to upload wallpaper'), 'error');
         } finally {
             setIsSubmitting(false);
         }
