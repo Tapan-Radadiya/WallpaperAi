@@ -20,7 +20,6 @@ export class ImageService {
     constructor(
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
         private readonly redis: RedisCacheService,
-        private readonly httpService: HttpService,
         private readonly awsServices: AwsServicesService,
         private readonly userService: UserService
     ) { }
@@ -220,7 +219,7 @@ export class ImageService {
         return APIResponse({ statusCode: HttpStatus.OK, message: "Data Fetched", data: likedImageIds })
     }
 
-    async getImageDetails(imageId: string): Promise<APIResponseInterface> {
+    async getImageDetails(imageId: string, userId: string | null): Promise<APIResponseInterface> {
 
         try {
             const isImageExists = await this.conn.query.tbl_image.findFirst({
@@ -251,8 +250,10 @@ export class ImageService {
                 })
                 .from(schema.tbl_image_downloads)
                 .where(eq(schema.tbl_image_downloads.image_id, imageId))
+
             const imageData = {
                 ...isImageExists,
+                price: isImageExists.price,
                 publishedOn: isImageExists.created_at,
                 imageLikes: totalLikedImage?.[0]?.totalLike,
                 totalDownloads: totalDownlaods?.[0]?.totalDownload ?? 0

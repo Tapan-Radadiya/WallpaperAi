@@ -144,9 +144,9 @@ export class ImageController {
     ) {
 
         let responseData = craftResponseData()
-
+        const userId = req.session?.userId ? req.session.userId : null
         try {
-            const data = await this.imageService.getImageDetails(params.imageId)
+            const data = await this.imageService.getImageDetails(params.imageId, userId)
             responseData.statusCode = data.statusCode
             responseData.message = data.message
             responseData.data = data.data ?? {}
