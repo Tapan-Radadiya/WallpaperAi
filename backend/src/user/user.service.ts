@@ -1,20 +1,22 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { and, count, eq, isNotNull } from 'drizzle-orm';
+import { and, count, eq, isNotNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { alias } from 'drizzle-orm/pg-core';
-import { DRIZZLE } from '@src/constants';
+import { DRIZZLE, IMAGE_USER_OWNER_TYPE } from '@src/constants';
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { APIResponseInterface, UpdateUserType } from '@src/types/common.types';
 import { APIResponse } from '@src/utils/common';
 import * as schema from "../Schema/schema";
 import { AwsServicesService } from '@src/aws-services/aws-services.service';
+import { StripeService } from '@src/stripe/stripe.service';
 
 @Injectable()
 export class UserService {
     constructor(
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
         private readonly redis: RedisCacheService,
-        private readonly awsServices: AwsServicesService
+        private readonly awsServices: AwsServicesService,
+        private readonly stripeService: StripeService
     ) { }
 
     private TABLE_USER_ALIAS = alias(schema.tbl_user, 'TABLE_USER_ALIAS')
@@ -233,7 +235,6 @@ export class UserService {
         }
     }
 
-
     async getUserPurchasedImagesService(userId: string): Promise<APIResponseInterface> {
         try {
             const data = await this.conn
@@ -247,7 +248,8 @@ export class UserService {
                     image_id: schema.tbl_image.id,
                     height: schema.tbl_image.height,
                     width: schema.tbl_image.width,
-                    is_paid: schema.tbl_image.is_paid
+                    is_paid: schema.tbl_image.is_paid,
+                    user_owned: sql<string>`${IMAGE_USER_OWNER_TYPE.PURCHASED}`.as('user_owned')
                 })
                 .from(schema.tbl_purchases)
                 .leftJoin(

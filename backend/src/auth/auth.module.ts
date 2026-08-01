@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
-import { UserVerificationModule } from '@src/user_verification/user_verification.module';
-import { UserVerificationService } from '@src/user_verification/user_verification.service';
-import { MailService } from '@src/mail/mail.service';
 import { AwsServicesModule } from '@src/aws-services/aws-services.module';
 import { DrizzleModule } from '@src/drizzle/drizzle.module';
+import { UserVerificationModule } from '@src/user_verification/user_verification.module';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { RedisCacheModule } from '@src/redis_cache/redis_cache.module';
+import { MailModule } from '@src/mail/mail.module';
 
 @Module({
-  imports: [DrizzleModule, AwsServicesModule, UserVerificationModule],
+  imports: [DrizzleModule, AwsServicesModule, UserVerificationModule, RedisCacheModule, MailModule],
   controllers: [AuthController],
-  providers: [AuthService, RedisCacheService, UserVerificationService, MailService]
+  providers: [AuthService],
+  exports: [AuthService]
 })
 export class AuthModule { }
