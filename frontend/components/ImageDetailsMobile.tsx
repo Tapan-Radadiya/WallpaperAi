@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
+import { getErrorMessage } from '@/lib/errorParser';
 import { WallpaperImage } from '@/lib/data';
 import api from '@/lib/api';
 import { Heart, Bookmark, Share2, Info, ChevronDown, Download, Check, ArrowLeft, MoreHorizontal, Lock, Sparkles } from 'lucide-react';
@@ -36,6 +38,7 @@ export default function ImageDetailsMobile({
     fetchedPrice
 }: ImageDetailsMobileProps) {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const router = useRouter();
     const [isDownloading, setIsDownloading] = useState(false);
     const [isPurchasing, setIsPurchasing] = useState(false);
@@ -93,11 +96,11 @@ export default function ImageDetailsMobile({
                 window.location.href = res.data.data.stripe_payment_url;
             } else {
                 console.error("Failed to get payment URL", res.data);
-                alert("Payment initialization failed. Please try again.");
+                showToast("Payment initialization failed. Please try again.", 'error');
             }
         } catch (error) {
             console.error("Payment error:", error);
-            alert("An error occurred during payment initialization.");
+            showToast(getErrorMessage(error, "An error occurred during payment initialization."), 'error');
         } finally {
             setIsPurchasing(false);
         }

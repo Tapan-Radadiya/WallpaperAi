@@ -7,6 +7,7 @@ import { User, Mail, Lock, ArrowRight, Loader2, FileText, Instagram, Globe, Chec
 import Link from 'next/link';
 import axios, { HttpStatusCode } from 'axios';
 import { useToast } from '@/context/ToastContext';
+import { getErrorMessage } from '@/lib/errorParser';
 import { useDebounce } from '@/hooks/useDebounce';
 import { ALLOWED_EMAILS_DOMAINS, MAX_FILE_SIZE } from '../../constants';
 import ImageDropzone from '../ui/ImageDropzone';
@@ -175,8 +176,10 @@ export default function RegistrationStep({ onRegistrationSuccess }: Registration
                 setFormError('User registration failed. Please try again.');
             }
         } catch (error: any) {
-            console.error(error);
-            setFormError(error.response?.data?.message || 'Registration failed. Please try again.');
+            console.error('Registration error:', error);
+            const msg = getErrorMessage(error, 'Registration failed. Please try again.');
+            setFormError(msg);
+            showToast(msg, 'error');
         }
     };
 
