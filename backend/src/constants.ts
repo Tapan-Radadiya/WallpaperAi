@@ -20,3 +20,8 @@ export const ALLOWED_IMAGES = [
 export const ALLOWED_IMAGES_FORMAT = ["jpeg", "jpg", "png", "webp"]
 
 export const DRIZZLE = Symbol("drizzle-connection")
+
+export const IMAGE_USER_OWNER_TYPE = {
+    "PURCHASED": "PURCHASED",
+    "UPLOADED": "UPLOADED"
+}

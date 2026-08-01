@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ImageModule } from '@src/image/image.module';
 import { StripeController } from './stripe.controller';
 import { StripeService } from './stripe.service';
 
 @Module({
-  imports: [ImageModule],
+  imports: [],
+  controllers: [StripeController],
   providers: [StripeService],
-  controllers: [StripeController]
+  exports: [StripeService]
 })
 export class StripeModule { }

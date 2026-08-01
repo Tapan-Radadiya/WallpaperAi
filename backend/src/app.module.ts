@@ -49,6 +49,7 @@ import LokiTransport from 'winston-loki';
     PrometheusModule.register({
       path: "/logging/metrics/prometheus/logs"
     }),
+    // Rate limiting
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -84,7 +85,6 @@ import LokiTransport from 'winston-loki';
   controllers: [AppController, UserVerificationController, DataSeedController],
   providers: [
     AppService,
-    UserVerificationService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard
