@@ -1,5 +1,5 @@
 import { ValidationPipe } from '@nestjs/common';
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory, PartialGraphHost } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as bodyParser from "body-parser";
 import { RedisStore } from 'connect-redis';
@@ -9,10 +9,14 @@ import { LoggingService } from './logging/logging.service';
 import { initRedis, redisClient } from './redis-client/redis-client';
 import { GlobalExceptionHandler } from './utils/global_exception_handler.filter';
 import dns from 'dns'
+import * as fs from 'fs'
 
 dns.setDefaultResultOrder('ipv4first')
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    snapshot: true,
+    abortOnError: false
+  });
 
   app.useGlobalFilters(new GlobalExceptionHandler(
     app.get(HttpAdapterHost),
@@ -85,4 +89,5 @@ async function bootstrap() {
   console.log(`Local access: http://localhost:${port}`);
   console.log("Redis Connected")
 }
-bootstrap();
+
+bootstrap()

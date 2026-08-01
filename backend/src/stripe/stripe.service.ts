@@ -5,23 +5,20 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import Stripe from "stripe"
 import { APIResponseInterface } from '@src/types/common.types';
 import { APIResponse } from '@src/utils/common';
-import { ImageService } from '@src/image/image.service';
-import { eq, InferSelectModel } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { tbl_payments } from './schema/schema';
-import type { RawBodyRequest } from "@nestjs/common"
 
-type imageData = InferSelectModel<typeof schema.tbl_image>;
 @Injectable()
 export class StripeService {
     private stripe: Stripe
     constructor(
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
-        private readonly imageService: ImageService
     ) {
         this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
     }
 
     async createPaymentSession({ image_id, userId }: { image_id: string, userId: string }): Promise<APIResponseInterface> {
+
         try {
             if (!image_id) {
                 return APIResponse({
@@ -33,6 +30,14 @@ export class StripeService {
             if (!process.env.PLATFORM_CUT) {
                 return APIResponse({
                     message: "Problem from our end we will reach you soon",
+                    statusCode: HttpStatus.CONFLICT
+                })
+            }
+
+            const userAlreadyPurchased = await this.isUserAlreadyPurached(userId, image_id)
+            if (userAlreadyPurchased) {
+                return APIResponse({
+                    message: "User already owns this image",
                     statusCode: HttpStatus.CONFLICT
                 })
             }
@@ -161,7 +166,7 @@ export class StripeService {
                     statusCode: HttpStatus.BAD_REQUEST
                 })
             }
-
+            // Stripe counts INR into paisa
             if (paymentData.amount * 100 !== amount_received) {
                 return APIResponse({
                     message: "Invalid Amount Received",
@@ -174,8 +179,6 @@ export class StripeService {
                     statusCode: HttpStatus.BAD_REQUEST
                 })
             }
-            console.log('latest_charge-->', latest_charge);
-            console.log("dsadas", typeof latest_charge)
             const updatePayment = await this.updatePaymentStatus({
                 payment_id,
                 status: 'SUCCESS',
@@ -227,6 +230,20 @@ export class StripeService {
         })
     }
 
+
+    async isUserAlreadyPurached(userId: string, imageId: string) {
+        const userPurchaed = await this.conn.query.tbl_purchases.findFirst({
+            where: and(
+                eq(
+                    schema.tbl_purchases.buyer_id, userId
+                ),
+                eq(
+                    schema.tbl_purchases.image_id, imageId
+                )
+            )
+        })
+        return userPurchaed ? true : false
+    }
     private async updatePaymentStatus({ payment_id, status, transaction_id }: { payment_id: string, status: 'PENDING' | 'SUCCESS' | 'FAILED', transaction_id?: string }): Promise<{
         payment_id: string,
         buyer_id: string,

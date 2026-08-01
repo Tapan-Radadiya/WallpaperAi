@@ -5,7 +5,6 @@ import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres"
 import { DrizzleService } from './drizzle.service';
 import * as schema from "../Schema/schema"
 import { LoggingModule } from '@src/logging/logging.module';
-import { LoggingService } from '@src/logging/logging.service';
 import { DRIZZLE } from '@src/constants';
 @Global()
 @Module({
@@ -30,8 +29,7 @@ import { DRIZZLE } from '@src/constants';
                 return drizzle(pool, { schema }) as NodePgDatabase<typeof schema>
             }
         },
-        DrizzleService,
-        LoggingService
+        DrizzleService
     ],
     exports: [DRIZZLE]
 })

@@ -35,7 +35,7 @@ import { SqsConsumerService } from './sqs-consumer.service';
       })
     })
   ],
-  providers: [AwsServicesService, ConfigService, SqsConsumerService, LoggingService],
+  providers: [AwsServicesService],
   exports: [AwsServicesService],
 })
 export class AwsServicesModule { }
