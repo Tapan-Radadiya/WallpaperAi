@@ -179,6 +179,7 @@ export default function SearchLayout() {
             >
                 {selectedImage && (
                     <ImageDetails
+                        key={selectedImage.id}
                         image={selectedImage}
                         relatedImages={results.filter(img => img.id !== selectedImage.id).slice(0, 10)}
                         isLiked={isLiked(selectedImage.id)}

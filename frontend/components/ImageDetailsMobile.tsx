@@ -23,6 +23,7 @@ interface ImageDetailsMobileProps {
     downloadCount: number;
     hasPurchased: boolean;
     fetchedPrice: number | null;
+    isDetailsLoading: boolean;
 }
 
 export default function ImageDetailsMobile({
@@ -35,7 +36,8 @@ export default function ImageDetailsMobile({
     likesCount,
     downloadCount,
     hasPurchased,
-    fetchedPrice
+    fetchedPrice,
+    isDetailsLoading
 }: ImageDetailsMobileProps) {
     const { user } = useAuth();
     const { showToast } = useToast();
@@ -248,7 +250,12 @@ export default function ImageDetailsMobile({
 
             {/* Static Download / Purchase Button for Mobile */}
             <div className="w-full p-4 mt-auto">
-                {isOwner ? (
+                {isDetailsLoading ? (
+                    <button disabled className="w-full py-4 bg-[var(--muted)]/10 text-[var(--muted)] rounded-full font-bold text-lg flex items-center justify-center gap-3 shadow-sm cursor-wait border border-[var(--muted)]/10">
+                        <div className="w-5 h-5 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin" />
+                        <span>Loading...</span>
+                    </button>
+                ) : isOwner ? (
                     <button disabled className="w-full py-4 bg-[var(--muted)]/20 text-[var(--muted)] rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-sm cursor-not-allowed border border-[var(--muted)]/10">
                         <Check size={20} />
                         <span>Your Owned Image</span>
@@ -277,7 +284,7 @@ export default function ImageDetailsMobile({
                                 <div className="w-6 h-6 border-2 border-[var(--background)] border-t-transparent rounded-full animate-spin" />
                             ) : (
                                 <>
-                                    <span>Download Free</span>
+                                    <span>{image.is_paid && hasPurchased ? 'Download' : 'Download Free'}</span>
                                     <ChevronDown size={20} className={`opacity-70 transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`} />
                                 </>
                             )}
