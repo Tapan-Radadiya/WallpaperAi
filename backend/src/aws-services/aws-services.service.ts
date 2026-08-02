@@ -7,6 +7,10 @@ import { SqsService } from "@ssut/nestjs-sqs";
 import { validateInput } from "@src/utils/common";
 import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
 import { LoggingService } from "@src/logging/logging.service";
+import { CloudfrontSignInputWithPolicy, getSignedUrl } from "@aws-sdk/cloudfront-signer";
+import * as fs from "fs"
+import { getSignedUrlPolicy } from "./aws.policy";
+
 @Injectable()
 export class AwsServicesService {
     private s3Client: S3Client
@@ -120,5 +124,20 @@ export class AwsServicesService {
                 ReceiptHandle: messageId
             })
         )
+    }
+
+    async getSignedUrl(url: string) {
+
+        const policyString = getSignedUrlPolicy(url)
+
+        console.log(fs.readFileSync("secrets/pk-APKAUS24ORKUJMRTS7TN.pem"))
+
+        const signedUrlParams: CloudfrontSignInputWithPolicy = {
+            keyPairId: process.env.AWS_CLOUDFRONT_KEY_PAIR_ID!,
+            policy: policyString,
+            privateKey: fs.readFileSync("secrets/pk-APKAUS24ORKUJMRTS7TN.pem")
+        }
+        const signedUrl = await getSignedUrl(signedUrlParams)
+        console.log('signedUrl -->', signedUrl);
     }
 }
