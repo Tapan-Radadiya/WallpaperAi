@@ -12,6 +12,7 @@ import { and, count, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import sharp from 'sharp';
 import * as schema from "../Schema/schema";
+import { StripeService } from '@src/stripe/stripe.service';
 
 @Injectable()
 export class ImageService {
@@ -21,7 +22,8 @@ export class ImageService {
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
         private readonly redis: RedisCacheService,
         private readonly awsServices: AwsServicesService,
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly stripeService: StripeService
     ) { }
 
     async getImages(page: string): Promise<APIResponseInterface> {
@@ -68,10 +70,10 @@ export class ImageService {
             const updatedData = newData.map((ele) => {
                 return {
                     ...ele,
-                    rawUrl: `${process.env.AWS_CLOUDFRONT}${ele.rawUrl}`,
-                    thumbnailUrl: `${process.env.AWS_CLOUDFRONT}${ele.thumbnailUrl}`,
-                    userAvatar: `${process.env.AWS_CLOUDFRONT}${ele.userAvatar}`,
-                    waterMarked_url: ele.is_paid && ele.waterMarked_url ? `${process.env.AWS_CLOUDFRONT}${ele.waterMarked_url}` : null
+                    rawUrl: `${ele.rawUrl}`,
+                    thumbnailUrl: `${ele.thumbnailUrl}`,
+                    userAvatar: `${ele.userAvatar}`,
+                    waterMarked_url: ele.is_paid && ele.waterMarked_url ? `${ele.waterMarked_url}` : null
                 }
             })
 
@@ -220,7 +222,7 @@ export class ImageService {
     }
 
     async getImageDetails(imageId: string, userId: string | null): Promise<APIResponseInterface> {
-
+        await this.awsServices.getSignedUrl('https://djrp6t1rc7td.cloudfront.net/dev/images/43f82621-722b-4c47-a241-fa0b760de45d/738ec1f2-7096-4f51-90e2-34bd322d80df/premium/raw.png')
         try {
             const isImageExists = await this.conn.query.tbl_image.findFirst({
                 where: (
@@ -230,8 +232,13 @@ export class ImageService {
                 )
             })
 
+
             if (!isImageExists) {
                 return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "Unable to find the image" })
+            }
+            if (userId) {
+                const userPurchasedImage = await this.stripeService.isUserAlreadyPurached(userId, imageId)
+                isImageExists["purchased_image"] = userPurchasedImage
             }
 
 
@@ -344,7 +351,6 @@ export class ImageService {
 
     private async convertImageToThumbnail(imageData: Express.Multer.File, orgImage: { width: number, height: number }): Promise<Buffer> {
         const thumbnailImageWidth = Math.round((orgImage.height / orgImage.width) * 400)
-
         const thumbNailImage = await sharp(imageData.buffer).resize({ width: thumbnailImageWidth }).toBuffer()
         return thumbNailImage
     }
@@ -375,7 +381,7 @@ export class ImageService {
 
     private async getWatermarkedImage(imageData: Express.Multer.File, imageMetaData: sharp.Metadata) {
         const waterMark = await sharp('src/public/watermark.png')
-            .resize(Math.floor(imageMetaData.width * 0.6))
+            .resize({ width: Math.floor(imageMetaData.width * 0.3) })
             .ensureAlpha(0.3)
             .toBuffer()
 
@@ -401,7 +407,7 @@ export class ImageService {
         if (is_paid) {
             return {
                 imagePreviewPath: `${PREFIX_PATH}/preview.webp`,
-                imageRawPath: `${PREFIX_PATH}/raw.${format}`,
+                imageRawPath: `${PREFIX_PATH}/premium/raw.${format}`,
                 imageThumbnailPath: `${PREFIX_PATH}/premium/thumbnail.webp`,
                 waterMarkedImagePath: `${PREFIX_PATH}/premium/waterMarkedImage.webp`
 
