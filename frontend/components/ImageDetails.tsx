@@ -29,6 +29,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     const [downloadCount, setDownloadCount] = useState<number>(0);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isPurchasing, setIsPurchasing] = useState(false);
+    const [isDetailsLoading, setIsDetailsLoading] = useState(true);
 
     // Purchase & detailed state
     const [hasPurchased, setHasPurchased] = useState(false);
@@ -105,20 +106,24 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     useEffect(() => {
         const controller = new AbortController();
         const fetchImageDetails = async () => {
+            setIsDetailsLoading(true);
             try {
                 const res = await api.get(`/image/image-data/${image.id}`, {
                     signal: controller.signal
                 });
                 if (res.data) {
-                    if (typeof res.data.imageLikes === 'number') setLikesCount(res.data.imageLikes);
-                    if (typeof res.data.totalDownloads === 'number') setDownloadCount(res.data.totalDownloads);
-                    if (res.data.price !== undefined) setFetchedPrice(res.data.price);
-                    if (res.data.has_purchased !== undefined) setHasPurchased(res.data.has_purchased);
+                    const payload = res.data.data || res.data;
+                    if (typeof payload.imageLikes === 'number') setLikesCount(payload.imageLikes);
+                    if (typeof payload.totalDownloads === 'number') setDownloadCount(payload.totalDownloads);
+                    if (payload.price !== undefined) setFetchedPrice(payload.price);
+                    if (payload.purchased_image !== undefined) setHasPurchased(payload.purchased_image);
                 }
             } catch (err: any) {
                 if (err.name !== 'CanceledError' && err.code !== "ERR_CANCELED") {
                     console.error("Failed to fetch image details:", err);
                 }
+            } finally {
+                setIsDetailsLoading(false);
             }
         };
         fetchImageDetails();
@@ -169,6 +174,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                 downloadCount={downloadCount}
                 hasPurchased={hasPurchased}
                 fetchedPrice={fetchedPrice}
+                isDetailsLoading={isDetailsLoading}
             />
 
             {/* Desktop View */}
@@ -344,7 +350,12 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
 
                         {/* Download / Purchase Button */}
                         <div className="mt-auto pt-4">
-                            {isOwner ? (
+                            {isDetailsLoading ? (
+                                <button disabled className="w-full py-4 bg-[var(--muted)]/10 text-[var(--muted)] rounded-2xl font-bold text-lg flex items-center justify-center gap-3 cursor-wait border border-[var(--muted)]/10">
+                                    <div className="w-5 h-5 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin" />
+                                    <span>Loading...</span>
+                                </button>
+                            ) : isOwner ? (
                                 <button disabled className="w-full py-4 bg-[var(--muted)]/20 text-[var(--muted)] rounded-2xl font-bold text-lg flex items-center justify-center gap-2 cursor-not-allowed">
                                     <Check size={20} />
                                     <span>Your Owned Image</span>
@@ -373,7 +384,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                                             <div className="w-6 h-6 border-2 border-[var(--background)] border-t-transparent rounded-full animate-spin" />
                                         ) : (
                                             <>
-                                                <span>Download Free</span>
+                                                <span>{image.is_paid && hasPurchased ? 'Download' : 'Download Free'}</span>
                                                 <ChevronDown size={20} className={`opacity-70 transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`} />
                                             </>
                                         )}
