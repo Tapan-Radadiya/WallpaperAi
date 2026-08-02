@@ -22,9 +22,6 @@ const CLOUDFRONT_URL = process.env.NEXT_PUBLIC_AWS_CLOUDFRONT || '';
 
 export const formatImageUrl = (url?: string): string => {
     if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
-        return url;
-    }
     // Prepend CloudFront URL or at least a slash
     const baseUrl = CLOUDFRONT_URL.endsWith('/') ? CLOUDFRONT_URL.slice(0, -1) : CLOUDFRONT_URL;
     return `${baseUrl}/${url}`;

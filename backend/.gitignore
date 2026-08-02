@@ -60,3 +60,5 @@ test.json
 .env*
 
 Pg_Dump
+pg_dump
+secrets

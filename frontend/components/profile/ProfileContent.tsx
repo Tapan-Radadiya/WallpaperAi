@@ -27,7 +27,6 @@ const CLOUDFRONT_URL = "https://djrp6t1rc7td.cloudfront.net/";
 
 const processImageUrl = (url?: string) => {
     if (!url) return '';
-    if (url.startsWith('http')) return url;
     return `${CLOUDFRONT_URL}${url}`;
 };
 
@@ -418,6 +417,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
             >
                 {selectedImage && (
                     <ImageDetails
+                        key={selectedImage.id}
                         image={selectedImage}
                         relatedImages={displayImages.slice(0, 10)}
                         isLiked={isLiked(selectedImage.id)}
