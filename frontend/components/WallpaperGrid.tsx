@@ -66,6 +66,7 @@ export default function WallpaperGrid({ initialImages, isMobile }: { initialImag
             >
                 {selectedImage && (
                     <ImageDetails
+                        key={selectedImage.id}
                         image={selectedImage}
                         relatedImages={images.slice(0, 10)}
                         isLiked={isLiked(selectedImage.id)}
