@@ -3,6 +3,8 @@ import { WallpaperImage } from '@/lib/data';
 import { Maximize2, Heart, Crown, Sparkles } from 'lucide-react';
 import { useState, useRef } from 'react';
 
+import { useAuth } from '@/context/AuthContext';
+
 interface ImageCardProps {
     image: WallpaperImage;
     onClick?: () => void;
@@ -11,6 +13,7 @@ interface ImageCardProps {
 }
 
 export default function ImageCard({ image, onClick, isLiked, onToggleLike }: ImageCardProps) {
+    const { user } = useAuth();
     const [showHeartAnimation, setShowHeartAnimation] = useState(false);
     const clickTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -23,8 +26,10 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
             if (!isLiked) {
                 onToggleLike?.();
             }
-            setShowHeartAnimation(true);
-            setTimeout(() => setShowHeartAnimation(false), 1000);
+            if (user) {
+                setShowHeartAnimation(true);
+                setTimeout(() => setShowHeartAnimation(false), 1000);
+            }
         } else {
             // Single click - wait for potential second click
             clickTimeout.current = setTimeout(() => {
