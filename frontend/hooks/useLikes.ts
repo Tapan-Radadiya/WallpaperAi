@@ -9,7 +9,7 @@ export interface UseLikesOptions {
 
 export function useLikes(options: UseLikesOptions = {}) {
     const { initialLikedIds = [], skipFetch = false } = options;
-    const { user } = useAuth();
+    const { user, showLoginPrompt } = useAuth();
     const [likedImageIds, setLikedImageIds] = useState<Set<string>>(new Set(initialLikedIds));
 
     useEffect(() => {
@@ -37,9 +37,17 @@ export function useLikes(options: UseLikesOptions = {}) {
         };
 
         fetchLikedImages();
-    }, [user]);
+    }, [user, skipFetch]);
 
     const toggleLike = async (id: string) => {
+        if (!user) {
+            showLoginPrompt(
+                "Sign in to Like",
+                "Please log in to like your favorite wallpapers."
+            );
+            return;
+        }
+
         const isCurrentlyLiked = likedImageIds.has(id);
         const newStatus = !isCurrentlyLiked;
 

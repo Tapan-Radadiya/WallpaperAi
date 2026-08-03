@@ -19,11 +19,10 @@ interface HeaderClientProps {
 }
 
 export default function HeaderClient({ initialUser }: HeaderClientProps) {
-    const { user: contextUser, login, logout } = useAuth();
+    const { user: contextUser, login, logout, showLoginPrompt } = useAuth();
     const { showToast } = useToast();
     const [imageError, setImageError] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
-    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isSynced, setIsSynced] = useState(false);
     const headerRef = useRef<HTMLElement>(null);
@@ -109,7 +108,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                 router.push('/profile');
             }
         } else {
-            setShowLoginPrompt(true);
+            showLoginPrompt("Sign in to Upload", "Please log in to share your wallpapers with the community.");
         }
     };
 
@@ -214,24 +213,7 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
                 onClose={() => setShowUploadModal(false)}
             />
 
-            <Modal
-                isOpen={showLoginPrompt}
-                onClose={() => setShowLoginPrompt(false)}
-            >
-                <div className="bg-[var(--card-bg)] p-6 rounded-3xl w-full max-w-md border border-[var(--muted)]/20 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
-                    <button
-                        onClick={() => setShowLoginPrompt(false)}
-                        className="absolute top-4 right-4 p-1.5 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors rounded-full hover:bg-[var(--foreground)]/10"
-                    >
-                        <X size={20} />
-                    </button>
-                    <LoginPrompt
-                        title="Sign in to Upload"
-                        message="Please log in to share your wallpapers with the community."
-                        onClose={() => setShowLoginPrompt(false)}
-                    />
-                </div>
-            </Modal>
+
             <Modal
                 isOpen={isLoggingOut}
                 onClose={() => { }} // Prevent closing while logging out
