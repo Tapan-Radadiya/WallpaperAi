@@ -1,5 +1,5 @@
 export const getSignedUrlPolicy = (url): string => {
-    const dateLessThan = "2022-01-01";
+    const dateLessThan = "2028-01-01";
     const policy = {
         Statement: [
             {
