@@ -1,6 +1,9 @@
 'use client';
 
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState, useCallback } from 'react';
+import Modal from '@/components/Modal';
+import LoginPrompt from '@/components/LoginPrompt';
+import { X } from 'lucide-react';
 
 export interface User {
     id: string;
@@ -10,11 +13,18 @@ export interface User {
     is_verified?: boolean;
 }
 
+export interface LoginPromptOptions {
+    title?: string;
+    message?: string;
+}
+
 interface AuthContextType {
     user: User | null;
     login: (userData: User) => void;
     logout: () => void;
     isLoading: boolean;
+    showLoginPrompt: (options?: LoginPromptOptions | string, message?: string) => void;
+    hideLoginPrompt: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,18 +33,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Check for active session on mount
-    // Check for active session on mount
-    /*
-    useEffect(() => {
-        const checkSession = async () => {
-             // Logic moved to SSR in Header component and hydrated via HeaderClient
-             setIsLoading(false);
-        };
-        checkSession();
-    }, []);
-    */
-    // Simplified to just stop loading immediately or keep it false if initialized
+    const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+    const [loginPromptConfig, setLoginPromptConfig] = useState<LoginPromptOptions>({
+        title: "Authentication Required",
+        message: "Please log in to continue."
+    });
+
     useEffect(() => {
         setIsLoading(false);
     }, []);
@@ -47,9 +51,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
     };
 
+    const showLoginPrompt = useCallback((options?: LoginPromptOptions | string, message?: string) => {
+        if (typeof options === 'string') {
+            setLoginPromptConfig({
+                title: options,
+                message: message || "Please log in to perform this action."
+            });
+        } else if (options) {
+            setLoginPromptConfig({
+                title: options.title || "Authentication Required",
+                message: options.message || "Please log in to perform this action."
+            });
+        } else {
+            setLoginPromptConfig({
+                title: "Authentication Required",
+                message: "Please log in to perform this action."
+            });
+        }
+        setIsLoginPromptOpen(true);
+    }, []);
+
+    const hideLoginPrompt = useCallback(() => {
+        setIsLoginPromptOpen(false);
+    }, []);
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+        <AuthContext.Provider value={{ user, login, logout, isLoading, showLoginPrompt, hideLoginPrompt }}>
             {children}
+            <Modal
+                isOpen={isLoginPromptOpen}
+                onClose={hideLoginPrompt}
+                zIndexClass="z-[100]"
+            >
+                <div className="bg-[var(--card-bg)] p-6 rounded-3xl w-full max-w-md border border-[var(--muted)]/20 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
+                    <button
+                        onClick={hideLoginPrompt}
+                        className="absolute top-4 right-4 p-1.5 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors rounded-full hover:bg-[var(--foreground)]/10"
+                    >
+                        <X size={20} />
+                    </button>
+                    <LoginPrompt
+                        title={loginPromptConfig.title}
+                        message={loginPromptConfig.message}
+                        onClose={hideLoginPrompt}
+                    />
+                </div>
+            </Modal>
         </AuthContext.Provider>
     );
 }
