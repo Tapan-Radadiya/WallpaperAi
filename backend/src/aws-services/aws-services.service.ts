@@ -127,17 +127,18 @@ export class AwsServicesService {
     }
 
     async getSignedUrl(url: string) {
+        try {
 
-        const policyString = getSignedUrlPolicy(url)
+            const policyString = getSignedUrlPolicy(url)
 
-        console.log(fs.readFileSync("secrets/pk-APKAUS24ORKUJMRTS7TN.pem"))
-
-        const signedUrlParams: CloudfrontSignInputWithPolicy = {
-            keyPairId: process.env.AWS_CLOUDFRONT_KEY_PAIR_ID!,
-            policy: policyString,
-            privateKey: fs.readFileSync("secrets/pk-APKAUS24ORKUJMRTS7TN.pem")
+            const signedUrlParams: CloudfrontSignInputWithPolicy = {
+                keyPairId: process.env.AWS_CLOUDFRONT_KEY_PAIR_ID!,
+                policy: policyString,
+                privateKey: fs.readFileSync("secrets/pk-APKAUS24ORKUJMRTS7TN.pem").toString(),
+            }
+            const signedUrl = await getSignedUrl(signedUrlParams)
+        } catch (error) {
+            console.log('error-->', error);
         }
-        const signedUrl = await getSignedUrl(signedUrlParams)
-        console.log('signedUrl -->', signedUrl);
     }
 }
