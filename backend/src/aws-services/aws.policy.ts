@@ -1,11 +1,12 @@
 export const getSignedUrlPolicy = (url): string => {
+    const expireTime = Math.floor((Date.now() + 60 * 1000) / 1000)
     const policy = {
         Statement: [
             {
                 Resource: url,
                 Condition: {
                     DateLessThan: {
-                        "AWS:EpochTime": new Date(Date.now() + 60 * 1000).toISOString(), // time in seconds
+                        "AWS:EpochTime": expireTime, // time in seconds
                     },
                 },
             },
