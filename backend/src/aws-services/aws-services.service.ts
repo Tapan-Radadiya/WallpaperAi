@@ -136,7 +136,8 @@ export class AwsServicesService {
                 policy: policyString,
                 privateKey: fs.readFileSync("secrets/pk-APKAUS24ORKUJMRTS7TN.pem").toString(),
             }
-            const signedUrl = await getSignedUrl(signedUrlParams)
+            const signedUrl = getSignedUrl(signedUrlParams)
+            return `${signedUrl}&Key-Pair-Id=${process.env.AWS_CLOUDFRONT_KEY_PAIR_ID}`
         } catch (error) {
             console.log('error-->', error);
         }
