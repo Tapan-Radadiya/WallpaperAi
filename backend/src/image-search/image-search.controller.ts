@@ -17,7 +17,6 @@ export class ImageSearchController {
         @Query() { text }: { text: string }
     ) {
         let responseData = craftResponseData()
-        console.log('text-->', text);
         try {
             const data = await this.ImageSearchService.getSearchImageResults(text)
             responseData.statusCode = data.statusCode

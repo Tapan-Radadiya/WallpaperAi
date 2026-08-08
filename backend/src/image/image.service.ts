@@ -337,6 +337,44 @@ export class ImageService {
         }
     }
 
+
+
+    async getSigendUrlImage(userId: string, imageId: string): Promise<APIResponseInterface> {
+        try {
+            const isUserPurchasedImage = await this.conn.query.tbl_purchases.findFirst({
+                where: (
+                    and(
+                        eq(schema.tbl_purchases.image_id, imageId),
+                        eq(schema.tbl_purchases.buyer_id, userId)
+                    )
+                )
+            })
+            if (!isUserPurchasedImage) {
+                return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "You haven't purchased for this image" })
+            }
+
+            const imageData = await this.conn.query.tbl_image.findFirst({
+                where: (eq(schema.tbl_image.id, imageId))
+            })
+
+            if (!imageData) {
+                return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "Image not found" })
+            }
+
+            const imageUrl = `${process.env.AWS_CLOUDFRONT}${imageData.raw_url}`
+            const sigendUrl = await this.awsServices.getSignedUrl(imageUrl)
+            return APIResponse({
+                statusCode: HttpStatus.OK, message: "", data: {
+                    sigendUrl
+                }
+            })
+        } catch (error) {
+
+            console.log('error-->', error);
+            return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error processing your request try after some time" })
+        }
+    }
+
     // Private Functions
     private async getLikeImage(imageId: string, userId: string) {
         return await this.conn.query.tbl_image_likes.findFirst({

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { ImageService } from './image.service';
 import { APIResponse, craftResponseData, getImageMetaData, SanitizeImageData } from '@src/utils/common';
@@ -194,6 +194,29 @@ export class ImageController {
             return res.status(data.statusCode).json(APIResponse({ statusCode: data.statusCode, message: data.message }))
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Invalid Image File" }))
+        }
+    }
+
+    @Get('/download/:imageId')
+    async getSignedUrlForPremiumImage(
+        @Req() req: Request,
+        @Res() res: Response,
+        @Param('imageId', new ParseUUIDPipe()) imageId: string
+    ) {
+        try {
+            const userId = req.session.userId
+            if (!userId) {
+                return res.status(HttpStatus.UNAUTHORIZED).json(APIResponse({ statusCode: HttpStatus.UNAUTHORIZED, message: "Unauthorized" }))
+            }
+            const data = await this.imageService.getSigendUrlImage(userId, imageId)
+            if (data.statusCode === HttpStatus.OK) {
+                return res.redirect(data.data.sigendUrl)
+            } else {
+                return res.status(data.statusCode).json(data)
+            }
+        } catch (error) {
+            console.log('error-->', error);
+            return res.status(HttpStatus.BAD_REQUEST).json(APIResponse({ statusCode: HttpStatus.BAD_REQUEST, message: "Unable to process your req try after sometime" }))
         }
     }
 }
