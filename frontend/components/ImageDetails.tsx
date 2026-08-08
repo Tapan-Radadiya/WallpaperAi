@@ -53,11 +53,6 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     }, []);
 
     const handleDownload = async (url: string, filename: string) => {
-        if (!url) {
-            console.error("Download failed: URL is missing");
-            return;
-        }
-
         // Fire and forget download count update
         api.patch(`/image/update-download-count/${image.id}`).catch(e => console.error("Error updating download count", e));
 
@@ -65,7 +60,44 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
             setIsDownloading(true);
             setShowDownloadMenu(false);
 
-            const res = await fetch(url, {
+            let targetUrl = url;
+
+            // If image is paid, fetch signed URL / download route from backend
+            if (image.is_paid) {
+                if (!user) {
+                    showToast("Please log in to download this wallpaper.", "info");
+                    setIsDownloading(false);
+                    return;
+                }
+
+                try {
+                    const downloadRes = await api.get(`/image/download/${image.id}`);
+                    const payload = downloadRes.data?.data || downloadRes.data;
+                    const signedUrl = payload?.downloadUrl || payload?.url || (typeof payload === 'string' && payload.startsWith('http') ? payload : null);
+
+                    if (signedUrl) {
+                        targetUrl = signedUrl;
+                    } else {
+                        console.warn("No signedUrl returned in response object, using fallback or target URL.");
+                    }
+                } catch (apiErr: any) {
+                    console.error("Backend download validation failed:", apiErr);
+                    if (apiErr?.response?.status === 403 || apiErr?.response?.status === 401) {
+                        setHasPurchased(false);
+                        showToast(getErrorMessage(apiErr, "You must purchase this prime image before downloading."), "error");
+                        return;
+                    }
+                    throw apiErr;
+                }
+            }
+
+            if (!targetUrl) {
+                console.error("Download failed: URL is missing");
+                showToast("Unable to get download link.", "error");
+                return;
+            }
+
+            const res = await fetch(targetUrl, {
                 method: 'GET',
                 mode: 'cors', // Ensure we request CORS
             });
@@ -83,9 +115,13 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
             document.body.removeChild(a);
             window.URL.revokeObjectURL(blobUrl);
         } catch (error) {
-            console.error("Download failed, using fallback:", error);
-            // Fallback: Open in new tab
-            window.open(url, '_blank');
+            console.error("Download failed:", error);
+            if (!image.is_paid && url) {
+                // Fallback for free images: Open in new tab
+                window.open(url, '_blank');
+            } else if (image.is_paid) {
+                showToast("Failed to download prime image. Please try again.", "error");
+            }
         } finally {
             setIsDownloading(false);
         }
@@ -376,7 +412,13 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                             ) : (
                                 <div className="relative" ref={downloadMenuRef}>
                                     <button
-                                        onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                                        onClick={() => {
+                                            if (image.is_paid) {
+                                                handleDownload(image.rawUrl, `wallpaper-${image.id}-original.jpg`);
+                                            } else {
+                                                setShowDownloadMenu(!showDownloadMenu);
+                                            }
+                                        }}
                                         disabled={isDownloading}
                                         className="w-full py-4 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-[var(--foreground)]/10 group disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
@@ -384,14 +426,17 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                                             <div className="w-6 h-6 border-2 border-[var(--background)] border-t-transparent rounded-full animate-spin" />
                                         ) : (
                                             <>
-                                                <span>{image.is_paid && hasPurchased ? 'Download' : 'Download Free'}</span>
-                                                <ChevronDown size={20} className={`opacity-70 transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`} />
+                                                {image.is_paid && <Download size={20} />}
+                                                <span>{image.is_paid ? 'Download' : 'Download Free'}</span>
+                                                {!image.is_paid && (
+                                                    <ChevronDown size={20} className={`opacity-70 transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`} />
+                                                )}
                                             </>
                                         )}
                                     </button>
 
-                                    {/* Download Menu */}
-                                    {showDownloadMenu && (
+                                    {/* Download Menu (Only for Free images) */}
+                                    {!image.is_paid && showDownloadMenu && (
                                         <div className="absolute bottom-full left-0 w-full mb-2 bg-[var(--card-bg)] border border-[var(--muted)]/20 rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom-2 z-50">
                                             <div className="p-2">
                                                 <div className="p-2">
