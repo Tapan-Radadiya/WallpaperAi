@@ -113,7 +113,7 @@ export class ImageService {
             if (reqBody.is_paid) {
                 // If User uploaded image is premium then create a watermarked image 
                 const waterMarkerdImage = await this.getWatermarkedImage(fileData, imageMetaData)
-
+                // TODO - This needs to be go in queue
                 const data = await Promise.allSettled([
                     this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
                     this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
@@ -446,8 +446,8 @@ export class ImageService {
             return {
                 imagePreviewPath: `${PREFIX_PATH}/preview.webp`,
                 imageRawPath: `${PREFIX_PATH}/premium/raw.${format}`,
-                imageThumbnailPath: `${PREFIX_PATH}/premium/thumbnail.webp`,
-                waterMarkedImagePath: `${PREFIX_PATH}/premium/waterMarkedImage.webp`
+                imageThumbnailPath: `${PREFIX_PATH}/thumbnail.webp`,
+                waterMarkedImagePath: `${PREFIX_PATH}/waterMarkedImage.webp`
 
             }
         } else {
