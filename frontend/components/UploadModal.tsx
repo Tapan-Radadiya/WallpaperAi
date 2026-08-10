@@ -6,6 +6,7 @@ import { Upload, X, Loader2 } from 'lucide-react';
 
 import api, { validateImage } from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
+import { useAuth } from '@/context/AuthContext';
 import { getErrorMessage } from '@/lib/errorParser';
 import ImageDropzone from './ui/ImageDropzone';
 import { MIN_WALLPAPER_SIZE, MAX_WALLPAPER_SIZE } from '@/constants';
@@ -17,6 +18,7 @@ interface UploadModalProps {
 
 export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     const { showToast } = useToast();
+    const { user, showLoginPrompt } = useAuth();
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [hashtags, setHashtags] = useState('');
@@ -28,6 +30,11 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) {
+            showLoginPrompt("Sign in to Upload", "Please log in to share your wallpapers.");
+            return;
+        }
+
         if (!file) {
             showToast('Please select an image first', 'error');
             return;
