@@ -22,7 +22,7 @@ interface ImageDetailsProps {
 }
 
 export default function ImageDetails({ image, relatedImages = [], onLike, isLiked, onRelatedImageClick, onClose }: ImageDetailsProps) {
-    const { user } = useAuth();
+    const { user, showLoginPrompt } = useAuth();
     const { showToast } = useToast();
     const [isFullSize, setIsFullSize] = useState(false);
     const [likesCount, setLikesCount] = useState<number>(0);
@@ -65,7 +65,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
             // If image is paid, fetch signed URL / download route from backend
             if (image.is_paid) {
                 if (!user) {
-                    showToast("Please log in to download this wallpaper.", "info");
+                    showLoginPrompt("Sign in to Download", "Please log in to download this wallpaper.");
                     setIsDownloading(false);
                     return;
                 }
@@ -167,6 +167,11 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     }, [image.id]);
 
     const handlePurchase = async () => {
+        if (!user) {
+            showLoginPrompt("Sign in to Purchase", "Please log in to purchase this wallpaper.");
+            return;
+        }
+
         try {
             setIsPurchasing(true);
             const res = await api.post('/stripe/payment', {

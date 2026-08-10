@@ -9,8 +9,8 @@ import { useWallpaperData } from '@/hooks/useWallpaperData';
 import { useMasonryGrid } from '@/hooks/useMasonryGrid';
 import { useLikes } from '@/hooks/useLikes';
 
-export default function WallpaperGrid({ initialImages, isMobile }: { initialImages: WallpaperImage[], isMobile?: boolean }) {
-    const { images, loading, hasMore, lastElementRef, page } = useWallpaperData(initialImages);
+export default function WallpaperGrid({ initialImages, purchasedIds, isMobile }: { initialImages: WallpaperImage[], purchasedIds?: string[], isMobile?: boolean }) {
+    const { images, loading, hasMore, lastElementRef, page } = useWallpaperData(initialImages, purchasedIds);
     const { columns } = useMasonryGrid(images, isMobile);
     const { isLiked, toggleLike } = useLikes();
     const [selectedImage, setSelectedImage] = useState<WallpaperImage | null>(null);

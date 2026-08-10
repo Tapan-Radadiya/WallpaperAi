@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';
-import { WallpaperImage, formatImageUrl } from '@/lib/data';
+import { WallpaperImage, formatImageUrl, getUserPurchases } from '@/lib/data';
 import api from '@/lib/api';
 import Modal from './Modal';
 import ImageDetails from './ImageDetails';
@@ -10,14 +10,23 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLikes } from '@/hooks/useLikes';
 
-export default function SearchLayout() {
+export default function SearchLayout({ purchasedIds }: { purchasedIds?: string[] }) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<WallpaperImage[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState<WallpaperImage | null>(null);
+    const [purchasedSet, setPurchasedSet] = useState<Set<string>>(() => new Set(purchasedIds || []));
     const dropdownRef = useRef<HTMLDivElement>(null);
     const { isLiked, toggleLike } = useLikes();
+
+    useEffect(() => {
+        if (purchasedIds) {
+            setPurchasedSet(new Set(purchasedIds));
+        } else {
+            getUserPurchases().then(ids => setPurchasedSet(new Set(ids)));
+        }
+    }, [purchasedIds]);
 
     // Debounce API calls
     useEffect(() => {
@@ -40,13 +49,15 @@ export default function SearchLayout() {
 
                 // Map API data to WallpaperImage interface
                 const mappedResults: WallpaperImage[] = dataArray.map((img: any) => {
+                    const id = img.id || img.image_id || img.imageSource || Math.random().toString(36).substring(7);
                     const rawUrl = formatImageUrl(img.imageSource || img.rawUrl || '');
                     const waterMarked_url = formatImageUrl(img.waterMarked_url);
                     const preview_url = formatImageUrl(img.preview_url);
                     const thumbnailUrl = formatImageUrl(img.thumbnailUrl || img.imageSource || '');
+                    const isPurchased = purchasedSet.has(id);
 
                     return {
-                        id: img.id || img.imageSource || Math.random().toString(36).substring(7),
+                        id,
                         width: img.width || 800,
                         height: img.height || 600,
                         rawUrl,
@@ -58,7 +69,8 @@ export default function SearchLayout() {
                         userId: img.userId || 'unknown',
                         title: img.imageTitle || img.title || img.imageDescription || 'Untitled',
                         publishedOn: img.publishedOn,
-                        is_paid: img.is_paid,
+                        is_paid: isPurchased ? false : img.is_paid,
+                        purchased_image: isPurchased || img.purchased_image,
                         waterMarked_url
                     };
                 });
