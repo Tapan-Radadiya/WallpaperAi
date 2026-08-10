@@ -4,9 +4,7 @@ import { ImageService } from './image.service';
 import { APIResponse, craftResponseData, getImageMetaData, SanitizeImageData } from '@src/utils/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageUploadBodyDTO, LikeImageDTO } from '@src/DTO/image.dto';
-import { ALLOWED_IMAGES, ALLOWED_IMAGES_FORMAT } from '@src/constants';
-import sharp from 'sharp';
-import { APIResponseInterface } from '@src/types/common.types';
+import { ALLOWED_IMAGES } from '@src/constants';
 @Controller('image')
 export class ImageController {
     constructor(

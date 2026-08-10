@@ -14,6 +14,10 @@ export const APIResponse = ({ statusCode, message, data, err }: APIResponseInter
     }
 }
 
+/**
+ * By default it will return   HttpStatus as OK
+ * @returns Response Object with data {statusCode:OK,message:'',data:{},err:{}}
+*/
 export const craftResponseData = (): APIResponseInterface => {
     return {
         statusCode: HttpStatus.OK,

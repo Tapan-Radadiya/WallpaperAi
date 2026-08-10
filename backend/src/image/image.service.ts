@@ -48,13 +48,15 @@ export class ImageService {
                     width: schema.tbl_image.width,
                     height: schema.tbl_image.height,
                     description: schema.tbl_image.description,
-                    userName: schema.tbl_user.user_name,
-                    userAvatar: schema.tbl_user.avatar,
-                    userId: schema.tbl_user.id,
                     title: schema.tbl_image.title,
                     is_paid: schema.tbl_image.is_paid,
                     publishedOn: schema.tbl_image.created_at,
-                    preview_url: schema.tbl_image.preview_url
+                    preview_url: schema.tbl_image.preview_url,
+                    ownerData: {
+                        userName: schema.tbl_user.user_name,
+                        userAvatar: schema.tbl_user.avatar,
+                        userId: schema.tbl_user.id,
+                    }
                 })
                 .from(schema.tbl_image)
                 .leftJoin(
@@ -67,19 +69,20 @@ export class ImageService {
                 .offset(offset)
                 .limit(this.PAGE_LENGTH)
 
-            const updatedData = newData.map((ele) => {
-                return {
-                    ...ele,
-                    rawUrl: `${ele.rawUrl}`,
-                    thumbnailUrl: `${ele.thumbnailUrl}`,
-                    userAvatar: `${ele.userAvatar}`,
-                    waterMarked_url: ele.is_paid && ele.waterMarked_url ? `${ele.waterMarked_url}` : null
-                }
-            })
+            // TODO Unwanted Code
+            // const updatedData = newData.map((ele) => {
+            //     return {
+            //         ...ele,
+            //         rawUrl: `${ele.rawUrl}`,
+            //         thumbnailUrl: `${ele.thumbnailUrl}`,
+            //         userAvatar: `${ele.userAvatar}`,
+            //         waterMarked_url: ele.is_paid && ele.waterMarked_url ? `${ele.waterMarked_url}` : null
+            //     }
+            // })
 
             // cache new req for other users 
             // await this.redis.setRedisKey(redisKey, JSON.stringify(updatedData), this.DEFAULT_TTL_IMAGE)
-            const randomData = this.randomizeData(updatedData)
+            const randomData = this.randomizeData(newData)
             return APIResponse({ statusCode: HttpStatus.OK, message: "", data: randomData })
         } catch (error) {
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error", err: error })
@@ -113,7 +116,7 @@ export class ImageService {
             if (reqBody.is_paid) {
                 // If User uploaded image is premium then create a watermarked image 
                 const waterMarkerdImage = await this.getWatermarkedImage(fileData, imageMetaData)
-
+                // TODO - This needs to be go in queue
                 const data = await Promise.allSettled([
                     this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
                     this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
@@ -446,8 +449,8 @@ export class ImageService {
             return {
                 imagePreviewPath: `${PREFIX_PATH}/preview.webp`,
                 imageRawPath: `${PREFIX_PATH}/premium/raw.${format}`,
-                imageThumbnailPath: `${PREFIX_PATH}/premium/thumbnail.webp`,
-                waterMarkedImagePath: `${PREFIX_PATH}/premium/waterMarkedImage.webp`
+                imageThumbnailPath: `${PREFIX_PATH}/thumbnail.webp`,
+                waterMarkedImagePath: `${PREFIX_PATH}/waterMarkedImage.webp`
 
             }
         } else {

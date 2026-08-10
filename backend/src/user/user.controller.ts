@@ -179,7 +179,7 @@ export class UserController {
     }
 
 
-    @Put('update-user')
+    @Put('/update-user')
     @UseInterceptors(FileInterceptor('user_avatar'))
     async updateUserController(
         @Req() req: Request,
@@ -223,6 +223,27 @@ export class UserController {
             responseData.err = error.message
             responseData.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
         }
+        return res.status(responseData.statusCode).json(responseData)
+    }
+
+
+    @Get('/get-user-purchases')
+    async getUserPurchases(
+        @Req() req: Request,
+        @Res() res: Response
+    ) {
+        const responseData = craftResponseData()
+        const userId = req.session.userId
+        try {
+            const data = await this.userService.getUserPurchases(userId)
+            responseData.data = data.data
+            responseData.statusCode = data.statusCode
+            responseData.message = data.message
+        } catch (error) {
+            responseData.err = error
+            responseData.statusCode = HttpStatus.CONFLICT
+        }
+
         return res.status(responseData.statusCode).json(responseData)
     }
 }
