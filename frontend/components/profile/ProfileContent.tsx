@@ -30,6 +30,36 @@ const processImageUrl = (url?: string) => {
     return `${CLOUDFRONT_URL}${url}`;
 };
 
+const mapToWallpaperImage = (img: any, defaultDesc = 'Wallpaper'): WallpaperImage => {
+    const owner = img.ownerData || {};
+    const userName = owner.userName || img.userName || 'Unknown';
+    const rawAvatar = owner.userAvatar || owner.avatar || img.userProfileImage || img.userAvatar || '';
+    const userAvatar = rawAvatar ? processImageUrl(rawAvatar) : '';
+    const userId = owner.userId || owner.id || img.userId || '';
+
+    return {
+        id: img.image_id || img.id,
+        width: Number(img.width) || 0,
+        height: Number(img.height) || 0,
+        rawUrl: processImageUrl(img.imageRawPath || img.raw_url || img.rawUrl),
+        thumbnailUrl: processImageUrl(img.thumbnail_url || img.thumbnailUrl),
+        description: img.description || defaultDesc,
+        userName,
+        userAvatar,
+        userId,
+        ownerData: {
+            userName,
+            userAvatar,
+            userId,
+        },
+        title: img.title,
+        is_paid: img.is_paid,
+        price: img.price,
+        publishedOn: img.publishedOn,
+        waterMarked_url: processImageUrl(img.waterMarked_url)
+    };
+};
+
 interface ProfileContentProps {
     initialProfileData: APIResponseData | null;
     viewedUserId?: string;
@@ -53,22 +83,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
 
     const [uploadedImages, setUploadedImages] = useState<WallpaperImage[]>(() => {
         if (!initialUploadedImagesRaw) return [];
-        return initialUploadedImagesRaw.map((img: any) => ({
-            id: img.image_id,
-            width: Number(img.width) || 0,
-            height: Number(img.height) || 0,
-            rawUrl: processImageUrl(img.raw_url),
-            thumbnailUrl: processImageUrl(img.thumbnail_url),
-            description: img.description || 'Wallpaper',
-            userName: img.ownerData?.userName || 'Unknown',
-            userAvatar: processImageUrl(img.ownerData?.avatar),
-            userId: img.ownerData?.id || '',
-            title: img.title,
-            is_paid: img.is_paid,
-            price: img.price,
-            publishedOn: img.publishedOn,
-            waterMarked_url: processImageUrl(img.waterMarked_url)
-        }));
+        return initialUploadedImagesRaw.map((img: any) => mapToWallpaperImage(img));
     });
     const [isUploadsLoading, setIsUploadsLoading] = useState(false);
     const [hasFetchedUploads, setHasFetchedUploads] = useState(!!initialUploadedImagesRaw);
@@ -139,22 +154,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
     // Reset uploads fetch state when switching users
     useEffect(() => {
         if (initialUploadedImagesRaw) {
-            setUploadedImages(initialUploadedImagesRaw.map((img: any) => ({
-                id: img.image_id,
-                width: Number(img.width) || 0,
-                height: Number(img.height) || 0,
-                rawUrl: processImageUrl(img.raw_url),
-                thumbnailUrl: processImageUrl(img.thumbnail_url),
-                description: img.description || 'Wallpaper',
-                userName: img.ownerData?.userName || 'Unknown',
-                userAvatar: processImageUrl(img.ownerData?.avatar),
-                userId: img.ownerData?.id || '',
-                title: img.title,
-                is_paid: img.is_paid,
-                price: img.price,
-                publishedOn: img.publishedOn,
-                waterMarked_url: processImageUrl(img.waterMarked_url)
-            })));
+            setUploadedImages(initialUploadedImagesRaw.map((img: any) => mapToWallpaperImage(img)));
             setHasFetchedUploads(true);
         } else {
             setHasFetchedUploads(false);
@@ -179,22 +179,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
 
                     const response = await api.get(url);
                     if (response.data && response.data.data) {
-                        const mappedImages: WallpaperImage[] = response.data.data.map((img: APILikedImage) => ({
-                            id: img.image_id,
-                            width: Number(img.width) || 0,
-                            height: Number(img.height) || 0,
-                            rawUrl: processImageUrl(img.raw_url),
-                            thumbnailUrl: processImageUrl(img.thumbnail_url),
-                            description: img.description || 'Wallpaper',
-                            userName: img.ownerData?.userName || 'Unknown',
-                            userAvatar: processImageUrl(img.ownerData?.avatar),
-                            userId: img.ownerData?.id || '',
-                            title: img.title,
-                            is_paid: img.is_paid,
-                            price: img.price,
-                            publishedOn: img.publishedOn,
-                            waterMarked_url: processImageUrl(img.waterMarked_url)
-                        }));
+                        const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => mapToWallpaperImage(img));
                         setUploadedImages(mappedImages);
                     }
                     setHasFetchedUploads(true);
@@ -217,22 +202,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                 try {
                     const response = await api.get('/user/purchased-images');
                     if (response.data && response.data.data) {
-                        const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => ({
-                            id: img.image_id,
-                            width: Number(img.width) || 0,
-                            height: Number(img.height) || 0,
-                            rawUrl: processImageUrl(img.imageRawPath),
-                            thumbnailUrl: processImageUrl(img.thumbnail_url),
-                            description: img.description || 'Purchased Image',
-                            userName: img.userName || 'Unknown',
-                            userAvatar: img.userProfileImage ? processImageUrl(img.userProfileImage) : '',
-                            userId: '',
-                            title: img.title,
-                            is_paid: img.is_paid,
-                            price: img.price,
-                            publishedOn: img.publishedOn,
-                            waterMarked_url: processImageUrl(img.waterMarked_url)
-                        }));
+                        const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => mapToWallpaperImage(img, 'Purchased Image'));
                         setPurchasedImages(mappedImages);
                     }
                     setHasFetchedPurchased(true);
@@ -248,22 +218,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
     }, [activeTab, hasFetchedPurchased, user, isOwnProfile]);
 
     const likedImages: WallpaperImage[] = useMemo(() => {
-        return profileData?.likedImages?.map((img) => ({
-            id: img.image_id,
-            width: Number(img.width) || 0,
-            height: Number(img.height) || 0,
-            rawUrl: processImageUrl(img.raw_url),
-            thumbnailUrl: processImageUrl(img.thumbnail_url),
-            description: img.description || 'Wallpaper',
-            userName: img.ownerData?.userName || 'Unknown',
-            userAvatar: processImageUrl(img.ownerData?.avatar),
-            userId: img.ownerData?.id || '',
-            title: img.title,
-            is_paid: img.is_paid,
-            price: img.price,
-            publishedOn: img.publishedOn,
-            waterMarked_url: processImageUrl(img.waterMarked_url)
-        })) || [];
+        return profileData?.likedImages?.map((img) => mapToWallpaperImage(img)) || [];
     }, [profileData]);
 
     const displayImages = activeTab === 'uploads' ? uploadedImages :
