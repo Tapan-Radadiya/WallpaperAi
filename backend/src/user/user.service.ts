@@ -1,5 +1,5 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { and, count, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { alias } from 'drizzle-orm/pg-core';
 import { DRIZZLE, IMAGE_USER_OWNER_TYPE } from '@src/constants';
@@ -235,11 +235,13 @@ export class UserService {
         }
     }
 
+
+    // For User Profile
     async getUserPurchasedImagesService(userId: string): Promise<APIResponseInterface> {
         try {
+            const userPurchases = await this.getUserPurchasedImagesData(userId)
             const data = await this.conn
                 .select({
-                    userName: schema.tbl_user.user_name,
                     imageRawPath: schema.tbl_image.raw_url,
                     thumbnail_url: schema.tbl_image.thumbnail_url,
                     description: schema.tbl_image.description,
@@ -249,32 +251,74 @@ export class UserService {
                     height: schema.tbl_image.height,
                     width: schema.tbl_image.width,
                     is_paid: schema.tbl_image.is_paid,
-                    user_owned: sql<string>`${IMAGE_USER_OWNER_TYPE.PURCHASED}`.as('user_owned')
+                    user_owned: sql<string>`${IMAGE_USER_OWNER_TYPE.PURCHASED}`.as('user_owned'),
+                    ownerData: {
+                        userName: schema.tbl_user.user_name,
+                        userAvatar: schema.tbl_user.avatar,
+                        userId: schema.tbl_user.id,
+                    },
+                    publishedOn: schema.tbl_image.created_at
                 })
-                .from(schema.tbl_purchases)
-                .leftJoin(
-                    schema.tbl_user,
-                    eq(
-                        schema.tbl_user.id,
-                        schema.tbl_purchases.buyer_id
-                    )
-                )
-                .leftJoin(
-                    schema.tbl_image,
-                    eq(
-                        schema.tbl_image.id,
-                        schema.tbl_purchases.image_id
-                    )
+                .from(schema.tbl_image)
+                .leftJoin(schema.tbl_user,
+                    eq(schema.tbl_image.user_id, schema.tbl_user.id)
                 )
                 .where(
-                    eq(
-                        schema.tbl_purchases.buyer_id,
-                        userId
+                    inArray(
+                        schema.tbl_image.id,
+                        userPurchases
                     )
                 )
             return APIResponse({ statusCode: HttpStatus.OK, message: "", data })
         } catch (error) {
+            console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Internal Server Error" })
         }
+    }
+
+    /**
+     * @param userId 
+     * @returns Array of user purchased image ids
+     */
+
+    async getUserPurchases(userId: string | undefined): Promise<APIResponseInterface> {
+        if (!userId) {
+            return APIResponse({
+                statusCode: HttpStatus.OK,
+                message: "",
+                data: []
+            })
+        }
+
+        const userPurchasedImages = await this.getUserPurchasedImagesData(userId)
+        return APIResponse({
+            statusCode: HttpStatus.OK,
+            message: "",
+            data: userPurchasedImages
+        })
+    }
+
+    // Private Functions
+    /**
+     * 
+     * @param userId 
+     * @returns Array Of imageId user has purchased
+     */
+    private async getUserPurchasedImagesData(userId: string): Promise<string[]> {
+        const userPurchases: string[] = []
+
+        const data = await this.conn.query.tbl_purchases.findMany({
+            columns: {
+                image_id: true,
+            },
+            where: (
+                eq(
+                    schema.tbl_purchases.buyer_id, userId
+                )
+            )
+        },)
+
+        data.forEach((ele) => userPurchases.push(ele.image_id))
+        return userPurchases
     }
 }
