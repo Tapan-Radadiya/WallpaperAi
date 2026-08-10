@@ -12,8 +12,10 @@ export interface APIUserProfile {
 }
 
 export interface APIImageOwner {
-    id: string;
-    avatar: string;
+    id?: string;
+    userId?: string;
+    avatar?: string;
+    userAvatar?: string;
     userName: string;
 }
 

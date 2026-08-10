@@ -1,11 +1,12 @@
-import { getImages } from '@/lib/data';
+import { getImages, getUserPurchases } from '@/lib/data';
 import WallpaperGrid from '@/components/WallpaperGrid';
 import SearchLayout from '@/components/SearchLayout';
 import Header from '@/components/Header';
 import { headers } from 'next/headers';
 
 export default async function Home() {
-  const images = await getImages();
+  const purchasedIds = await getUserPurchases();
+  const images = await getImages(0, purchasedIds);
   const headersList = await headers();
   const userAgent = headersList.get('user-agent') || '';
   const isMobile = /mobile|android|iphone|ipad|ipod/i.test(userAgent);
@@ -13,9 +14,9 @@ export default async function Home() {
   return (
     <main className="min-h-screen pb-10">
       <div className="container mx-auto px-4 mt-6 space-y-12">
-        <SearchLayout />
+        <SearchLayout purchasedIds={purchasedIds} />
         <div>
-           <WallpaperGrid initialImages={images} isMobile={isMobile} />
+           <WallpaperGrid initialImages={images} purchasedIds={purchasedIds} isMobile={isMobile} />
         </div>
       </div>
     </main>
