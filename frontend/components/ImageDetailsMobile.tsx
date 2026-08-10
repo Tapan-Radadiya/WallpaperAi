@@ -39,7 +39,7 @@ export default function ImageDetailsMobile({
     fetchedPrice,
     isDetailsLoading
 }: ImageDetailsMobileProps) {
-    const { user } = useAuth();
+    const { user, showLoginPrompt } = useAuth();
     const { showToast } = useToast();
     const router = useRouter();
     const [isDownloading, setIsDownloading] = useState(false);
@@ -62,7 +62,7 @@ export default function ImageDetailsMobile({
             // If image is paid, fetch signed URL / download route from backend
             if (image.is_paid) {
                 if (!user) {
-                    showToast("Please log in to download this wallpaper.", "info");
+                    showLoginPrompt("Sign in to Download", "Please log in to download this wallpaper.");
                     setIsDownloading(false);
                     return;
                 }
@@ -125,6 +125,11 @@ export default function ImageDetailsMobile({
     };
 
     const handlePurchase = async () => {
+        if (!user) {
+            showLoginPrompt("Sign in to Purchase", "Please log in to purchase this wallpaper.");
+            return;
+        }
+
         try {
             setIsPurchasing(true);
             const res = await api.post('/stripe/payment', {

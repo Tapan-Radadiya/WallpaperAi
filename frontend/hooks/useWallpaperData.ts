@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { WallpaperImage, getImages } from '@/lib/data';
 
-export function useWallpaperData(initialImages: WallpaperImage[]) {
+export function useWallpaperData(initialImages: WallpaperImage[], purchasedIds?: string[]) {
     // Initial images are page 0
     const [images, setImages] = useState<WallpaperImage[]>(initialImages);
     const [page, setPage] = useState(0);
@@ -29,7 +29,7 @@ export function useWallpaperData(initialImages: WallpaperImage[]) {
         const loadMoreImages = async () => {
             setLoading(true);
             try {
-                const newImages = await getImages(page);
+                const newImages = await getImages(page, purchasedIds);
                 if (newImages.length > 0) {
                     setImages(prev => {
                         const existingIds = new Set(prev.map(img => img.id));
