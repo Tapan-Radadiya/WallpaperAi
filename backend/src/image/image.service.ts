@@ -92,7 +92,14 @@ export class ImageService {
 
     async uploadUserImageService(reqBody: ImageUploadBodyDTO, imageMetaData: sharp.Metadata, userId: string, fileData: Express.Multer.File): Promise<APIResponseInterface> {
         const imageUuid = crypto.randomUUID()
-        const { imagePreviewPath, imageRawPath, imageThumbnailPath, waterMarkedImagePath } = this.getImagepaths({ is_paid: reqBody.is_paid, imageUuid, userId, format: imageMetaData.format })
+        const {
+            imagePreviewPath,
+            imageRawPath,
+            imageThumbnailPath,
+            waterMarkedImagePath,
+            waterMarkedThumbnailPath,
+            waterMarkedPreviewPath
+        } = this.getImagepaths({ is_paid: reqBody.is_paid, imageUuid, userId, format: imageMetaData.format })
 
         const imageData: ImageUploadDTO = {
             id: imageUuid,
@@ -113,7 +120,9 @@ export class ImageService {
         try {
             const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
             const fullImageBuffer = await this.convertImageToPreview(fileData)
+
             if (reqBody.is_paid) {
+
                 // If User uploaded image is premium then create a watermarked image 
                 const waterMarkerdImage = await this.getWatermarkedImage(fileData, imageMetaData)
                 // TODO - This needs to be go in queue
@@ -121,7 +130,10 @@ export class ImageService {
                     this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
                     this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
                     this.awsServices.uploadFile(imagePreviewPath, fullImageBuffer, fileData.mimetype),
-                    this.awsServices.uploadFile(waterMarkedImagePath!, waterMarkerdImage, fileData.mimetype)
+                    this.awsServices.uploadFile(waterMarkedImagePath!, waterMarkerdImage, fileData.mimetype),
+                    // TODO: Change Image Buffer TO particular Image E.g. Create buffer for watermarked thumbnail Image
+                    this.awsServices.uploadFile(waterMarkedThumbnailPath!, waterMarkerdImage, fileData.mimetype),
+                    this.awsServices.uploadFile(waterMarkedPreviewPath!, waterMarkerdImage, fileData.mimetype)
                 ])
 
             } else {
@@ -441,7 +453,9 @@ export class ImageService {
         imageThumbnailPath: string,
         imageRawPath: string,
         imagePreviewPath: string,
-        waterMarkedImagePath?: string
+        waterMarkedImagePath?: string,
+        waterMarkedPreviewPath?: string
+        waterMarkedThumbnailPath?: string
     } {
 
         const PREFIX_PATH = `${process.env.S3_PREFIX}/${userId}/${imageUuid}`
@@ -450,8 +464,9 @@ export class ImageService {
                 imagePreviewPath: `${PREFIX_PATH}/preview.webp`,
                 imageRawPath: `${PREFIX_PATH}/premium/raw.${format}`,
                 imageThumbnailPath: `${PREFIX_PATH}/thumbnail.webp`,
-                waterMarkedImagePath: `${PREFIX_PATH}/waterMarkedImage.webp`
-
+                waterMarkedImagePath: `${PREFIX_PATH}/waterMarkedImage.webp`,
+                waterMarkedPreviewPath: `${PREFIX_PATH}/waterMarkedPreview.webp`,
+                waterMarkedThumbnailPath: `${PREFIX_PATH}/waterMarkedThumbnail.webp`
             }
         } else {
             return {
