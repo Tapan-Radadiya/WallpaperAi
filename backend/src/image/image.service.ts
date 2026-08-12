@@ -128,28 +128,15 @@ export class ImageService {
                 const thumbNailMetaData = await this.getImageMetadataFromBuffer(thumbnailbuffer)
                 const previewImageMetaData = await this.getImageMetadataFromBuffer(previewImageBuffer)
 
-                //                 {
-                //   format: 'png',
-                //   size: 26318,
-                //   width: 200,
-                //   height: 100,
-                //   space: 'srgb',
-                //   channels: 3,
-                //   depth: 'uchar',
-                //   density: 72,
-                //   isProgressive: false,
-                //   isPalette: false,
-                //   bitsPerSample: 8,
-                //   hasProfile: false,
-                //   hasAlpha: false,
-                //   autoOrient: { width: 200, height: 100 }
-                // }
-                // If User uploaded image is premium then create a watermarked image 
-                console.log('thumbNailMetaData-->', thumbNailMetaData);
-                console.log('previewImageMetaData-->', previewImageMetaData);
-                // const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbNailMetaData, thumbnailbuffer)
-                return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
 
+                const thumbnailFileData: Express.Multer.File = { ...fileData, buffer: thumbnailbuffer }
+                const previewFileData: Express.Multer.File = { ...fileData, buffer: previewImageBuffer }
+
+
+                const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbnailFileData, thumbNailMetaData)
+                const previewWaterMarkedImage = await this.getWatermarkedImage(previewFileData, previewImageMetaData)
+                // If User uploaded image is premium then create a watermarked image 
+                // const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbNailMetaData, thumbnailbuffer)
                 // TODO - This needs to be go in queue
                 const data = await Promise.allSettled([
                     this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
@@ -157,18 +144,18 @@ export class ImageService {
                     this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype),
                     this.awsServices.uploadFile(waterMarkedImagePath!, waterMarkerdImage, fileData.mimetype),
                     // TODO: Change Image Buffer TO particular Image E.g. Create buffer for watermarked thumbnail Image
-                    this.awsServices.uploadFile(waterMarkedThumbnailPath!, waterMarkerdImage, fileData.mimetype),
-                    this.awsServices.uploadFile(waterMarkedPreviewPath!, waterMarkerdImage, fileData.mimetype)
+                    this.awsServices.uploadFile(waterMarkedThumbnailPath!, thumbNailWaterMarkedImage, fileData.mimetype),
+                    this.awsServices.uploadFile(waterMarkedPreviewPath!, previewWaterMarkedImage, fileData.mimetype)
                 ])
 
             }
-            // else {
-            //     const data = await Promise.allSettled([
-            //         this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
-            //         this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-            //         this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype)
-            //     ])
-            // }
+            else {
+                const data = await Promise.allSettled([
+                    this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
+                    this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
+                    this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype)
+                ])
+            }
 
             const insertImage = await this.conn.insert(schema.tbl_image).values({
                 description: imageData.description,
@@ -429,7 +416,7 @@ export class ImageService {
     }
 
     private async convertImageToThumbnail(imageData: Express.Multer.File, orgImage: { width: number, height: number }): Promise<Buffer> {
-        const thumbnailImageWidth = Math.round((orgImage.height / orgImage.width) * 400)
+        const thumbnailImageWidth = Math.round((orgImage.height / orgImage.width) * 600)
         const thumbNailImage = await sharp(imageData.buffer).resize({ width: thumbnailImageWidth }).toBuffer()
         return thumbNailImage
     }
@@ -506,9 +493,9 @@ export class ImageService {
         const PREFIX_PATH = `${process.env.S3_PREFIX}/${userId}/${imageUuid}`
         if (is_paid) {
             return {
-                imagePreviewPath: `${PREFIX_PATH}/preview.webp`,
+                imagePreviewPath: `${PREFIX_PATH}/premium/preview.webp`,
                 imageRawPath: `${PREFIX_PATH}/premium/raw.${format}`,
-                imageThumbnailPath: `${PREFIX_PATH}/thumbnail.webp`,
+                imageThumbnailPath: `${PREFIX_PATH}/premium/thumbnail.webp`,
                 waterMarkedImagePath: `${PREFIX_PATH}/waterMarkedImage.webp`,
                 waterMarkedPreviewPath: `${PREFIX_PATH}/waterMarkedPreview.webp`,
                 waterMarkedThumbnailPath: `${PREFIX_PATH}/waterMarkedThumbnail.webp`
