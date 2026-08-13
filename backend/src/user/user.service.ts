@@ -291,6 +291,13 @@ export class UserService {
         }
 
         const userPurchasedImages = await this.getUserPurchasedImagesData(userId)
+
+        const privateImagePaths = await this.conn.query.tbl_image.findMany({
+            where: inArray(schema.tbl_image.id, userPurchasedImages)
+        })
+
+        console.log('privateImagePaths-->', privateImagePaths);
+
         return APIResponse({
             statusCode: HttpStatus.OK,
             message: "",

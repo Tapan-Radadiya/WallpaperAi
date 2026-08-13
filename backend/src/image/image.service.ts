@@ -121,6 +121,7 @@ export class ImageService {
             const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
             const previewImageBuffer = await this.convertImageToPreview(fileData)
 
+            // TODO - This needs to be go in queue
             if (reqBody.is_paid) {
 
                 const waterMarkerdImage = await this.getWatermarkedImage(fileData, imageMetaData)
@@ -137,7 +138,6 @@ export class ImageService {
                 const previewWaterMarkedImage = await this.getWatermarkedImage(previewFileData, previewImageMetaData)
                 // If User uploaded image is premium then create a watermarked image 
                 // const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbNailMetaData, thumbnailbuffer)
-                // TODO - This needs to be go in queue
                 const data = await Promise.allSettled([
                     this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
                     this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
@@ -509,22 +509,6 @@ export class ImageService {
             }
         }
     }
-
-    // private convertShaprDataToExpressMulter(imageMetaData: sharp.Metadata) {
-    //     const expressMetaData: Express.Multer.File = {
-    //         fieldname: imageMetaData,
-    //         originalname: '',
-    //         encoding: '',
-    //         mimetype: '',
-    //         size: 0,
-    //         stream: new Readable,
-    //         destination: '',
-    //         filename: '',
-    //         path: '',
-    //         buffer: undefined
-    //     }
-    // }
-
     /**
      * 
      * @param imageBuffer 
