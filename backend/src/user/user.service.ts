@@ -9,6 +9,7 @@ import { APIResponse } from '@src/utils/common';
 import * as schema from "../Schema/schema";
 import { AwsServicesService } from '@src/aws-services/aws-services.service';
 import { StripeService } from '@src/stripe/stripe.service';
+import { retry } from 'rxjs';
 
 @Injectable()
 export class UserService {
@@ -292,16 +293,38 @@ export class UserService {
 
         const userPurchasedImages = await this.getUserPurchasedImagesData(userId)
 
-        const privateImagePaths = await this.conn.query.tbl_image.findMany({
-            where: inArray(schema.tbl_image.id, userPurchasedImages)
-        })
+        const privateImagePaths = await this.conn
+            .select({
+                id: schema.tbl_image.id,
+                preview_url: schema.tbl_image.preview_url,
+                thumbnail_url: schema.tbl_image.thumbnail_url
+            })
+            .from(schema.tbl_image)
+            .where(
+                inArray(schema.tbl_image.id, userPurchasedImages)
+            )
 
-        console.log('privateImagePaths-->', privateImagePaths);
+        // TODO Cache Data
+        const signedUrlsData = await Promise.all(privateImagePaths.map(async (ele) => {
+            if ((ele.preview_url && ele.preview_url !== '') && (ele.thumbnail_url && ele.thumbnail_url !== '')) {
+                return {
+                    ...ele,
+                    preview_url: await this.awsServices.getSignedUrl(this.getCloudFrontPrefixImage(ele.preview_url), 300),
+                    thumbnail_url: await this.awsServices.getSignedUrl(this.getCloudFrontPrefixImage(ele.thumbnail_url), 300)
+                }
+            }
+            return {
+                ...ele,
+                preview_url: this.getCloudFrontPrefixImage(ele.preview_url),
+                thumbnail_url: this.getCloudFrontPrefixImage(ele.thumbnail_url)
+            }
+        }))
+
 
         return APIResponse({
             statusCode: HttpStatus.OK,
             message: "",
-            data: userPurchasedImages
+            data: signedUrlsData
         })
     }
 
@@ -327,5 +350,9 @@ export class UserService {
 
         data.forEach((ele) => userPurchases.push(ele.image_id))
         return userPurchases
+    }
+
+    private getCloudFrontPrefixImage(imagePath: string): string {
+        return `${process.env.AWS_CLOUDFRONT}${imagePath}`
     }
 }
