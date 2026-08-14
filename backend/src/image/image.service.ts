@@ -43,15 +43,15 @@ export class ImageService {
                 .select({
                     id: schema.tbl_image.id,
                     rawUrl: schema.tbl_image.raw_url,
-                    thumbnailUrl: schema.tbl_image.thumbnail_url,
-                    waterMarked_url: schema.tbl_image.waterMarked_url,
+                    thumbnailUrl: schema.tbl_image.is_paid ? schema.tbl_image.waterMarked_thumbnail_url : schema.tbl_image.thumbnail_url,
+                    waterMarked_preview_url: schema.tbl_image.waterMarked_preview_url,
                     width: schema.tbl_image.width,
                     height: schema.tbl_image.height,
                     description: schema.tbl_image.description,
                     title: schema.tbl_image.title,
                     is_paid: schema.tbl_image.is_paid,
                     publishedOn: schema.tbl_image.created_at,
-                    preview_url: schema.tbl_image.preview_url,
+                    preview_url: schema.tbl_image.is_paid ? schema.tbl_image.waterMarked_preview_url : schema.tbl_image.preview_url,
                     ownerData: {
                         userName: schema.tbl_user.user_name,
                         userAvatar: schema.tbl_user.avatar,
@@ -96,7 +96,6 @@ export class ImageService {
             imagePreviewPath,
             imageRawPath,
             imageThumbnailPath,
-            waterMarkedImagePath,
             waterMarkedThumbnailPath,
             waterMarkedPreviewPath
         } = this.getImagepaths({ is_paid: reqBody.is_paid, imageUuid, userId, format: imageMetaData.format })
@@ -113,7 +112,8 @@ export class ImageService {
             raw_url: imageRawPath,
             thumbnail_url: imageThumbnailPath,
             preview_url: imagePreviewPath,
-            waterMarked_url: waterMarkedImagePath,
+            waterMarked_url: waterMarkedPreviewPath,
+            waterMarked_thumbnail_url: waterMarkedThumbnailPath,
             title: reqBody.title
         }
 
@@ -123,8 +123,6 @@ export class ImageService {
 
             // TODO - This needs to be go in queue
             if (reqBody.is_paid) {
-
-                const waterMarkerdImage = await this.getWatermarkedImage(fileData, imageMetaData)
 
                 const thumbNailMetaData = await this.getImageMetadataFromBuffer(thumbnailbuffer)
                 const previewImageMetaData = await this.getImageMetadataFromBuffer(previewImageBuffer)
@@ -142,7 +140,7 @@ export class ImageService {
                     this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
                     this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
                     this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype),
-                    this.awsServices.uploadFile(waterMarkedImagePath!, waterMarkerdImage, fileData.mimetype),
+
                     // TODO: Change Image Buffer TO particular Image E.g. Create buffer for watermarked thumbnail Image
                     this.awsServices.uploadFile(waterMarkedThumbnailPath!, thumbNailWaterMarkedImage, fileData.mimetype),
                     this.awsServices.uploadFile(waterMarkedPreviewPath!, previewWaterMarkedImage, fileData.mimetype)
@@ -165,7 +163,8 @@ export class ImageService {
                 preview_url: imageData.preview_url,
                 raw_url: imageData.raw_url,
                 thumbnail_url: imageData.thumbnail_url,
-                waterMarked_url: imageData.waterMarked_url,
+                waterMarked_preview_url: imageData.waterMarked_url,
+                waterMarked_thumbnail_url: imageData.waterMarked_thumbnail_url,
                 user_id: imageData.user_id,
                 width: imageData.width,
                 id: imageData.id,
