@@ -46,7 +46,7 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
         >
             <div className="relative w-full">
                 <Image
-                    src={image.is_paid ? (image.waterMarked_url || image.rawUrl) : (image.preview_url || image.rawUrl)}
+                    src={image.is_paid ? (image.waterMarked_preview_url || image.waterMarked_url || image.preview_url || image.rawUrl || image.thumbnailUrl) : (image.preview_url || image.rawUrl || image.thumbnailUrl)}
                     alt={image.description || 'Wallpaper'}
                     width={image.width}
                     height={image.height}
