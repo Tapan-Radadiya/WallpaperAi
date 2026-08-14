@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';
-import { WallpaperImage, formatImageUrl, getUserPurchases } from '@/lib/data';
+import { WallpaperImage, formatImageUrl, getUserPurchases, PurchasedItem } from '@/lib/data';
 import api from '@/lib/api';
 import Modal from './Modal';
 import ImageDetails from './ImageDetails';
@@ -10,21 +10,39 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLikes } from '@/hooks/useLikes';
 
-export default function SearchLayout({ purchasedIds }: { purchasedIds?: string[] }) {
+export default function SearchLayout({ purchasedIds }: { purchasedIds?: PurchasedItem[] | string[] }) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<WallpaperImage[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState<WallpaperImage | null>(null);
-    const [purchasedSet, setPurchasedSet] = useState<Set<string>>(() => new Set(purchasedIds || []));
+    const [purchasedMap, setPurchasedMap] = useState<Map<string, PurchasedItem>>(() => {
+        const map = new Map<string, PurchasedItem>();
+        if (purchasedIds) {
+            purchasedIds.forEach(p => {
+                const item = typeof p === 'string' ? { id: p } : p;
+                if (item.id) map.set(item.id, item);
+            });
+        }
+        return map;
+    });
     const dropdownRef = useRef<HTMLDivElement>(null);
     const { isLiked, toggleLike } = useLikes();
 
     useEffect(() => {
+        const updatePurchasedMap = (items: (PurchasedItem | string)[]) => {
+            const map = new Map<string, PurchasedItem>();
+            items.forEach(p => {
+                const item = typeof p === 'string' ? { id: p } : p;
+                if (item.id) map.set(item.id, item);
+            });
+            setPurchasedMap(map);
+        };
+
         if (purchasedIds) {
-            setPurchasedSet(new Set(purchasedIds));
+            updatePurchasedMap(purchasedIds);
         } else {
-            getUserPurchases().then(ids => setPurchasedSet(new Set(ids)));
+            getUserPurchases().then(updatePurchasedMap);
         }
     }, [purchasedIds]);
 
@@ -50,11 +68,21 @@ export default function SearchLayout({ purchasedIds }: { purchasedIds?: string[]
                 // Map API data to WallpaperImage interface
                 const mappedResults: WallpaperImage[] = dataArray.map((img: any) => {
                     const id = img.id || img.image_id || img.imageSource || Math.random().toString(36).substring(7);
-                    const rawUrl = formatImageUrl(img.imageSource || img.rawUrl || '');
-                    const waterMarked_url = formatImageUrl(img.waterMarked_url);
-                    const preview_url = formatImageUrl(img.preview_url);
-                    const thumbnailUrl = formatImageUrl(img.thumbnailUrl || img.imageSource || '');
-                    const isPurchased = purchasedSet.has(id);
+                    const purchasedInfo = purchasedMap.get(id);
+                    const isPurchased = !!purchasedInfo;
+
+                    const rawPreview = (isPurchased && purchasedInfo?.preview_url)
+                        ? purchasedInfo.preview_url
+                        : img.preview_url;
+
+                    const rawThumbnail = (isPurchased && purchasedInfo?.thumbnail_url)
+                        ? purchasedInfo.thumbnail_url
+                        : img.thumbnailUrl || img.thumbnail_url || img.imageSource;
+
+                    const rawUrl = formatImageUrl(rawPreview || img.imageSource || img.rawUrl || '');
+                    const preview_url = formatImageUrl(rawPreview);
+                    const thumbnailUrl = formatImageUrl(rawThumbnail);
+                    const waterMarked_preview_url = isPurchased ? undefined : formatImageUrl(img.waterMarked_preview_url || img.waterMarked_url);
 
                     return {
                         id,
@@ -71,7 +99,8 @@ export default function SearchLayout({ purchasedIds }: { purchasedIds?: string[]
                         publishedOn: img.publishedOn,
                         is_paid: isPurchased ? false : img.is_paid,
                         purchased_image: isPurchased || img.purchased_image,
-                        waterMarked_url
+                        waterMarked_preview_url,
+                        waterMarked_url: waterMarked_preview_url
                     };
                 });
 
