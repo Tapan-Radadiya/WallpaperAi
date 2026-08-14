@@ -64,6 +64,9 @@ export class ImageUploadDTO {
 
     @IsOptional()
     waterMarked_url?: string
+
+    @IsOptional()
+    waterMarked_thumbnail_url?: string
 }
 
 export class LikeImageDTO {
