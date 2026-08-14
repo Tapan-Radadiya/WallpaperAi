@@ -27,7 +27,9 @@ const CLOUDFRONT_URL = "https://djrp6t1rc7td.cloudfront.net/";
 
 const processImageUrl = (url?: string) => {
     if (!url) return '';
-    return `${CLOUDFRONT_URL}${url}`;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    const baseUrl = CLOUDFRONT_URL.endsWith('/') ? CLOUDFRONT_URL.slice(0, -1) : CLOUDFRONT_URL;
+    return `${baseUrl}/${url.startsWith('/') ? url.slice(1) : url}`;
 };
 
 const mapToWallpaperImage = (img: any, defaultDesc = 'Wallpaper'): WallpaperImage => {
@@ -37,12 +39,15 @@ const mapToWallpaperImage = (img: any, defaultDesc = 'Wallpaper'): WallpaperImag
     const userAvatar = rawAvatar ? processImageUrl(rawAvatar) : '';
     const userId = owner.userId || owner.id || img.userId || '';
 
+    const preview_url = processImageUrl(img.preview_url || img.previewUrl || img.imageRawPath || img.raw_url || img.rawUrl);
+
     return {
         id: img.image_id || img.id,
         width: Number(img.width) || 0,
         height: Number(img.height) || 0,
-        rawUrl: processImageUrl(img.imageRawPath || img.raw_url || img.rawUrl),
+        rawUrl: processImageUrl(img.imageRawPath || img.raw_url || img.rawUrl || img.preview_url),
         thumbnailUrl: processImageUrl(img.thumbnail_url || img.thumbnailUrl),
+        preview_url,
         description: img.description || defaultDesc,
         userName,
         userAvatar,
@@ -56,7 +61,8 @@ const mapToWallpaperImage = (img: any, defaultDesc = 'Wallpaper'): WallpaperImag
         is_paid: img.is_paid,
         price: img.price,
         publishedOn: img.publishedOn,
-        waterMarked_url: processImageUrl(img.waterMarked_url)
+        waterMarked_preview_url: processImageUrl(img.waterMarked_preview_url || img.waterMarked_url),
+        waterMarked_url: processImageUrl(img.waterMarked_preview_url || img.waterMarked_url)
     };
 };
 

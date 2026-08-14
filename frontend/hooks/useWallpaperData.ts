@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { WallpaperImage, getImages } from '@/lib/data';
+import { WallpaperImage, getImages, PurchasedItem } from '@/lib/data';
 
-export function useWallpaperData(initialImages: WallpaperImage[], purchasedIds?: string[]) {
+export function useWallpaperData(initialImages: WallpaperImage[], purchasedIds?: PurchasedItem[] | string[]) {
     // Initial images are page 0
     const [images, setImages] = useState<WallpaperImage[]>(initialImages);
     const [page, setPage] = useState(0);
