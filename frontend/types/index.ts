@@ -31,7 +31,16 @@ export interface APILikedImage {
     thumbnail_url: string;
     raw_url: string;
     ownerData: APIImageOwner;
+    waterMarked_preview_url?: string;
     waterMarked_url?: string;
+}
+
+export interface PurchasedItem {
+    id: string;
+    preview_url?: string;
+    thumbnail_url?: string;
+    previewUrl?: string;
+    thumbnailUrl?: string;
 }
 
 export interface APIResponseData {
