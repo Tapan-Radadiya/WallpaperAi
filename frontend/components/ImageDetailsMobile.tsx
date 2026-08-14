@@ -182,7 +182,7 @@ export default function ImageDetailsMobile({
             <div className="relative w-full bg-black/5 flex justify-center">
                 <div className="relative w-full max-h-[75vh]">
                     <img
-                        src={isPremiumLocked ? (image.waterMarked_url || image.rawUrl) : (image.preview_url || image.rawUrl)}
+                        src={isPremiumLocked ? (image.waterMarked_preview_url || image.waterMarked_url || image.preview_url || image.rawUrl || image.thumbnailUrl) : (image.preview_url || image.rawUrl || image.thumbnailUrl)}
                         alt={image.description || 'Wallpaper'}
                         className="w-full h-auto max-h-[75vh] object-contain mx-auto"
                     />

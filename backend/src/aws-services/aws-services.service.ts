@@ -126,10 +126,10 @@ export class AwsServicesService {
         )
     }
 
-    async getSignedUrl(url: string) {
+    async getSignedUrl(url: string, signedUrlTime: number = 60) {
         try {
 
-            const policyString = getSignedUrlPolicy(url)
+            const policyString = getSignedUrlPolicy(url, signedUrlTime)
 
             const signedUrlParams: CloudfrontSignInputWithPolicy = {
                 keyPairId: process.env.AWS_CLOUDFRONT_KEY_PAIR_ID!,
