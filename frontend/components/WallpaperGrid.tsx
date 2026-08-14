@@ -1,6 +1,6 @@
 'use client';
 
-import { WallpaperImage } from '@/lib/data';
+import { WallpaperImage, PurchasedItem } from '@/lib/data';
 import ImageCard from './ImageCard';
 import Modal from './Modal';
 import { useState } from 'react';
@@ -9,7 +9,7 @@ import { useWallpaperData } from '@/hooks/useWallpaperData';
 import { useMasonryGrid } from '@/hooks/useMasonryGrid';
 import { useLikes } from '@/hooks/useLikes';
 
-export default function WallpaperGrid({ initialImages, purchasedIds, isMobile }: { initialImages: WallpaperImage[], purchasedIds?: string[], isMobile?: boolean }) {
+export default function WallpaperGrid({ initialImages, purchasedIds, isMobile }: { initialImages: WallpaperImage[], purchasedIds?: PurchasedItem[] | string[], isMobile?: boolean }) {
     const { images, loading, hasMore, lastElementRef, page } = useWallpaperData(initialImages, purchasedIds);
     const { columns } = useMasonryGrid(images, isMobile);
     const { isLiked, toggleLike } = useLikes();
