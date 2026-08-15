@@ -5,6 +5,7 @@ export interface APIResponseInterface {
     message: string
     data?: any
     err?: any
+    customHeaders?: Record<string, string> | null
 }
 
 export type UserDataType = {

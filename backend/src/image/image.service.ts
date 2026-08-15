@@ -6,7 +6,7 @@ import { ImageUploadBodyDTO, ImageUploadDTO, LikeImageDTO } from '@src/DTO/image
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { APIResponseInterface } from '@src/types/common.types';
 import { UserService } from '@src/user/user.service';
-import { APIResponse } from '@src/utils/common';
+import { APIResponse, getUserProfileDataCacheKey } from '@src/utils/common';
 import { UUID } from 'crypto';
 import { and, count, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -69,17 +69,6 @@ export class ImageService {
                 .offset(offset)
                 .limit(this.PAGE_LENGTH)
 
-            // TODO Unwanted Code
-            // const updatedData = newData.map((ele) => {
-            //     return {
-            //         ...ele,
-            //         rawUrl: `${ele.rawUrl}`,
-            //         thumbnailUrl: `${ele.thumbnailUrl}`,
-            //         userAvatar: `${ele.userAvatar}`,
-            //         waterMarked_url: ele.is_paid && ele.waterMarked_url ? `${ele.waterMarked_url}` : null
-            //     }
-            // })
-
             // cache new req for other users 
             // await this.redis.setRedisKey(redisKey, JSON.stringify(updatedData), this.DEFAULT_TTL_IMAGE)
             const randomData = this.randomizeData(newData)
@@ -114,7 +103,8 @@ export class ImageService {
             preview_url: imagePreviewPath,
             waterMarked_url: waterMarkedPreviewPath,
             waterMarked_thumbnail_url: waterMarkedThumbnailPath,
-            title: reqBody.title
+            title: reqBody.title,
+            price: reqBody.price
         }
 
         try {
@@ -169,17 +159,19 @@ export class ImageService {
                 width: imageData.width,
                 id: imageData.id,
                 is_paid: imageData.is_paid,
-                title: imageData.title
+                title: imageData.title,
+                price: imageData.price
             }).returning({
                 image_id: schema.tbl_image.id,
                 description: schema.tbl_image.description,
                 hashTags: schema.tbl_image.hashTags
             })
 
+            console.log('insertImage-->', insertImage);
             if (insertImage) {
                 this.awsServices.sqsImageProcessingDataPush({
                     description: insertImage[0].description,
-                    hashTags: insertImage[0].hashTags,
+                    hashTags: insertImage[0].hashTags ?? '',
                     image_id: insertImage[0].image_id
                 })
 
@@ -202,7 +194,7 @@ export class ImageService {
                     image_id: body.imageId,
                     user_id: userId
                 })
-                await this.redis.destroyKey(`profileData_${userId}`)
+                await this.redis.destroyKey(getUserProfileDataCacheKey(userId))
                 return APIResponse({ statusCode: HttpStatus.OK, message: "Liked" })
             } else {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Operation" })
@@ -227,7 +219,7 @@ export class ImageService {
                         eq(schema.tbl_image_likes.image_id, body.imageId)
                     )
                 )
-                await this.redis.destroyKey(`profileData_${userId}`)
+                await this.redis.destroyKey(getUserProfileDataCacheKey(userId))
                 return APIResponse({ statusCode: HttpStatus.OK, message: "UnLiked" })
             }
 
@@ -364,8 +356,6 @@ export class ImageService {
         }
     }
 
-
-
     async getSigendUrlImage(userId: string, imageId: string): Promise<APIResponseInterface> {
         try {
             const isUserPurchasedImage = await this.conn.query.tbl_purchases.findFirst({
@@ -441,7 +431,6 @@ export class ImageService {
             [plainData[i], plainData[j]] = [plainData[j], plainData[i]]
         }
         return plainData
-
     }
 
     /**

@@ -5,12 +5,15 @@ import sharp from "sharp"
 import { ALLOWED_IMAGES_FORMAT } from "@src/constants"
 import { plainToInstance } from "class-transformer"
 import { validate } from "class-validator"
-export const APIResponse = ({ statusCode, message, data, err }: APIResponseInterface) => {
+import { SystemMessage, HumanMessage } from "@langchain/core/messages"
+
+export const APIResponse = ({ statusCode, message, data, err, customHeaders }: APIResponseInterface) => {
     return {
         statusCode,
         message,
         data,
-        err
+        err,
+        customHeaders
     }
 }
 
@@ -72,4 +75,13 @@ export const validateInput = async (payload, dtoType) => {
     } else {
         return []
     }
+}
+
+
+export const getUserProfileDataCacheKey = (userId: string): string => {
+    return `userData:${userId}:profileData`
+}
+
+export const getUserPurchasedImageDataCacheKey = (userId: string): string => {
+    return `user:purchased-assets:${userId}`
 }
