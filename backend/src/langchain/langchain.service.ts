@@ -24,7 +24,8 @@ export class LangchainService {
 
     async getImageDescription(s3ImagePath: string) {
         try {
-            const test = await this.chatModel.invoke([
+
+            const modelResponse = await this.chatModel.invoke([
                 new SystemMessage(`You are an image summarization agent.
 
 Carefully inspect the provided image and summarize ONLY what is visibly present.
@@ -52,12 +53,14 @@ Rules:
                     ]
                 })
             ])
-            // return 
+
+
+            const textModelResponse = modelResponse.content ?? ''
+            return textModelResponse.toString()
         } catch (error) {
             console.log('error-->', error);
             return
         }
-        return ""
     }
 
     async getEmbeddedText(text: string): Promise<number[] | null> {
