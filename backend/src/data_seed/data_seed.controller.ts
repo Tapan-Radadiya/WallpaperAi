@@ -44,70 +44,80 @@ export class DataSeedController {
             "category": "Technology",
             "hashTags": "#ai #innovation #futuretech #gadgets",
             "description": "Exploring cutting-edge AI tools transforming everyday life.",
-            "title": "AI Tools Revolution"
+            "title": "AI Tools Revolution",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Food",
             "hashTags": "#streetfood #foodie #tasty #localflavors",
             "description": "A journey through the most delicious street food spots.",
-            "title": "Street Food Fiesta"
+            "title": "Street Food Fiesta",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Fitness",
             "hashTags": "#workout #gym #healthylife #fit",
             "description": "Daily workout routines to keep you active and healthy.",
-            "title": "Fitness Motivation"
+            "title": "Fitness Motivation",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Education",
             "hashTags": "#learning #onlinecourses #skills #education",
             "description": "Top online courses to boost your career skills.",
-            "title": "Skill Up Online"
+            "title": "Skill Up Online",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Travel",
             "hashTags": "#wanderlust #travelgram #adventure #explore",
             "description": "Hidden gems around the world waiting to be explored.",
-            "title": "Hidden Travel Gems"
+            "title": "Hidden Travel Gems",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Finance",
             "hashTags": "#investing #money #finance #wealth",
             "description": "Smart investment strategies for long-term wealth.",
-            "title": "Wealth Building Tips"
+            "title": "Wealth Building Tips",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Gaming",
             "hashTags": "#gaming #esports #gamerlife #fun",
             "description": "Latest trends and updates from the gaming world.",
-            "title": "Gaming Buzz"
+            "title": "Gaming Buzz",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Fashion",
             "hashTags": "#style #fashion #trendy #outfits",
             "description": "Seasonal fashion trends you shouldn’t miss.",
-            "title": "Trendy Looks 2026"
+            "title": "Trendy Looks 2026",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Health",
             "hashTags": "#wellness #healthtips #mindbody #selfcare",
             "description": "Simple habits for a healthier lifestyle.",
-            "title": "Healthy Living Guide"
+            "title": "Healthy Living Guide",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Photography",
             "hashTags": "#photography #camera #creative #shots",
             "description": "Tips to capture stunning photos like a pro.",
-            "title": "Photography Mastery"
+            "title": "Photography Mastery",
+            price: 0
         },
 
         {
@@ -115,70 +125,80 @@ export class DataSeedController {
             "category": "Music",
             "hashTags": "#musiclover #playlist #songs #vibes",
             "description": "Curated playlists for every mood and moment.",
-            "title": "Daily Music Vibes"
+            "title": "Daily Music Vibes",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Business",
             "hashTags": "#startup #entrepreneur #business #growth",
             "description": "Insights to grow and scale your startup.",
-            "title": "Startup Success"
+            "title": "Startup Success",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "DIY",
             "hashTags": "#diy #crafts #creative #homemade",
             "description": "Fun and creative DIY ideas for your home.",
-            "title": "DIY Creations"
+            "title": "DIY Creations",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Parenting",
             "hashTags": "#parenting #kids #family #tips",
             "description": "Helpful parenting tips for modern families.",
-            "title": "Smart Parenting"
+            "title": "Smart Parenting",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Automotive",
             "hashTags": "#cars #automotive #driving #vehicles",
             "description": "Latest updates and reviews from the car industry.",
-            "title": "Auto Insights"
+            "title": "Auto Insights",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Real Estate",
             "hashTags": "#realestate #property #investment #homes",
             "description": "Guide to smart property investments.",
-            "title": "Property Guide"
+            "title": "Property Guide",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Art",
             "hashTags": "#art #creative #design #artist",
             "description": "Showcasing inspiring artwork from around the world.",
-            "title": "Art Showcase"
+            "title": "Art Showcase",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Movies",
             "hashTags": "#movies #cinema #film #entertainment",
             "description": "Latest movie reviews and recommendations.",
-            "title": "Movie Mania"
+            "title": "Movie Mania",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Science",
             "hashTags": "#science #research #innovation #discovery",
             "description": "New scientific discoveries shaping the future.",
-            "title": "Science Today"
+            "title": "Science Today",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Spirituality",
             "hashTags": "#meditation #spiritual #mindfulness #peace",
             "description": "Practices to bring peace and clarity to your life.",
-            "title": "Mindful Living"
+            "title": "Mindful Living",
+            price: 0
         },
 
         {
@@ -186,70 +206,80 @@ export class DataSeedController {
             "category": "Pets",
             "hashTags": "#pets #animals #cute #petcare",
             "description": "Tips to take better care of your furry friends.",
-            "title": "Pet Care Guide"
+            "title": "Pet Care Guide",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Gardening",
             "hashTags": "#plants #gardening #nature #green",
             "description": "Grow your own garden with these simple tips.",
-            "title": "Green Living"
+            "title": "Green Living",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "History",
             "hashTags": "#history #past #culture #stories",
             "description": "Exploring fascinating events from the past.",
-            "title": "History Uncovered"
+            "title": "History Uncovered",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Marketing",
             "hashTags": "#marketing #digital #branding #ads",
             "description": "Modern marketing strategies that drive results.",
-            "title": "Marketing Hacks"
+            "title": "Marketing Hacks",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Writing",
             "hashTags": "#writing #blogging #content #creative",
             "description": "Improve your writing skills with these tips.",
-            "title": "Writing Skills Boost"
+            "title": "Writing Skills Boost",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Coding",
             "hashTags": "#coding #programming #developer #tech",
             "description": "Learn coding with practical real-world examples.",
-            "title": "Code Smarter"
+            "title": "Code Smarter",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Relationships",
             "hashTags": "#love #relationships #advice #dating",
             "description": "Advice for building strong relationships.",
-            "title": "Relationship Talk"
+            "title": "Relationship Talk",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Interior Design",
             "hashTags": "#interior #design #home #decor",
             "description": "Stylish ideas to decorate your living space.",
-            "title": "Home Decor Ideas"
+            "title": "Home Decor Ideas",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Sports",
             "hashTags": "#sports #fitness #games #athlete",
             "description": "Latest highlights from the sports world.",
-            "title": "Sports Update"
+            "title": "Sports Update",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Productivity",
             "hashTags": "#productivity #focus #work #efficiency",
             "description": "Boost your productivity with proven techniques.",
-            "title": "Work Smart"
+            "title": "Work Smart",
+            price: 0
         },
 
         {
@@ -257,70 +287,80 @@ export class DataSeedController {
             "category": "Language",
             "hashTags": "#language #learning #communication #skills",
             "description": "Tips to learn new languages faster.",
-            "title": "Language Hacks"
+            "title": "Language Hacks",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Events",
             "hashTags": "#events #festivals #fun #celebration",
             "description": "Discover exciting events happening near you.",
-            "title": "Event Highlights"
+            "title": "Event Highlights",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Environment",
             "hashTags": "#environment #eco #green #sustainability",
             "description": "Ways to live a more sustainable lifestyle.",
-            "title": "Eco Living"
+            "title": "Eco Living",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Luxury",
             "hashTags": "#luxury #premium #exclusive #lifestyle",
             "description": "Experience the finest things life has to offer.",
-            "title": "Luxury Lifestyle"
+            "title": "Luxury Lifestyle",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Education Tech",
             "hashTags": "#edtech #learning #technology #future",
             "description": "How technology is transforming education.",
-            "title": "EdTech Trends"
+            "title": "EdTech Trends",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Freelancing",
             "hashTags": "#freelance #remote #work #career",
             "description": "Build a successful freelancing career.",
-            "title": "Freelance Guide"
+            "title": "Freelance Guide",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Comedy",
             "hashTags": "#funny #comedy #laugh #entertainment",
             "description": "Daily dose of humor to make you laugh.",
-            "title": "Laugh Out Loud"
+            "title": "Laugh Out Loud",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "News",
             "hashTags": "#news #updates #world #currentaffairs",
             "description": "Stay updated with the latest global news.",
-            "title": "Daily News"
+            "title": "Daily News",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Astrology",
             "hashTags": "#astrology #horoscope #stars #zodiac",
             "description": "Daily horoscope and zodiac insights.",
-            "title": "Star Guide"
+            "title": "Star Guide",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "E-commerce",
             "hashTags": "#shopping #ecommerce #deals #online",
             "description": "Best deals and tips for online shopping.",
-            "title": "Smart Shopping"
+            "title": "Smart Shopping",
+            price: 0
         },
 
         {
@@ -328,70 +368,80 @@ export class DataSeedController {
             "category": "Cybersecurity",
             "hashTags": "#security #cyber #privacy #dataprotection",
             "description": "Learn how to protect your data in the digital world.",
-            "title": "Stay Secure Online"
+            "title": "Stay Secure Online",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Blockchain",
             "hashTags": "#blockchain #crypto #technology #web3",
             "description": "Understanding blockchain and its real-world applications.",
-            "title": "Blockchain Basics"
+            "title": "Blockchain Basics",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Cooking",
             "hashTags": "#cooking #recipes #foodlover #kitchen",
             "description": "Simple and delicious recipes you can try at home.",
-            "title": "Home Cooking Ideas"
+            "title": "Home Cooking Ideas",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Mental Health",
             "hashTags": "#mentalhealth #wellbeing #selfcare #mind",
             "description": "Tips and techniques to improve mental well-being.",
-            "title": "Mind Matters"
+            "title": "Mind Matters",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Adventure",
             "hashTags": "#adventure #outdoors #explore #thrill",
             "description": "Exciting outdoor adventures for thrill seekers.",
-            "title": "Adventure Awaits"
+            "title": "Adventure Awaits",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Beauty",
             "hashTags": "#beauty #skincare #makeup #glow",
             "description": "Latest beauty tips and skincare routines.",
-            "title": "Beauty Secrets"
+            "title": "Beauty Secrets",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Robotics",
             "hashTags": "#robotics #automation #ai #future",
             "description": "Discover how robots are changing industries.",
-            "title": "Rise of Robots"
+            "title": "Rise of Robots",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Public Speaking",
             "hashTags": "#speaking #confidence #communication #skills",
             "description": "Improve your public speaking and confidence.",
-            "title": "Speak with Confidence"
+            "title": "Speak with Confidence",
+            price: 0
         },
         {
             "is_paid": false,
             "category": "Photography Gear",
             "hashTags": "#camera #gear #photography #lens",
             "description": "Best gear recommendations for photographers.",
-            "title": "Camera Gear Guide"
+            "title": "Camera Gear Guide",
+            price: 0
         },
         {
             "is_paid": true,
             "category": "Space",
             "hashTags": "#space #universe #nasa #exploration",
             "description": "Exploring the mysteries of the universe.",
-            "title": "Space Discoveries"
+            "title": "Space Discoveries",
+            price: 0
         }
     ]
 

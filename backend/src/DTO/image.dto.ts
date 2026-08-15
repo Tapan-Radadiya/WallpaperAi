@@ -22,6 +22,9 @@ export class ImageUploadBodyDTO {
 
     @IsString()
     title!: string
+
+    @IsOptional({})
+    price!: number
 }
 
 
@@ -67,6 +70,9 @@ export class ImageUploadDTO {
 
     @IsOptional()
     waterMarked_thumbnail_url?: string
+
+    @IsOptional()
+    price?: number
 }
 
 export class LikeImageDTO {

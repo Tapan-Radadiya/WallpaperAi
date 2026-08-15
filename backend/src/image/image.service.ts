@@ -103,7 +103,8 @@ export class ImageService {
             preview_url: imagePreviewPath,
             waterMarked_url: waterMarkedPreviewPath,
             waterMarked_thumbnail_url: waterMarkedThumbnailPath,
-            title: reqBody.title
+            title: reqBody.title,
+            price: reqBody.price
         }
 
         try {
@@ -158,7 +159,8 @@ export class ImageService {
                 width: imageData.width,
                 id: imageData.id,
                 is_paid: imageData.is_paid,
-                title: imageData.title
+                title: imageData.title,
+                price: imageData.price
             }).returning({
                 image_id: schema.tbl_image.id,
                 description: schema.tbl_image.description,
