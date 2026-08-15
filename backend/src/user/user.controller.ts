@@ -239,6 +239,12 @@ export class UserController {
             responseData.data = data.data
             responseData.statusCode = data.statusCode
             responseData.message = data.message
+            const customHeaders = data?.customHeaders
+            if (customHeaders) {
+                Object.keys(customHeaders).map((ele) => {
+                    res.append(ele, customHeaders[ele])
+                })
+            }
         } catch (error) {
             responseData.err = error
             responseData.statusCode = HttpStatus.CONFLICT

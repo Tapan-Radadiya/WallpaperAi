@@ -2,10 +2,10 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { and, count, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { alias } from 'drizzle-orm/pg-core';
-import { DRIZZLE, IMAGE_USER_OWNER_TYPE } from '@src/constants';
+import { DRIZZLE, IMAGE_USER_OWNER_TYPE, USER_PURCHASED_IMAGES_CACHE_TIME, USER_PURCHASED_IMAGES_SIGNED_URL_EXPIRE_TIME } from '@src/constants';
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { APIResponseInterface, UpdateUserType } from '@src/types/common.types';
-import { APIResponse } from '@src/utils/common';
+import { APIResponse, getUserProfileDataCacheKey, getUserPurchasedImageDataCacheKey } from '@src/utils/common';
 import * as schema from "../Schema/schema";
 import { AwsServicesService } from '@src/aws-services/aws-services.service';
 import { StripeService } from '@src/stripe/stripe.service';
@@ -73,7 +73,7 @@ export class UserService {
     async getUserLikedImages(userId: string): Promise<APIResponseInterface> {
         try {
             // Disabled Cache
-            // const isRedisDataStored = await this.redis.getRedisKeyValue(`profileData_${userId}`)
+            // const isRedisDataStored = await this.redis.getRedisKeyValue(getUserProfileDataCacheKey(userId))
             // if (isRedisDataStored) {
             //     return APIResponse({ statusCode: HttpStatus.OK, message: "userdata", data: JSON.parse(isRedisDataStored) })
             // }
@@ -120,7 +120,7 @@ export class UserService {
                 likedImages: userImages
             }
 
-            await this.redis.setRedisKey(`profileData_${userId}`, JSON.stringify(structuredData), 86400)
+            await this.redis.setRedisKey(getUserProfileDataCacheKey(userId), JSON.stringify(structuredData), 86400)
 
             return APIResponse({ statusCode: HttpStatus.OK, message: "User data", data: structuredData })
 
@@ -226,7 +226,7 @@ export class UserService {
                 })
 
             if (updateUser) {
-                this.redis.destroyKey(`profileData_${userId}`)
+                this.redis.destroyKey(getUserProfileDataCacheKey(userId))
                 return APIResponse({ statusCode: HttpStatus.OK, message: "UserData Updated", data: updateUser[0] })
             } else {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Error Updating UserData Try AFterSome Time" })
@@ -291,7 +291,27 @@ export class UserService {
             })
         }
 
+        const cachedData = await this.redis.getRedisKeyValue(getUserPurchasedImageDataCacheKey(userId))
+        if (cachedData) {
+            return APIResponse({
+                statusCode: HttpStatus.OK,
+                message: "",
+                data: cachedData,
+                customHeaders: {
+                    "x-redis-cache": "hit"
+                }
+            })
+        }
+
         const userPurchasedImages = await this.getUserPurchasedImagesData(userId)
+
+        if (userPurchasedImages.length === 0) {
+            return APIResponse({
+                statusCode: HttpStatus.OK,
+                message: "",
+                data: []
+            })
+        }
 
         const privateImagePaths = await this.conn
             .select({
@@ -309,8 +329,8 @@ export class UserService {
             if ((ele.preview_url && ele.preview_url !== '') && (ele.thumbnail_url && ele.thumbnail_url !== '')) {
                 return {
                     ...ele,
-                    preview_url: await this.awsServices.getSignedUrl(this.getCloudFrontPrefixImage(ele.preview_url), 300),
-                    thumbnail_url: await this.awsServices.getSignedUrl(this.getCloudFrontPrefixImage(ele.thumbnail_url), 300)
+                    preview_url: await this.awsServices.getSignedUrl(this.getCloudFrontPrefixImage(ele.preview_url), USER_PURCHASED_IMAGES_SIGNED_URL_EXPIRE_TIME),
+                    thumbnail_url: await this.awsServices.getSignedUrl(this.getCloudFrontPrefixImage(ele.thumbnail_url), USER_PURCHASED_IMAGES_SIGNED_URL_EXPIRE_TIME)
                 }
             }
             return {
@@ -320,11 +340,14 @@ export class UserService {
             }
         }))
 
-
+        this.redis.setRedisKey(getUserPurchasedImageDataCacheKey(userId), JSON.stringify(signedUrlsData), USER_PURCHASED_IMAGES_CACHE_TIME)
         return APIResponse({
             statusCode: HttpStatus.OK,
             message: "",
-            data: signedUrlsData
+            data: signedUrlsData,
+            customHeaders: {
+                "x-redis-cache": "miss"
+            }
         })
     }
 

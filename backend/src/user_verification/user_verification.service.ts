@@ -6,7 +6,7 @@ import { DRIZZLE } from '@src/constants';
 import { MailService } from '@src/mail/mail.service';
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { APIResponseInterface } from '@src/types/common.types';
-import { APIResponse } from '@src/utils/common';
+import { APIResponse, getUserProfileDataCacheKey } from '@src/utils/common';
 import * as schema from "../Schema/schema";
 @Injectable()
 export class UserVerificationService {
@@ -159,7 +159,7 @@ export class UserVerificationService {
                     is_verified: true
                 }).where(eq(schema.tbl_user.id, findUser.id))
 
-                await this.redis.destroyKey(`profileData_${findUser.id}`)
+                await this.redis.destroyKey(getUserProfileDataCacheKey(findUser.id))
                 const deleteUserData = await this.conn.delete(schema.tbl_email_verfications).where(
                     eq(schema.tbl_email_verfications.user_id, findUser.id)
                 )
