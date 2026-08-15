@@ -4,15 +4,17 @@ import * as schema from "../Schema/schema"
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import Stripe from "stripe"
 import { APIResponseInterface } from '@src/types/common.types';
-import { APIResponse } from '@src/utils/common';
+import { APIResponse, getUserPurchasedImageDataCacheKey } from '@src/utils/common';
 import { and, eq } from "drizzle-orm"
 import { tbl_payments } from './schema/schema';
+import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 
 @Injectable()
 export class StripeService {
     private stripe: Stripe
     constructor(
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>,
+        private readonly redis: RedisCacheService
     ) {
         this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
     }
@@ -185,6 +187,7 @@ export class StripeService {
                 transaction_id: latest_charge?.toString()
             })
             if (updatePayment) {
+
                 await this.conn
                     .insert(schema.tbl_purchases)
                     .values({
@@ -192,6 +195,8 @@ export class StripeService {
                         image_id: updatePayment.image_id,
                         payment_id: updatePayment.payment_id,
                     })
+
+                this.redis.destroyKey(getUserPurchasedImageDataCacheKey(updatePayment.buyer_id))
                 return APIResponse({
                     message: "Ok",
                     statusCode: HttpStatus.OK
