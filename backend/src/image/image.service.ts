@@ -6,7 +6,7 @@ import { ImageUploadBodyDTO, ImageUploadDTO, LikeImageDTO } from '@src/DTO/image
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { APIResponseInterface } from '@src/types/common.types';
 import { UserService } from '@src/user/user.service';
-import { APIResponse } from '@src/utils/common';
+import { APIResponse, getUserProfileDataCacheKey } from '@src/utils/common';
 import { UUID } from 'crypto';
 import { and, count, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -68,17 +68,6 @@ export class ImageService {
                 )
                 .offset(offset)
                 .limit(this.PAGE_LENGTH)
-
-            // TODO Unwanted Code
-            // const updatedData = newData.map((ele) => {
-            //     return {
-            //         ...ele,
-            //         rawUrl: `${ele.rawUrl}`,
-            //         thumbnailUrl: `${ele.thumbnailUrl}`,
-            //         userAvatar: `${ele.userAvatar}`,
-            //         waterMarked_url: ele.is_paid && ele.waterMarked_url ? `${ele.waterMarked_url}` : null
-            //     }
-            // })
 
             // cache new req for other users 
             // await this.redis.setRedisKey(redisKey, JSON.stringify(updatedData), this.DEFAULT_TTL_IMAGE)
@@ -202,7 +191,7 @@ export class ImageService {
                     image_id: body.imageId,
                     user_id: userId
                 })
-                await this.redis.destroyKey(`profileData_${userId}`)
+                await this.redis.destroyKey(getUserProfileDataCacheKey(userId))
                 return APIResponse({ statusCode: HttpStatus.OK, message: "Liked" })
             } else {
                 return APIResponse({ statusCode: HttpStatus.CONFLICT, message: "Invalid Operation" })
@@ -227,7 +216,7 @@ export class ImageService {
                         eq(schema.tbl_image_likes.image_id, body.imageId)
                     )
                 )
-                await this.redis.destroyKey(`profileData_${userId}`)
+                await this.redis.destroyKey(getUserProfileDataCacheKey(userId))
                 return APIResponse({ statusCode: HttpStatus.OK, message: "UnLiked" })
             }
 
@@ -364,8 +353,6 @@ export class ImageService {
         }
     }
 
-
-
     async getSigendUrlImage(userId: string, imageId: string): Promise<APIResponseInterface> {
         try {
             const isUserPurchasedImage = await this.conn.query.tbl_purchases.findFirst({
@@ -441,7 +428,6 @@ export class ImageService {
             [plainData[i], plainData[j]] = [plainData[j], plainData[i]]
         }
         return plainData
-
     }
 
     /**
