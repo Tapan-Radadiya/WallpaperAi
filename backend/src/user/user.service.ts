@@ -1,5 +1,5 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { and, count, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { alias } from 'drizzle-orm/pg-core';
 import { DRIZZLE, IMAGE_USER_OWNER_TYPE, USER_PURCHASED_IMAGES_CACHE_TIME, USER_PURCHASED_IMAGES_SIGNED_URL_EXPIRE_TIME } from '@src/constants';
@@ -291,17 +291,17 @@ export class UserService {
             })
         }
 
-        const cachedData = await this.redis.getRedisKeyValue(getUserPurchasedImageDataCacheKey(userId))
-        if (cachedData) {
-            return APIResponse({
-                statusCode: HttpStatus.OK,
-                message: "",
-                data: cachedData,
-                customHeaders: {
-                    "x-redis-cache": "hit"
-                }
-            })
-        }
+        // const cachedData = await this.redis.getRedisKeyValue(getUserPurchasedImageDataCacheKey(userId))
+        // if (cachedData) {
+        //     return APIResponse({
+        //         statusCode: HttpStatus.OK,
+        //         message: "",
+        //         data: cachedData,
+        //         customHeaders: {
+        //             "x-redis-cache": "hit"
+        //         }
+        //     })
+        // }
 
         const userPurchasedImages = await this.getUserPurchasedImagesData(userId)
 
@@ -321,10 +321,15 @@ export class UserService {
             })
             .from(schema.tbl_image)
             .where(
-                inArray(schema.tbl_image.id, userPurchasedImages)
+                or(
+                    inArray(schema.tbl_image.id, userPurchasedImages),
+                    and(
+                        eq(schema.tbl_image.user_id, userId),
+                        eq(schema.tbl_image.is_paid, true)
+                    )
+                )
             )
 
-        // TODO Cache Data
         const signedUrlsData = await Promise.all(privateImagePaths.map(async (ele) => {
             if ((ele.preview_url && ele.preview_url !== '') && (ele.thumbnail_url && ele.thumbnail_url !== '')) {
                 return {

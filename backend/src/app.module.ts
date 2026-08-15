@@ -13,7 +13,6 @@ import { DataSeedController } from './data_seed/data_seed.controller';
 import { DataSeedModule } from './data_seed/data_seed.module';
 import { DrizzleModule } from './drizzle/drizzle.module';
 import { FileuploadModule } from './fileupload/fileupload.module';
-import { GeminiModule } from './gemini/gemini.module';
 import { ImageSearchModule } from './image-search/image-search.module';
 import { ImageController } from './image/image.controller';
 import { ImageModule } from './image/image.module';
@@ -66,7 +65,6 @@ import LokiTransport from 'winston-loki';
     DrizzleModule,
     NodePgDatabase,
     UserModule,
-    GeminiModule,
     RedisCacheModule,
     ImageModule,
     WorkerModule,

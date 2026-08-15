@@ -14,7 +14,7 @@ import { eq } from "drizzle-orm";
 
 @Injectable()
 export class SqsConsumerService implements OnModuleInit {
-    private logger: Logger
+    private logger: Logger = new Logger(AwsServicesService.name)
     constructor(
         private readonly sqsService: SqsService,
         private readonly awsService: AwsServicesService,
@@ -23,12 +23,14 @@ export class SqsConsumerService implements OnModuleInit {
     ) {
         console.log("Initialized SQS Polling")
     }
+
     onModuleInit() {
         console.log("Module Loaded")
     }
 
     @SqsMessageHandler('wallpaper_ai_fifo_sqs')
     async sqsImageProcessingMessageHandler(message: Message) {
+        console.log('message-->', message);
         // Generate embeddings of the image description and store 
         try {
             if (!message.Body) {
