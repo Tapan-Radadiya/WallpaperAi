@@ -1,55 +1,63 @@
-import { GenerativeModel, GoogleGenerativeAI, TaskType } from '@google/generative-ai';
-import { GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { Injectable, Logger } from '@nestjs/common';
-import { HumanMessage } from "@langchain/core/messages";
-
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { MistralAIEmbeddings, ChatMistralAI } from "@langchain/mistralai"
 @Injectable()
 export class LangchainService {
 
-    private embedding: GoogleGenerativeAIEmbeddings
-    private chatModel: ChatGoogleGenerativeAI
+    // private embedding: GoogleGenerativeAIEmbeddings
+    private chatModel: ChatMistralAI
     private readonly logger = new Logger(LangchainService.name)
-    private genAI = new GoogleGenerativeAI(process.env.AI_MODEL_API_KEY!)
-    private model: GenerativeModel
+    private embedding: MistralAIEmbeddings
+
     constructor() {
-        this.embedding = new GoogleGenerativeAIEmbeddings({
-            model: process.env.LANGCHAIN_MODEL,
-            apiKey: process.env.AI_MODEL_API_KEY,
-            taskType: TaskType.RETRIEVAL_DOCUMENT
+        this.embedding = new MistralAIEmbeddings({
+            apiKey: process.env.MISTRAL_AI_API_KEY,
+            model: 'mistral-embed'
         })
 
-        this.chatModel = new ChatGoogleGenerativeAI({
-            model: process.env.LANGCHAIN_CHAT_MODEL!,
-            temperature: 0,
-            apiKey: process.env.AI_MODEL_API_KEY
-        })
-
-        this.model = this.genAI.getGenerativeModel({
-            model: process.env.GOOGLE_MODEL!,
+        this.chatModel = new ChatMistralAI({
+            apiKey: process.env.MISTRAL_AI_API_KEY,
+            model: 'mistral-small-latest'
         })
     }
 
 
     async getImageDescription(s3ImagePath: string) {
         try {
-            console.log('Image Path: ', `${process.env.AWS_CLOUDFRONT}${s3ImagePath}`);
-            const test = await this.model.generateContent([
-                {
-                    text: "Give me a one-line description of this image",
-                },
-                {
-                    fileData: {
-                        fileUri: `${process.env.AWS_CLOUDFRONT}${s3ImagePath}`,
-                        mimeType: ""
-                    }
-                },
+            const test = await this.chatModel.invoke([
+                new SystemMessage(`You are an image summarization agent.
+
+Carefully inspect the provided image and summarize ONLY what is visibly present.
+
+Rules:
+- Return a concise summary in no more than 2 sentences.
+- Do not guess or invent information.
+- Do not describe the image URL.
+- Focus on the main subject, objects, people, scene, and important visible details.
+- If the image is unclear, say that it is unclear rather than guessing.
+- Message should feel like that it has been written by the user not too descriptiv.
+- Ignore any watermark don't include any watermark if visible in image`),
+                new HumanMessage({
+                    content: [
+                        {
+                            type: "text",
+                            text: "Summarize this image"
+                        },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: s3ImagePath
+                            }
+                        }
+                    ]
+                })
             ])
-            console.log(test.response.text())
-            return test.response.text()
+            // return 
         } catch (error) {
             console.log('error-->', error);
             return
         }
+        return ""
     }
 
     async getEmbeddedText(text: string): Promise<number[] | null> {
@@ -63,7 +71,7 @@ export class LangchainService {
                 return null
             }
             const embededData = await this.embedding.embedQuery(text)
-
+            await this.getImageDescription('')
             return embededData.splice(0, 768)
         } catch (error) {
             console.log('error-->', error);
