@@ -14,6 +14,12 @@ export class RedisCacheService implements OnModuleDestroy {
         return await this.redisClient.get(key) || '';
     }
 
+    /**
+     * 
+     * @param key string
+     * @param data string
+     * @param ttl number in secconds
+     */
     async setRedisKey(key: string, data: string, ttl: number): Promise<void> {
         await this.redisClient.set(key, data, { EX: ttl })
     }
