@@ -103,7 +103,8 @@ export class ImageService {
             preview_url: imagePreviewPath,
             waterMarked_url: waterMarkedPreviewPath,
             waterMarked_thumbnail_url: waterMarkedThumbnailPath,
-            title: reqBody.title
+            title: reqBody.title,
+            price: reqBody.price
         }
 
         try {
@@ -158,17 +159,19 @@ export class ImageService {
                 width: imageData.width,
                 id: imageData.id,
                 is_paid: imageData.is_paid,
-                title: imageData.title
+                title: imageData.title,
+                price: imageData.price
             }).returning({
                 image_id: schema.tbl_image.id,
                 description: schema.tbl_image.description,
                 hashTags: schema.tbl_image.hashTags
             })
 
+            console.log('insertImage-->', insertImage);
             if (insertImage) {
                 this.awsServices.sqsImageProcessingDataPush({
                     description: insertImage[0].description,
-                    hashTags: insertImage[0].hashTags,
+                    hashTags: insertImage[0].hashTags ?? '',
                     image_id: insertImage[0].image_id
                 })
 
