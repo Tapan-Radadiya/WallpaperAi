@@ -74,7 +74,6 @@ Rules:
                 return null
             }
             const embededData = await this.embedding.embedQuery(text)
-            await this.getImageDescription('')
             return embededData.splice(0, 768)
         } catch (error) {
             console.log('error-->', error);

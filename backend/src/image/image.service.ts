@@ -107,43 +107,45 @@ export class ImageService {
             price: reqBody.price
         }
 
+        this.awsServices.sqsImageProcessingDataPush('Test')
+
         try {
-            const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
-            const previewImageBuffer = await this.convertImageToPreview(fileData)
+            // const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
+            // const previewImageBuffer = await this.convertImageToPreview(fileData)
 
-            // TODO - This needs to be go in queue
-            if (reqBody.is_paid) {
+            // // TODO - This needs to be go in queue
+            // if (reqBody.is_paid) {
 
-                const thumbNailMetaData = await this.getImageMetadataFromBuffer(thumbnailbuffer)
-                const previewImageMetaData = await this.getImageMetadataFromBuffer(previewImageBuffer)
-
-
-                const thumbnailFileData: Express.Multer.File = { ...fileData, buffer: thumbnailbuffer }
-                const previewFileData: Express.Multer.File = { ...fileData, buffer: previewImageBuffer }
+            //     const thumbNailMetaData = await this.getImageMetadataFromBuffer(thumbnailbuffer)
+            //     const previewImageMetaData = await this.getImageMetadataFromBuffer(previewImageBuffer)
 
 
-                const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbnailFileData, thumbNailMetaData)
-                const previewWaterMarkedImage = await this.getWatermarkedImage(previewFileData, previewImageMetaData)
-                // If User uploaded image is premium then create a watermarked image 
-                // const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbNailMetaData, thumbnailbuffer)
-                const data = await Promise.allSettled([
-                    this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
-                    this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-                    this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype),
+            //     const thumbnailFileData: Express.Multer.File = { ...fileData, buffer: thumbnailbuffer }
+            //     const previewFileData: Express.Multer.File = { ...fileData, buffer: previewImageBuffer }
 
-                    // TODO: Change Image Buffer TO particular Image E.g. Create buffer for watermarked thumbnail Image
-                    this.awsServices.uploadFile(waterMarkedThumbnailPath!, thumbNailWaterMarkedImage, fileData.mimetype),
-                    this.awsServices.uploadFile(waterMarkedPreviewPath!, previewWaterMarkedImage, fileData.mimetype)
-                ])
 
-            }
-            else {
-                const data = await Promise.allSettled([
-                    this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
-                    this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-                    this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype)
-                ])
-            }
+            //     const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbnailFileData, thumbNailMetaData)
+            //     const previewWaterMarkedImage = await this.getWatermarkedImage(previewFileData, previewImageMetaData)
+            //     // If User uploaded image is premium then create a watermarked image 
+            //     // const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbNailMetaData, thumbnailbuffer)
+            //     const data = await Promise.allSettled([
+            //         this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
+            //         this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
+            //         this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype),
+
+            //         // TODO: Change Image Buffer TO particular Image E.g. Create buffer for watermarked thumbnail Image
+            //         this.awsServices.uploadFile(waterMarkedThumbnailPath!, thumbNailWaterMarkedImage, fileData.mimetype),
+            //         this.awsServices.uploadFile(waterMarkedPreviewPath!, previewWaterMarkedImage, fileData.mimetype)
+            //     ])
+
+            // }
+            // else {
+            //     const data = await Promise.allSettled([
+            //         this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
+            //         this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
+            //         this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype)
+            //     ])
+            // }
 
             const insertImage = await this.conn.insert(schema.tbl_image).values({
                 description: imageData.description,
@@ -167,9 +169,8 @@ export class ImageService {
                 hashTags: schema.tbl_image.hashTags
             })
 
-            console.log('insertImage-->', insertImage);
             if (insertImage) {
-                this.awsServices.sqsImageProcessingDataPush({
+                this.awsServices.sqsImageEmbeddingProcessingDataPush({
                     description: insertImage[0].description,
                     hashTags: insertImage[0].hashTags ?? '',
                     image_id: insertImage[0].image_id
