@@ -23,12 +23,24 @@ import { SqsConsumerService } from './sqs-consumer.service';
             region: configService.getOrThrow("AWS_REGION"),
             batchSize: 1,
             waitTimeSeconds: 5,
+          },
+          {
+            name: 'image_variant_generation_std_q',
+            queueUrl: configService.getOrThrow("AWS_IMAGE_VARIANT_SQS_QUEUE_URL"),
+            region: configService.getOrThrow("AWS_REGION"),
+            batchSize: 1,
+            waitTimeSeconds: 5,
           }
         ],
         producers: [
           {
             name: "wallpaper_ai_fifo_sqs",
             queueUrl: configService.getOrThrow("AWS_SQS_STD_QUEUE_URL"),
+            region: configService.getOrThrow("AWS_REGION"),
+          },
+          {
+            name: 'image_variant_generation_std_q',
+            queueUrl: configService.getOrThrow("AWS_IMAGE_VARIANT_SQS_QUEUE_URL"),
             region: configService.getOrThrow("AWS_REGION"),
           }
         ]

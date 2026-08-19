@@ -1,16 +1,30 @@
-import { IsNotEmpty, IsString, IsUUID, Length } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsString, IsUUID, Length } from "class-validator";
+import sharp from "sharp";
 
-export class SQSImageProcessDTO {
+export class SQSImageEmbeddingProcessDTO {
     @IsString()
     @IsNotEmpty()
     @Length(10, 500)
-    description: string
+    description!: string
 
     @IsString()
     @IsNotEmpty()
-    hashTags: string
+    hashTags!: string
 
     @IsUUID()
     @IsNotEmpty()
-    image_id: string
+    image_id!: string
+}
+
+export class SQSImageProcessDTO {
+
+    @IsNotEmpty()
+    fileData!: Express.Multer.File
+
+    @IsBoolean()
+    @IsNotEmpty()
+    is_image_paid!: boolean
+
+    @IsNotEmpty()
+    imageMetaData!: sharp.Metadata
 }
