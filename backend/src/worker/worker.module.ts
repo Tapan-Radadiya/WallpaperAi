@@ -6,6 +6,7 @@ import { WorkerService } from './worker.service';
 
 @Module({
   imports: [RedisCacheModule, HttpModule],
-  providers: [WorkerService, NodePgDatabase]
+  providers: [WorkerService, NodePgDatabase],
+  exports: [WorkerService]
 })
 export class WorkerModule { }

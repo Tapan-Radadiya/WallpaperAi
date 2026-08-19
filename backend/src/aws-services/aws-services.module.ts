@@ -5,6 +5,7 @@ import { LoggingModule } from '@src/logging/logging.module';
 import { SqsModule } from "@ssut/nestjs-sqs";
 import { AwsServicesService } from './aws-services.service';
 import './sqs-consumer.service';
+import { SqsConsumerService } from './sqs-consumer.service';
 
 @Module({
   imports: [
@@ -22,6 +23,13 @@ import './sqs-consumer.service';
             region: configService.getOrThrow("AWS_REGION"),
             batchSize: 1,
             waitTimeSeconds: 5,
+          },
+          {
+            name: 'image_variant_generation_std_q',
+            queueUrl: configService.getOrThrow("AWS_IMAGE_VARIANT_SQS_QUEUE_URL"),
+            region: configService.getOrThrow("AWS_REGION"),
+            batchSize: 1,
+            waitTimeSeconds: 5,
           }
         ],
         producers: [
@@ -29,12 +37,17 @@ import './sqs-consumer.service';
             name: "wallpaper_ai_fifo_sqs",
             queueUrl: configService.getOrThrow("AWS_SQS_STD_QUEUE_URL"),
             region: configService.getOrThrow("AWS_REGION"),
+          },
+          {
+            name: 'image_variant_generation_std_q',
+            queueUrl: configService.getOrThrow("AWS_IMAGE_VARIANT_SQS_QUEUE_URL"),
+            region: configService.getOrThrow("AWS_REGION"),
           }
         ]
       })
     })
   ],
-  providers: [AwsServicesService],
+  providers: [AwsServicesService, SqsConsumerService],
   exports: [AwsServicesService],
 })
 export class AwsServicesModule { }
