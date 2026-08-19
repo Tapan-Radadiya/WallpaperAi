@@ -3,7 +3,7 @@ import { SqsMessageHandler } from "@ssut/nestjs-sqs";
 import type { Message } from '@aws-sdk/client-sqs';
 import { SqsService } from "@ssut/nestjs-sqs"
 import { AwsServicesService } from "./aws-services.service"
-import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
+import { SQSImageEmbeddingProcessDTO, SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
 import { LangchainService } from "@src/langchain/langchain.service";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "../Schema/schema"
@@ -35,7 +35,7 @@ export class SqsConsumerService implements OnModuleInit {
                 this.logger.log("Empty body received in image processing queue")
                 return
             }
-            const parsedBody: SQSImageProcessDTO = JSON.parse(message.Body)
+            const parsedBody: SQSImageEmbeddingProcessDTO = JSON.parse(message.Body)
             const descriptionEmbeddings = await this.langchainService.getEmbeddedText(parsedBody.description)
 
             if (!descriptionEmbeddings) {
@@ -53,8 +53,10 @@ export class SqsConsumerService implements OnModuleInit {
             }).where(
                 eq(schema.tbl_image.id, parsedBody.image_id)
             )
+
+            // Can Remove await
             if (message.ReceiptHandle) {
-                await this.awsService.sqsMessageDelete(message.ReceiptHandle)
+                await this.deleteSqsMessage(message.ReceiptHandle)
             }
             this.logger.log(`Successfully consumed and processed`)
         } catch (error) {
@@ -63,5 +65,20 @@ export class SqsConsumerService implements OnModuleInit {
             return
         }
         return
+    }
+
+
+    @SqsMessageHandler('image_variant_generation_std_q')
+    async sqsImageVariantGenerationMessageHandler(message: Message) {
+        console.log('message-->', message);
+        if (message.ReceiptHandle) {
+            await this.deleteSqsMessage(message.ReceiptHandle)
+        }
+    }
+
+
+    private async deleteSqsMessage(receiptHandle: string) {
+
+        await this.awsService.sqsMessageDelete(receiptHandle)
     }
 }

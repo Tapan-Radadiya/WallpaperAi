@@ -5,7 +5,7 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SqsService } from "@ssut/nestjs-sqs";
 import { validateInput } from "@src/utils/common";
-import { SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
+import { SQSImageEmbeddingProcessDTO } from "./DTO/sqsImageProcessData";
 import { LoggingService } from "@src/logging/logging.service";
 import { CloudfrontSignInputWithPolicy, getSignedUrl } from "@aws-sdk/cloudfront-signer";
 import * as fs from "fs"
@@ -98,8 +98,8 @@ export class AwsServicesService {
         }
     }
 
-    async sqsImageProcessingDataPush(imageData: SQSImageProcessDTO) {
-        const validatedData = await validateInput(imageData, SQSImageProcessDTO)
+    async sqsImageEmbeddingProcessingDataPush(imageData: SQSImageEmbeddingProcessDTO) {
+        const validatedData = await validateInput(imageData, SQSImageEmbeddingProcessDTO)
         if (validatedData.length > 0) {
             const loggerMessage = {
                 message: "Invalid Data Passed To Image Processing Queue",
@@ -112,6 +112,19 @@ export class AwsServicesService {
         }
 
         const data = await this.sqsService.send('wallpaper_ai_fifo_sqs', {
+            body: imageData,
+            id: Date.now().toString(),
+        })
+    }
+
+    /**
+     * 
+     * @param imageData 
+     * @description Validate Image Payload And push to queue
+     */
+    async sqsImageProcessingDataPush(imageData: string) {
+        console.log('imageData At Verify Payload-->', imageData);
+        await this.sqsService.send('image_variant_generation_std_q', {
             body: imageData,
             id: Date.now().toString(),
         })

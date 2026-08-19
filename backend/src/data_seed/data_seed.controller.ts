@@ -518,7 +518,7 @@ export class DataSeedController {
                 .where(inArray(schema.tbl_image.id, dataProcessed))
 
             for await (const element of data) {
-                this.awsService.sqsImageProcessingDataPush({
+                this.awsService.sqsImageEmbeddingProcessingDataPush({
                     description: element.desc,
                     hashTags: element.hashTags,
                     image_id: element.id
