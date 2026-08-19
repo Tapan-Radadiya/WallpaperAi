@@ -167,7 +167,6 @@ export class ImageService {
                 hashTags: schema.tbl_image.hashTags
             })
 
-            console.log('insertImage-->', insertImage);
             if (insertImage) {
                 this.awsServices.sqsImageProcessingDataPush({
                     description: insertImage[0].description,
