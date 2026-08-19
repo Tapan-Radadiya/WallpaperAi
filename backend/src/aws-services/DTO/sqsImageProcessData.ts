@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsString, IsUUID, Length } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, Length } from "class-validator";
 import sharp from "sharp";
 
 export class SQSImageEmbeddingProcessDTO {
@@ -21,10 +21,21 @@ export class SQSImageProcessDTO {
     @IsNotEmpty()
     fileData!: Express.Multer.File
 
-    @IsBoolean()
     @IsNotEmpty()
-    is_image_paid!: boolean
+    imageSharpMetaData!: sharp.Metadata
 
-    @IsNotEmpty()
-    imageMetaData!: sharp.Metadata
+
+    ImageMetaData!: SQSImageMetaData
+
+    @IsOptional()
+    s3_image_path?: string
+
+}
+
+type SQSImageMetaData = {
+    tempS3Path?: string
+    userId: string
+    imageFormat: string
+    imageUuid: string
+    is_image_paid: boolean
 }
