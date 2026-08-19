@@ -5,6 +5,7 @@ import { LoggingModule } from '@src/logging/logging.module';
 import { SqsModule } from "@ssut/nestjs-sqs";
 import { AwsServicesService } from './aws-services.service';
 import './sqs-consumer.service';
+import { SqsConsumerService } from './sqs-consumer.service';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import './sqs-consumer.service';
       })
     })
   ],
-  providers: [AwsServicesService],
+  providers: [AwsServicesService, SqsConsumerService],
   exports: [AwsServicesService],
 })
 export class AwsServicesModule { }

@@ -16,7 +16,6 @@ import { eq } from "drizzle-orm";
 export class SqsConsumerService implements OnModuleInit {
     private logger: Logger = new Logger(AwsServicesService.name)
     constructor(
-        private readonly sqsService: SqsService,
         private readonly awsService: AwsServicesService,
         private readonly langchainService: LangchainService,
         @Inject(DRIZZLE) private readonly conn: NodePgDatabase<typeof schema>
@@ -30,7 +29,6 @@ export class SqsConsumerService implements OnModuleInit {
 
     @SqsMessageHandler('wallpaper_ai_fifo_sqs')
     async sqsImageProcessingMessageHandler(message: Message) {
-        console.log('message-->', message);
         // Generate embeddings of the image description and store 
         try {
             if (!message.Body) {
@@ -38,9 +36,7 @@ export class SqsConsumerService implements OnModuleInit {
                 return
             }
             const parsedBody: SQSImageProcessDTO = JSON.parse(message.Body)
-
             const descriptionEmbeddings = await this.langchainService.getEmbeddedText(parsedBody.description)
-
 
             if (!descriptionEmbeddings) {
                 this.logger.log(`Error Getting Embeddings for ${parsedBody}`)
@@ -58,9 +54,11 @@ export class SqsConsumerService implements OnModuleInit {
                 eq(schema.tbl_image.id, parsedBody.image_id)
             )
             if (message.ReceiptHandle) {
-                this.awsService.sqsMessageDelete(message.ReceiptHandle)
+                await this.awsService.sqsMessageDelete(message.ReceiptHandle)
             }
+            this.logger.log(`Successfully consumed and processed`)
         } catch (error) {
+            console.log('error-->', error);
             this.logger.log(`Error Processing ${message.MessageId}, ${message.ReceiptHandle}`)
             return
         }

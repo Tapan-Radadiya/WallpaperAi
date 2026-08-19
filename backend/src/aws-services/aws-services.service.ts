@@ -124,6 +124,7 @@ export class AwsServicesService {
                 ReceiptHandle: messageId
             })
         )
+        return
     }
 
     async getSignedUrl(url: string, signedUrlTime: number = 60) {
