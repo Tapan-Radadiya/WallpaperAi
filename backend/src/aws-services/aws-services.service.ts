@@ -5,11 +5,12 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SqsService } from "@ssut/nestjs-sqs";
 import { validateInput } from "@src/utils/common";
-import { SQSImageEmbeddingProcessDTO } from "./DTO/sqsImageProcessData";
+import { SQSImageEmbeddingProcessDTO, SQSImageProcessDTO } from "./DTO/sqsImageProcessData";
 import { LoggingService } from "@src/logging/logging.service";
 import { CloudfrontSignInputWithPolicy, getSignedUrl } from "@aws-sdk/cloudfront-signer";
 import * as fs from "fs"
 import { getSignedUrlPolicy } from "./aws.policy";
+import { AWS_QUEUE_NAMES, AWS_QUEUE_URLS } from "./aws-service.types";
 
 @Injectable()
 export class AwsServicesService {
@@ -46,7 +47,7 @@ export class AwsServicesService {
                 ContentType,
                 CacheControl: 'public, max-age=31536000, immutable'
             }))
-
+        console.log('uploadedFile-->', uploadedFile);
         if (uploadedFile.$metadata.httpStatusCode === HttpStatus.OK) {
             return fileName
         } else {
@@ -111,7 +112,7 @@ export class AwsServicesService {
             return
         }
 
-        const data = await this.sqsService.send('wallpaper_ai_fifo_sqs', {
+        const data = await this.sqsService.send(AWS_QUEUE_NAMES.IMAGE_EMBEDDING_PROCESS_QUEUE, {
             body: imageData,
             id: Date.now().toString(),
         })
@@ -119,24 +120,58 @@ export class AwsServicesService {
 
     /**
      * 
-     * @param imageData 
+     * @param fileData: imageData
+     * @param imageMetaData: SharpMetadata
+     * @param ImagePaid: boolean
      * @description Validate Image Payload And push to queue
      */
-    async sqsImageProcessingDataPush(imageData: string) {
-        console.log('imageData At Verify Payload-->', imageData);
-        await this.sqsService.send('image_variant_generation_std_q', {
-            body: imageData,
+    async sqsImageProcessingDataPush({ fileData, imageSharpMetaData, ImageMetaData }: SQSImageProcessDTO) {
+
+
+        const { imageUuid, tempS3Path } = ImageMetaData
+        if (!tempS3Path) {
+            this.logger.log("Temp S3 image is not uploaded")
+            return
+        }
+
+        await this.uploadFile(tempS3Path, fileData.buffer, fileData.mimetype)
+
+        const compresedFileData = {
+            ...fileData,
+            // Cannot Send Full buffer to sqs so temp upload file to s3 which will be fetched by worker and get deleted after use
+            buffer: '' as unknown as Buffer<ArrayBufferLike>,
+        }
+
+        const validatedData: SQSImageProcessDTO = {
+            fileData: compresedFileData,
+            imageSharpMetaData,
+            s3_image_path: `${process.env.S3_PREFIX}${tempS3Path}`,
+            ImageMetaData
+        }
+
+        await this.sqsService.send(AWS_QUEUE_NAMES.IMAGE_VARIANT_PROCESS_QUEUE, {
+            body: JSON.stringify(validatedData),
             id: Date.now().toString(),
         })
+        return
     }
 
-    async sqsMessageDelete(messageId: string) {
-        const data = await this.sqsClient.send(
-            new DeleteMessageCommand({
-                QueueUrl: this.configService.getOrThrow("AWS_SQS_STD_QUEUE_URL"),
-                ReceiptHandle: messageId
-            })
-        )
+    async sqsMessageDelete(messageId: string, queueName: AWS_QUEUE_URLS) {
+        if (queueName === AWS_QUEUE_URLS.AWS_SQS_IMAGE_EMBEDDING_QUEUE_URL) {
+            await this.sqsClient.send(
+                new DeleteMessageCommand({
+                    QueueUrl: this.configService.getOrThrow("AWS_SQS_IMAGE_EMBEDDING_QUEUE_URL"),
+                    ReceiptHandle: messageId
+                })
+            )
+        } else if (queueName === AWS_QUEUE_URLS.AWS_IMAGE_VARIANT_SQS_QUEUE_URL) {
+            await this.sqsClient.send(
+                new DeleteMessageCommand({
+                    QueueUrl: this.configService.getOrThrow("AWS_SQS_IMAGE_EMBEDDING_QUEUE_URL"),
+                    ReceiptHandle: messageId
+                })
+            )
+        }
         return
     }
 
