@@ -1,5 +1,5 @@
 import { CloudFrontClient, CreateInvalidationCommand, ListInvalidationsCommand } from "@aws-sdk/client-cloudfront";
-import { GetObjectCommand, GetObjectCommandOutput, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, DeleteObjectCommandOutput, GetObjectCommand, GetObjectCommandOutput, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DeleteMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -69,6 +69,21 @@ export class AwsServicesService {
         }
     }
 
+    async removeS3Object(filePath: string): Promise<DeleteObjectCommandOutput | null> {
+        const deletedObject = await this.s3Client.send(
+            new DeleteObjectCommand({
+                Bucket: this.configService.getOrThrow("AWS_BUCKET_NAME"),
+                Key: filePath
+            })
+        )
+        if (deletedObject.$metadata.httpStatusCode === HttpStatus.NO_CONTENT) {
+            return deletedObject
+        } else {
+            this.logger.error(`Error deleting the s3Object Path:${filePath}`)
+            return null
+        }
+    }
+
     // S3 Services
 
     async cloudFrontTest() {
@@ -125,29 +140,32 @@ export class AwsServicesService {
      * @param ImagePaid: boolean
      * @description Validate Image Payload And push to queue
      */
-    async sqsImageProcessingDataPush({ fileData, imageSharpMetaData, ImageMetaData }: SQSImageProcessDTO) {
+    async sqsImageProcessingDataPush({ fileData, imageSharpMetaData, ImageMetaData, s3_image_path }: SQSImageProcessDTO) {
 
-
-        const { imageUuid, tempS3Path } = ImageMetaData
-        if (!tempS3Path) {
+        if (!s3_image_path) {
             this.logger.log("Temp S3 image is not uploaded")
             return
         }
 
-        await this.uploadFile(tempS3Path, fileData.buffer, fileData.mimetype)
+        // * Uploading original file to s3 because we cannot pass whole buffer to queue
+
+        await this.uploadFile(s3_image_path, fileData.buffer, fileData.mimetype)
 
         const compresedFileData = {
             ...fileData,
-            // Cannot Send Full buffer to sqs so temp upload file to s3 which will be fetched by worker and get deleted after use
+            // * Cannot Send Full buffer to sqs so temp upload file to s3 which will be fetched by worker 
+            // * and get deleted after use
             buffer: '' as unknown as Buffer<ArrayBufferLike>,
         }
 
         const validatedData: SQSImageProcessDTO = {
             fileData: compresedFileData,
             imageSharpMetaData,
-            s3_image_path: `${process.env.S3_PREFIX}${tempS3Path}`,
+            s3_image_path: s3_image_path,
             ImageMetaData
         }
+
+        console.log('validated-->', validatedData);
 
         await this.sqsService.send(AWS_QUEUE_NAMES.IMAGE_VARIANT_PROCESS_QUEUE, {
             body: JSON.stringify(validatedData),
