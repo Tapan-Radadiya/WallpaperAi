@@ -108,6 +108,8 @@ export class ImageService {
             price: reqBody.price
         }
 
+        await this.awsServices.uploadFile(temp_path, fileData.buffer, fileData.mimetype)
+
         this.awsServices.sqsImageProcessingDataPush({
             fileData,
             imageSharpMetaData: imageMetaData,
@@ -116,6 +118,7 @@ export class ImageService {
                 userId,
                 imageUuid,
                 is_image_paid: reqBody.is_paid,
+                tempS3Path: temp_path
             }
         })
 
@@ -416,26 +419,6 @@ export class ImageService {
             )
         })
     }
-
-    private async convertImageToThumbnail(imageData: Express.Multer.File, orgImage: { width: number, height: number }): Promise<Buffer> {
-        const thumbnailImageWidth = Math.round((orgImage.height / orgImage.width) * 600)
-        const thumbNailImage = await sharp(imageData.buffer).resize({ width: thumbnailImageWidth }).toBuffer()
-        return thumbNailImage
-    }
-
-    private async convertImageToPreview(imageData: Express.Multer.File): Promise<Buffer> {
-        const previewWidth = 1400; // perfect for modal previews
-        const previewImage = await sharp(imageData.buffer, {
-            limitInputPixels: 25_000_000
-        })
-            .rotate()
-            .resize({ width: previewWidth, withoutEnlargement: true })
-            .jpeg({ quality: 90 })
-            .toBuffer();
-
-        return previewImage;
-    }
-
     private randomizeData(data: any[]): any[] {
         const plainData = data
         for (let i = plainData.length - 1; i > 0; i--) {
@@ -446,38 +429,4 @@ export class ImageService {
         return plainData
     }
 
-    /**
-     * 
-     * @param imageData 
-     * @param imageMetaData 
-     * @returns 
-     */
-    private async getWatermarkedImage(imageData: Express.Multer.File, imageMetaData: sharp.Metadata) {
-        const waterMark = await sharp('src/public/watermark.png')
-            .resize({ width: Math.floor(imageMetaData.width * 0.3) })
-            .ensureAlpha(0.3)
-            .toBuffer()
-
-        const waterMarkedImage = await sharp(imageData.buffer)
-            .composite([{
-                input: waterMark,
-                gravity: 'center',
-                blend: 'overlay'
-            }])
-            .toBuffer()
-
-        return waterMarkedImage
-    }
-
-
-
-    /**
-     * 
-     * @param imageBuffer 
-     * @returns Promise<sharp.Metadata>
-     */
-    private async getImageMetadataFromBuffer(imageBuffer: Buffer<ArrayBufferLike>): Promise<sharp.Metadata> {
-        const metaData = await sharp(imageBuffer).metadata()
-        return metaData
-    }
 }

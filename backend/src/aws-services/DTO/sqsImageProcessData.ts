@@ -33,7 +33,7 @@ export class SQSImageProcessDTO {
 }
 
 type SQSImageMetaData = {
-    tempS3Path?: string
+    tempS3Path: string
     userId: string
     imageFormat: string
     imageUuid: string

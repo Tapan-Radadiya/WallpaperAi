@@ -167,7 +167,7 @@ export class AwsServicesService {
         } else if (queueName === AWS_QUEUE_URLS.AWS_IMAGE_VARIANT_SQS_QUEUE_URL) {
             await this.sqsClient.send(
                 new DeleteMessageCommand({
-                    QueueUrl: this.configService.getOrThrow("AWS_SQS_IMAGE_EMBEDDING_QUEUE_URL"),
+                    QueueUrl: this.configService.getOrThrow("AWS_IMAGE_VARIANT_SQS_QUEUE_URL"),
                     ReceiptHandle: messageId
                 })
             )
