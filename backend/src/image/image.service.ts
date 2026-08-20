@@ -6,7 +6,7 @@ import { ImageUploadBodyDTO, ImageUploadDTO, LikeImageDTO } from '@src/DTO/image
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
 import { APIResponseInterface } from '@src/types/common.types';
 import { UserService } from '@src/user/user.service';
-import { APIResponse, getUserProfileDataCacheKey } from '@src/utils/common';
+import { APIResponse, getImagepaths, getUserProfileDataCacheKey } from '@src/utils/common';
 import { UUID } from 'crypto';
 import { and, count, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -86,8 +86,9 @@ export class ImageService {
             imageRawPath,
             imageThumbnailPath,
             waterMarkedThumbnailPath,
-            waterMarkedPreviewPath
-        } = this.getImagepaths({ is_paid: reqBody.is_paid, imageUuid, userId, format: imageMetaData.format })
+            waterMarkedPreviewPath,
+            temp_path
+        } = getImagepaths({ is_paid: reqBody.is_paid, imageUuid, userId, format: imageMetaData.format })
 
         const imageData: ImageUploadDTO = {
             id: imageUuid,
@@ -101,84 +102,21 @@ export class ImageService {
             raw_url: imageRawPath,
             thumbnail_url: imageThumbnailPath,
             preview_url: imagePreviewPath,
-            waterMarked_url: waterMarkedPreviewPath,
+            waterMarked_preview_url: waterMarkedPreviewPath,
             waterMarked_thumbnail_url: waterMarkedThumbnailPath,
             title: reqBody.title,
             price: reqBody.price
         }
 
+        await this.awsServices.sqsImageProcessingDataPush({
+            fileData,
+            imageSharpMetaData: imageMetaData,
+            ImageMetaData: imageData,
+            s3_image_path: temp_path
+        })
+
         try {
-            const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
-            const previewImageBuffer = await this.convertImageToPreview(fileData)
-
-            // TODO - This needs to be go in queue
-            if (reqBody.is_paid) {
-
-                const thumbNailMetaData = await this.getImageMetadataFromBuffer(thumbnailbuffer)
-                const previewImageMetaData = await this.getImageMetadataFromBuffer(previewImageBuffer)
-
-
-                const thumbnailFileData: Express.Multer.File = { ...fileData, buffer: thumbnailbuffer }
-                const previewFileData: Express.Multer.File = { ...fileData, buffer: previewImageBuffer }
-
-
-                const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbnailFileData, thumbNailMetaData)
-                const previewWaterMarkedImage = await this.getWatermarkedImage(previewFileData, previewImageMetaData)
-                // If User uploaded image is premium then create a watermarked image 
-                // const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbNailMetaData, thumbnailbuffer)
-                const data = await Promise.allSettled([
-                    this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
-                    this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-                    this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype),
-
-                    // TODO: Change Image Buffer TO particular Image E.g. Create buffer for watermarked thumbnail Image
-                    this.awsServices.uploadFile(waterMarkedThumbnailPath!, thumbNailWaterMarkedImage, fileData.mimetype),
-                    this.awsServices.uploadFile(waterMarkedPreviewPath!, previewWaterMarkedImage, fileData.mimetype)
-                ])
-
-            }
-            else {
-                const data = await Promise.allSettled([
-                    this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
-                    this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-                    this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype)
-                ])
-            }
-
-            const insertImage = await this.conn.insert(schema.tbl_image).values({
-                description: imageData.description,
-                category: imageData.category,
-                hashTags: imageData.hashTags,
-                height: imageData.height,
-                preview_url: imageData.preview_url,
-                raw_url: imageData.raw_url,
-                thumbnail_url: imageData.thumbnail_url,
-                waterMarked_preview_url: imageData.waterMarked_url,
-                waterMarked_thumbnail_url: imageData.waterMarked_thumbnail_url,
-                user_id: imageData.user_id,
-                width: imageData.width,
-                id: imageData.id,
-                is_paid: imageData.is_paid,
-                title: imageData.title,
-                price: imageData.price
-            }).returning({
-                image_id: schema.tbl_image.id,
-                description: schema.tbl_image.description,
-                hashTags: schema.tbl_image.hashTags
-            })
-
-            console.log('insertImage-->', insertImage);
-            if (insertImage) {
-                this.awsServices.sqsImageProcessingDataPush({
-                    description: insertImage[0].description,
-                    hashTags: insertImage[0].hashTags ?? '',
-                    image_id: insertImage[0].image_id
-                })
-
-                return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
-            } else {
-                return APIResponse({ statusCode: HttpStatus.CONFLICT, message: 'Error uploading image' })
-            }
+            return APIResponse({ statusCode: HttpStatus.ACCEPTED, message: "Image is accepted" })
         } catch (error) {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Something Went Wrong", err: error })
@@ -403,26 +341,6 @@ export class ImageService {
             )
         })
     }
-
-    private async convertImageToThumbnail(imageData: Express.Multer.File, orgImage: { width: number, height: number }): Promise<Buffer> {
-        const thumbnailImageWidth = Math.round((orgImage.height / orgImage.width) * 600)
-        const thumbNailImage = await sharp(imageData.buffer).resize({ width: thumbnailImageWidth }).toBuffer()
-        return thumbNailImage
-    }
-
-    private async convertImageToPreview(imageData: Express.Multer.File): Promise<Buffer> {
-        const previewWidth = 1400; // perfect for modal previews
-        const previewImage = await sharp(imageData.buffer, {
-            limitInputPixels: 25_000_000
-        })
-            .rotate()
-            .resize({ width: previewWidth, withoutEnlargement: true })
-            .jpeg({ quality: 90 })
-            .toBuffer();
-
-        return previewImage;
-    }
-
     private randomizeData(data: any[]): any[] {
         const plainData = data
         for (let i = plainData.length - 1; i > 0; i--) {
@@ -433,77 +351,4 @@ export class ImageService {
         return plainData
     }
 
-    /**
-     * 
-     * @param imageData 
-     * @param imageMetaData 
-     * @returns 
-     */
-    private async getWatermarkedImage(imageData: Express.Multer.File, imageMetaData: sharp.Metadata) {
-        const waterMark = await sharp('src/public/watermark.png')
-            .resize({ width: Math.floor(imageMetaData.width * 0.3) })
-            .ensureAlpha(0.3)
-            .toBuffer()
-
-        const waterMarkedImage = await sharp(imageData.buffer)
-            .composite([{
-                input: waterMark,
-                gravity: 'center',
-                blend: 'overlay'
-            }])
-            .toBuffer()
-
-        return waterMarkedImage
-    }
-
-
-    /**
-     * 
-     * @param param0 
-     * @returns {
-            imageThumbnailPath: string,
-            imageRawPath: string,
-            imagePreviewPath: string,
-            waterMarkedImagePath?: string,
-            waterMarkedPreviewPath?: string
-            waterMarkedThumbnailPath?: string
-        }
-     */
-    private getImagepaths({ is_paid, userId, imageUuid, format }: { is_paid: boolean, userId: string, imageUuid: string, format: string }): {
-        imageThumbnailPath: string,
-        imageRawPath: string,
-        imagePreviewPath: string,
-        waterMarkedImagePath?: string,
-        waterMarkedPreviewPath?: string
-        waterMarkedThumbnailPath?: string
-    } {
-
-        const PREFIX_PATH = `${process.env.S3_PREFIX}/${userId}/${imageUuid}`
-        if (is_paid) {
-            return {
-                imagePreviewPath: `${PREFIX_PATH}/premium/preview.webp`,
-                imageRawPath: `${PREFIX_PATH}/premium/raw.${format}`,
-                imageThumbnailPath: `${PREFIX_PATH}/premium/thumbnail.webp`,
-                waterMarkedImagePath: `${PREFIX_PATH}/waterMarkedImage.webp`,
-                waterMarkedPreviewPath: `${PREFIX_PATH}/waterMarkedPreview.webp`,
-                waterMarkedThumbnailPath: `${PREFIX_PATH}/waterMarkedThumbnail.webp`
-            }
-        } else {
-            return {
-                imagePreviewPath: `${PREFIX_PATH}/preview.webp`,
-                imageRawPath: `${PREFIX_PATH}/raw.${format}`,
-                imageThumbnailPath: `${PREFIX_PATH}/thumbnail.webp`,
-                waterMarkedImagePath: ''
-            }
-        }
-    }
-    /**
-     * 
-     * @param imageBuffer 
-     * @returns Promise<sharp.Metadata>
-     */
-    private async getImageMetadataFromBuffer(imageBuffer: Buffer<ArrayBufferLike>): Promise<sharp.Metadata> {
-        const metaData = await sharp(imageBuffer).metadata()
-        return metaData
-    }
 }

@@ -35,7 +35,7 @@ export class WorkerService {
         this.logger.log(`Total New Images Dumped: ${this.insertedImageCount} \n New Users Added: ${this.newUserCount}`);
     }
 
-    async getUnsplashimage(pages: string) {
+    async getUnsplashimage(pages: string): Promise<any> {
         const unSplashimages = await lastValueFrom(this.httpService.get(`https://api.unsplash.com/photos/random?count=${pages}00`, {
             headers: {
                 Authorization: `${process.env.SPLASH_API_KEY}`
@@ -43,7 +43,9 @@ export class WorkerService {
         }).pipe(catchError(async (error) => {
             throw APIResponse({ statusCode: HttpStatus.CONFLICT, message: "SplashApi Call Failed" })
         })))
-        await this.validateTheUnsplashImages(unSplashimages.data)
+
+        return unSplashimages
+        // await this.validateTheUnsplashImages(unSplashimages)
         // await this.validateTheUnsplashImages(json, pages)
     }
 
