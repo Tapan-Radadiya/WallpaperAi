@@ -66,7 +66,7 @@ export class ImageUploadDTO {
     title!: string
 
     @IsOptional()
-    waterMarked_url?: string
+    waterMarked_preview_url?: string
 
     @IsOptional()
     waterMarked_thumbnail_url?: string

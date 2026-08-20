@@ -1,3 +1,4 @@
+import { ImageUploadDTO } from "@src/DTO/image.dto";
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, Length } from "class-validator";
 import sharp from "sharp";
 
@@ -25,17 +26,8 @@ export class SQSImageProcessDTO {
     imageSharpMetaData!: sharp.Metadata
 
 
-    ImageMetaData!: SQSImageMetaData
+    ImageMetaData!: ImageUploadDTO
 
-    @IsOptional()
-    s3_image_path?: string
-
-}
-
-type SQSImageMetaData = {
-    tempS3Path: string
-    userId: string
-    imageFormat: string
-    imageUuid: string
-    is_image_paid: boolean
+    @IsNotEmpty()
+    s3_image_path!: string
 }
