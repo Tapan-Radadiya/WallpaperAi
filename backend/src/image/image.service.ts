@@ -102,99 +102,21 @@ export class ImageService {
             raw_url: imageRawPath,
             thumbnail_url: imageThumbnailPath,
             preview_url: imagePreviewPath,
-            waterMarked_url: waterMarkedPreviewPath,
+            waterMarked_preview_url: waterMarkedPreviewPath,
             waterMarked_thumbnail_url: waterMarkedThumbnailPath,
             title: reqBody.title,
             price: reqBody.price
         }
 
-        await this.awsServices.uploadFile(temp_path, fileData.buffer, fileData.mimetype)
-
-        this.awsServices.sqsImageProcessingDataPush({
+        await this.awsServices.sqsImageProcessingDataPush({
             fileData,
             imageSharpMetaData: imageMetaData,
-            ImageMetaData: {
-                imageFormat: imageMetaData.format,
-                userId,
-                imageUuid,
-                is_image_paid: reqBody.is_paid,
-                tempS3Path: temp_path
-            }
+            ImageMetaData: imageData,
+            s3_image_path: temp_path
         })
 
-
-        return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
         try {
-            // const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageMetaData.width, height: imageMetaData.height })
-            // const previewImageBuffer = await this.convertImageToPreview(fileData)
-
-            // // TODO - This needs to be go in queue
-            // if (reqBody.is_paid) {
-
-            //     const thumbNailMetaData = await this.getImageMetadataFromBuffer(thumbnailbuffer)
-            //     const previewImageMetaData = await this.getImageMetadataFromBuffer(previewImageBuffer)
-
-
-            //     const thumbnailFileData: Express.Multer.File = { ...fileData, buffer: thumbnailbuffer }
-            //     const previewFileData: Express.Multer.File = { ...fileData, buffer: previewImageBuffer }
-
-
-            //     const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbnailFileData, thumbNailMetaData)
-            //     const previewWaterMarkedImage = await this.getWatermarkedImage(previewFileData, previewImageMetaData)
-            //     // If User uploaded image is premium then create a watermarked image 
-            //     // const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbNailMetaData, thumbnailbuffer)
-            //     const data = await Promise.allSettled([
-            //         this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
-            //         this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-            //         this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype),
-
-            //         // TODO: Change Image Buffer TO particular Image E.g. Create buffer for watermarked thumbnail Image
-            //         this.awsServices.uploadFile(waterMarkedThumbnailPath!, thumbNailWaterMarkedImage, fileData.mimetype),
-            //         this.awsServices.uploadFile(waterMarkedPreviewPath!, previewWaterMarkedImage, fileData.mimetype)
-            //     ])
-
-            // }
-            // else {
-            //     const data = await Promise.allSettled([
-            //         this.awsServices.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
-            //         this.awsServices.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-            //         this.awsServices.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype)
-            //     ])
-            // }
-
-            const insertImage = await this.conn.insert(schema.tbl_image).values({
-                description: imageData.description,
-                category: imageData.category,
-                hashTags: imageData.hashTags,
-                height: imageData.height,
-                preview_url: imageData.preview_url,
-                raw_url: imageData.raw_url,
-                thumbnail_url: imageData.thumbnail_url,
-                waterMarked_preview_url: imageData.waterMarked_url,
-                waterMarked_thumbnail_url: imageData.waterMarked_thumbnail_url,
-                user_id: imageData.user_id,
-                width: imageData.width,
-                id: imageData.id,
-                is_paid: imageData.is_paid,
-                title: imageData.title,
-                price: imageData.price
-            }).returning({
-                image_id: schema.tbl_image.id,
-                description: schema.tbl_image.description,
-                hashTags: schema.tbl_image.hashTags
-            })
-
-            // if (insertImage) {
-            //     // this.awsServices.sqsImageEmbeddingProcessingDataPush({
-            //     //     description: insertImage[0].description,
-            //     //     hashTags: insertImage[0].hashTags ?? '',
-            //     //     image_id: insertImage[0].image_id
-            //     // })
-
-            //     return APIResponse({ statusCode: HttpStatus.CREATED, message: 'Image uploaded' })
-            // } else {
-            //     return APIResponse({ statusCode: HttpStatus.CONFLICT, message: 'Error uploading image' })
-            // }
+            return APIResponse({ statusCode: HttpStatus.ACCEPTED, message: "Image is accepted" })
         } catch (error) {
             console.log('error-->', error);
             return APIResponse({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: "Something Went Wrong", err: error })

@@ -13,6 +13,7 @@ import { eq } from "drizzle-orm";
 import { AWS_QUEUE_NAMES, AWS_QUEUE_URLS } from "./aws-service.types";
 import { getImagepaths } from "../utils/common"
 import sharp from 'sharp';
+import { ImageUploadDTO } from "@src/DTO/image.dto";
 
 @Injectable()
 export class SqsConsumerService implements OnModuleInit {
@@ -30,40 +31,36 @@ export class SqsConsumerService implements OnModuleInit {
     }
 
     @SqsMessageHandler(AWS_QUEUE_NAMES.IMAGE_EMBEDDING_PROCESS_QUEUE)
-    async sqsImageProcessingMessageHandler(message: Message) {
+    async sqsImageProcessingMessageHandler(imageEmbeddingData: SQSImageEmbeddingProcessDTO) {
         // Generate embeddings of the image description and store 
         try {
-            if (!message.Body) {
-                this.logger.log("Empty body received in image processing queue")
-                return
-            }
-            const parsedBody: SQSImageEmbeddingProcessDTO = JSON.parse(message.Body)
-            const descriptionEmbeddings = await this.langchainService.getEmbeddedText(parsedBody.description)
+            const descriptionEmbeddings = await this.langchainService.getEmbeddedText(imageEmbeddingData.description)
 
             if (!descriptionEmbeddings) {
-                this.logger.log(`Error Getting Embeddings for ${parsedBody}`)
+                this.logger.log(`Error Getting Embeddings for ${imageEmbeddingData}`)
                 return
             }
 
             const data = await this.conn.insert(tbl_image_embeddings).values({
-                tbl_image_id: parsedBody.image_id,
+                tbl_image_id: imageEmbeddingData.image_id,
                 image_metadata: descriptionEmbeddings
             })
 
+            // * Update the image as processed 
             await this.conn.update(schema.tbl_image).set({
                 image_processed: true
             }).where(
-                eq(schema.tbl_image.id, parsedBody.image_id)
+                eq(schema.tbl_image.id, imageEmbeddingData.image_id)
             )
 
-            // Can Remove await
-            if (message.ReceiptHandle) {
-                await this.deleteSqsMessage(message.ReceiptHandle, AWS_QUEUE_URLS.AWS_SQS_IMAGE_EMBEDDING_QUEUE_URL)
-            }
+            // ! Deprecated
+            // if (message.ReceiptHandle) {
+            //     await this.deleteSqsMessage(message.ReceiptHandle, AWS_QUEUE_URLS.AWS_SQS_IMAGE_EMBEDDING_QUEUE_URL)
+            // }
             this.logger.log(`Successfully consumed and processed`)
         } catch (error) {
             console.log('error-->', error);
-            this.logger.log(`Error Processing ${message.MessageId}, ${message.ReceiptHandle}`)
+            this.logger.log(`Error Processing ${imageEmbeddingData.image_id}`)
             return
         }
         return
@@ -73,8 +70,6 @@ export class SqsConsumerService implements OnModuleInit {
     @SqsMessageHandler(AWS_QUEUE_NAMES.IMAGE_VARIANT_PROCESS_QUEUE)
     async sqsImageVariantGenerationMessageHandler(message: Message) {
         try {
-            console.log('message-->', message);
-
             if (!message.Body) {
                 this.logger.log("Empty body received in image processing queue")
                 return
@@ -82,49 +77,37 @@ export class SqsConsumerService implements OnModuleInit {
 
             const parsedData: SQSImageProcessDTO = JSON.parse(message.Body)
             const {
-                ImageMetaData: {
-                    imageFormat,
-                    imageUuid,
-                    userId,
-                    tempS3Path,
-                    is_image_paid
-                },
-                fileData,
-                imageSharpMetaData,
+                ImageMetaData, // * Data to store in table
+                s3_image_path, // * Temp s3 uploaded image location
+                fileData, // * Multer file data 
+                imageSharpMetaData, // * Sharp image metadata
             } = parsedData
-            const s3ImagePath = parsedData?.s3_image_path
-            if (!s3ImagePath) {
-                this.logger.error("S3 image Not uploaded to /tmp")
-            }
 
+            const uploadedImage = await this.awsService.getS3FileData(s3_image_path)
 
-            const uploadedImage = await this.awsService.getS3FileData(tempS3Path!)
             const imageByteArray = await uploadedImage?.Body?.transformToByteArray()
 
-            const imageBuffer = await Buffer.from(imageByteArray!)
+            const imageBuffer = Buffer.from(imageByteArray!)
 
             parsedData.fileData.buffer = imageBuffer
             const {
                 imagePreviewPath,
                 imageRawPath,
                 imageThumbnailPath,
-                temp_path,
-                waterMarkedImagePath,
                 waterMarkedPreviewPath,
                 waterMarkedThumbnailPath,
             } = getImagepaths({
-                format: imageFormat,
-                imageUuid,
-                is_paid: is_image_paid,
-                userId
+                format: imageSharpMetaData.format,
+                imageUuid: ImageMetaData.id,
+                is_paid: ImageMetaData.is_paid,
+                userId: ImageMetaData.user_id
             })
 
-            this.logger.log(`Image variant Creating Starting For Image Id: ${imageUuid}`)
+            this.logger.log(`Image variant Creating Starting For Image Id: ${ImageMetaData.id}`)
             const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageSharpMetaData.width, height: imageSharpMetaData.height })
             const previewImageBuffer = await this.convertImageToPreview(fileData)
 
-            // TODO - This needs to be go in queue
-            if (is_image_paid) {
+            if (ImageMetaData.is_paid) {
 
                 const thumbNailMetaData = await this.getImageMetadataFromBuffer(thumbnailbuffer)
                 const previewImageMetaData = await this.getImageMetadataFromBuffer(previewImageBuffer)
@@ -157,10 +140,19 @@ export class SqsConsumerService implements OnModuleInit {
                 ])
             }
 
-            // TODO : Remove Temp S3 Object After Worker Done Is Job Successfully
+            this.logger.log("All Variants Generated Inserting Image")
+
+
+            // * It will insert image data into table as well call the embedding function
+            await this.InsertImageData(ImageMetaData)
+
+
             if (message.ReceiptHandle) {
                 await this.deleteSqsMessage(message.ReceiptHandle, AWS_QUEUE_URLS.AWS_IMAGE_VARIANT_SQS_QUEUE_URL)
+                console.log("Deleting temp s3 object", s3_image_path)
+                await this.awsService.removeS3Object(s3_image_path)
             }
+
             this.logger.log("Image processing Completed")
         } catch (error) {
             console.log('error-->', error);
@@ -191,6 +183,23 @@ export class SqsConsumerService implements OnModuleInit {
             .toBuffer();
 
         return previewImage;
+    }
+
+    private async InsertImageData(imageData: ImageUploadDTO) {
+
+        const insertImage = await this.conn.insert(schema.tbl_image).values(imageData).returning({
+            image_id: schema.tbl_image.id,
+            description: schema.tbl_image.description,
+            hashTags: schema.tbl_image.hashTags
+        })
+
+        this.logger.log("Image Data Inserted Generating Embedding")
+
+        await this.sqsImageProcessingMessageHandler({
+            description: insertImage[0].description,
+            hashTags: insertImage[0].hashTags ?? '',
+            image_id: insertImage[0].image_id
+        })
     }
 
 
