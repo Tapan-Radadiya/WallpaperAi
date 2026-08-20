@@ -12,7 +12,8 @@ import { AwsServicesService } from '@src/aws-services/aws-services.service';
 import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import { LangchainService } from '@src/langchain/langchain.service';
 import { RedisCacheService } from '@src/redis_cache/redis_cache.service';
-
+import { WorkerService } from '@src/worker/worker.service';
+import { Readable } from 'stream';
 @Controller('data-seed')
 @Injectable()
 export class DataSeedController {
@@ -21,7 +22,8 @@ export class DataSeedController {
         private readonly imageService: ImageService,
         private readonly awsService: AwsServicesService,
         private readonly lanchainService: LangchainService,
-        private readonly redisService: RedisCacheService
+        private readonly redisService: RedisCacheService,
+        private readonly workerService: WorkerService
     ) { }
 
     private readonly logger = new Logger(DataSeedController.name)
@@ -446,6 +448,7 @@ export class DataSeedController {
         @Req() req: Request,
         @Res() res: Response
     ) {
+
         if (!req.session.userId) {
             return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
         }
@@ -515,7 +518,7 @@ export class DataSeedController {
                 .where(inArray(schema.tbl_image.id, dataProcessed))
 
             for await (const element of data) {
-                this.awsService.sqsImageProcessingDataPush({
+                this.awsService.sqsImageEmbeddingProcessingDataPush({
                     description: element.desc,
                     hashTags: element.hashTags,
                     image_id: element.id
@@ -535,48 +538,93 @@ export class DataSeedController {
         @Res() res: Response
     ) {
         try {
+            const data_seed_json_file = `src/data_seed/data_seed.json`
             if (!req.session.userId) {
                 return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
             }
+            const unsplashImageDataAPI = await this.workerService.getUnsplashimage('4')
+            // Writing Into File
+            fs.writeFileSync(data_seed_json_file, JSON.stringify(unsplashImageDataAPI.data))
             const userId = req.session.userId
-            const start = 1
-            const end = 2
-            const isUserExists = await this.conn.query.tbl_user.findFirst({
-                where: eq(
-                    schema.tbl_user.id, userId
-                )
-            })
 
-            if (!isUserExists) {
-                return res.json("User Not Exists")
+            const unsplashImageData = JSON.parse(fs.readFileSync(data_seed_json_file).toString())
+            if (Object.keys(unsplashImageData).length === 0) {
+                console.log("No Image Data Present")
+                return
             }
-            if (this.testData.length < end - start) {
-                return res.json("Insufficient Data")
-            }
+            // Read the data from data_seed.json file and upload image for test env
+            for await (const element of unsplashImageData) {
+                const data: any = await fetch(element.urls.raw)
+                const filePath = `src/data_seed/images/${element.id}.jpeg`
+                if (fs.existsSync(filePath)) {
+                    console.log("Same Image Found")
+                    continue
+                }
+                const fileStream = fs.createWriteStream(filePath)
 
-            const imagePath = process.env.SEED_DATA_IMAGES_PATH!
+                const imageStream = Readable.fromWeb(data.body)
 
-            const data = await fs.readdirSync(imagePath)
-            const test: any = []
-            for (let index = start; index < end; index++) {
-                const buffer = fs.readFileSync(`${imagePath}/${data[index + start]}`)
-                const testdata = await sharp(buffer).metadata()
+                await new Promise((resolve: any, reject: any) => {
+                    imageStream.pipe(fileStream)
+                    imageStream.on('error', reject)
+                    fileStream.on('finish', resolve)
+                })
+
+                const buffer = fs.readFileSync(filePath)
+                const imageSharpMetaData = await sharp(buffer).metadata()
 
                 const multerData = {
                     buffer,
-                    originalname: data[index + start],
+                    originalname: element.id,
                     encoding: '7bit',
-                    mimetype: this.IMAGE_FORMAT_TO_MIME[testdata.format],
-                    size: testdata.size,
+                    mimetype: this.IMAGE_FORMAT_TO_MIME[imageSharpMetaData.format],
+                    size: imageSharpMetaData.size,
                 } as Express.Multer.File
-                const uploadData = await this.imageService.uploadUserImageService(this.testData[index], testdata, userId, multerData)
-                this.logger.log(`Image: ${index + start} Uploaded ✅`)
+
+                const imagePaidData = this.shouldImagePaid()
+
+                if (!element.description || element.description === '') {
+                    if (!element.alt_description || element.alt_description === '') {
+                        console.log("Generating Description")
+                    } else {
+                        element.description = element.alt_description
+                        console.log("Using Alt Description")
+                    }
+                } else {
+                    element.description = await this.lanchainService.getImageDescription(element.urls.raw)
+                }
+
+                const imageUploadData: ImageUploadBodyDTO = {
+                    is_paid: imagePaidData.is_paid,
+                    category: 'Test',
+                    hashTags: 'Test',
+                    description: element.description,
+                    title: element.description.slice(0, 20),
+                    price: imagePaidData.price
+                }
+                console.log({ price: imageUploadData.price, is_paid: imageUploadData.is_paid })
+                const uploadData = await this.imageService.uploadUserImageService(imageUploadData, imageSharpMetaData, userId, multerData)
+                this.logger.log(`${element.id} Is Successfully Completed`)
+                fs.rmSync(filePath)
             }
-            return res.json(test)
+            fs.writeFileSync('src/data_seed/data_seed.json', JSON.stringify({}))
+            if (req.session.userId) {
+                return res.status(HttpStatus.BAD_REQUEST).json("No User Logged In")
+            }
+
+            return res.json({})
 
         }
         catch (error) {
             console.log('error-->', error);
+        }
+    }
+
+    private shouldImagePaid(): { is_paid: boolean, price: number } {
+        const number = Math.floor(Math.random() * (200 - 100 + 1)) + 100
+        return {
+            is_paid: number > 150,
+            price: number > 150 ? number : 0
         }
     }
 }

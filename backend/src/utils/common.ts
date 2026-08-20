@@ -85,3 +85,48 @@ export const getUserProfileDataCacheKey = (userId: string): string => {
 export const getUserPurchasedImageDataCacheKey = (userId: string): string => {
     return `user:purchased-assets:${userId}`
 }
+
+
+/**
+  * 
+  * @param param0 
+  * @returns {
+         imageThumbnailPath: string,
+         imageRawPath: string,
+         imagePreviewPath: string,
+         waterMarkedImagePath?: string,
+         waterMarkedPreviewPath?: string
+         waterMarkedThumbnailPath?: string
+     }
+  */
+export function getImagepaths({ is_paid, userId, imageUuid, format }: { is_paid: boolean, userId: string, imageUuid: string, format: string }): {
+    imageThumbnailPath: string,
+    imageRawPath: string,
+    imagePreviewPath: string,
+    waterMarkedImagePath?: string,
+    waterMarkedPreviewPath?: string
+    waterMarkedThumbnailPath?: string,
+    temp_path: string
+} {
+
+    const PREFIX_PATH = `${process.env.S3_PREFIX}/${userId}/${imageUuid}`
+    if (is_paid) {
+        return {
+            imagePreviewPath: `${PREFIX_PATH}/premium/preview.webp`,
+            imageRawPath: `${PREFIX_PATH}/premium/raw.${format}`,
+            imageThumbnailPath: `${PREFIX_PATH}/premium/thumbnail.webp`,
+            waterMarkedImagePath: `${PREFIX_PATH}/waterMarkedImage.webp`,
+            waterMarkedPreviewPath: `${PREFIX_PATH}/waterMarkedPreview.webp`,
+            waterMarkedThumbnailPath: `${PREFIX_PATH}/waterMarkedThumbnail.webp`,
+            temp_path: `${PREFIX_PATH}/temp/raw.${format}`
+        }
+    } else {
+        return {
+            imagePreviewPath: `${PREFIX_PATH}/preview.webp`,
+            imageRawPath: `${PREFIX_PATH}/raw.${format}`,
+            imageThumbnailPath: `${PREFIX_PATH}/thumbnail.webp`,
+            waterMarkedImagePath: '',
+            temp_path: `${PREFIX_PATH}/temp/raw.${format}`
+        }
+    }
+}
