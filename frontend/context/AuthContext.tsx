@@ -1,9 +1,11 @@
 'use client';
 
-import { createContext, ReactNode, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import Modal from '@/components/Modal';
 import LoginPrompt from '@/components/LoginPrompt';
 import { X } from 'lucide-react';
+
+import { PurchasedItem, getUserPurchases } from '@/lib/data';
 
 export interface User {
     id: string;
@@ -25,6 +27,10 @@ interface AuthContextType {
     isLoading: boolean;
     showLoginPrompt: (options?: LoginPromptOptions | string, message?: string) => void;
     hideLoginPrompt: () => void;
+    purchasedItems: PurchasedItem[] | null;
+    fetchPurchases: (force?: boolean) => Promise<PurchasedItem[]>;
+    isPurchased: (imageId: string) => boolean;
+    getPurchasedItem: (imageId: string) => PurchasedItem | undefined;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +38,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [purchasedItems, setPurchasedItems] = useState<PurchasedItem[] | null>(null);
+
+    const userRef = useRef<User | null>(null);
+    userRef.current = user;
+
+    const purchasedItemsRef = useRef<PurchasedItem[] | null>(null);
+    purchasedItemsRef.current = purchasedItems;
+
+    const isFetchingPurchasesRef = useRef<boolean>(false);
 
     const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
     const [loginPromptConfig, setLoginPromptConfig] = useState<LoginPromptOptions>({
@@ -43,13 +58,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
     }, []);
 
-    const login = (userData: User) => {
-        setUser(userData);
-    };
+    const fetchPurchases = useCallback(async (force = false) => {
+        const currentUser = userRef.current;
+        if (!currentUser) {
+            setPurchasedItems([]);
+            purchasedItemsRef.current = [];
+            return [];
+        }
 
-    const logout = () => {
+        if (!force && purchasedItemsRef.current !== null) {
+            return purchasedItemsRef.current;
+        }
+
+        if (isFetchingPurchasesRef.current) {
+            return purchasedItemsRef.current || [];
+        }
+
+        isFetchingPurchasesRef.current = true;
+        try {
+            const items = await getUserPurchases();
+            setPurchasedItems(items);
+            purchasedItemsRef.current = items;
+            return items;
+        } catch (error) {
+            console.error("Failed to fetch user purchases:", error);
+            setPurchasedItems([]);
+            purchasedItemsRef.current = [];
+            return [];
+        } finally {
+            isFetchingPurchasesRef.current = false;
+        }
+    }, []);
+
+    useEffect(() => {
+        if (user && purchasedItems === null) {
+            fetchPurchases();
+        } else if (!user && purchasedItems !== null) {
+            setPurchasedItems(null);
+            purchasedItemsRef.current = null;
+        }
+    }, [user?.id, purchasedItems, fetchPurchases]);
+
+    const isPurchased = useCallback((imageId: string) => {
+        if (!purchasedItems || !imageId) return false;
+        return purchasedItems.some(item => item.id === imageId);
+    }, [purchasedItems]);
+
+    const getPurchasedItem = useCallback((imageId: string) => {
+        if (!purchasedItems || !imageId) return undefined;
+        return purchasedItems.find(item => item.id === imageId);
+    }, [purchasedItems]);
+
+    const login = useCallback((userData: User) => {
+        setUser(prev => {
+            if (prev?.id === userData.id) return prev;
+            return userData;
+        });
+    }, []);
+
+    const logout = useCallback(() => {
         setUser(null);
-    };
+        setPurchasedItems(null);
+        purchasedItemsRef.current = null;
+    }, []);
 
     const showLoginPrompt = useCallback((options?: LoginPromptOptions | string, message?: string) => {
         if (typeof options === 'string') {
@@ -76,7 +147,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, isLoading, showLoginPrompt, hideLoginPrompt }}>
+        <AuthContext.Provider value={{
+            user,
+            login,
+            logout,
+            isLoading,
+            showLoginPrompt,
+            hideLoginPrompt,
+            purchasedItems,
+            fetchPurchases,
+            isPurchased,
+            getPurchasedItem
+        }}>
             {children}
             <Modal
                 isOpen={isLoginPromptOpen}
