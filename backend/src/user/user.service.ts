@@ -305,14 +305,6 @@ export class UserService {
 
         const userPurchasedImages = await this.getUserPurchasedImagesData(userId)
 
-        if (userPurchasedImages.length === 0) {
-            return APIResponse({
-                statusCode: HttpStatus.OK,
-                message: "",
-                data: []
-            })
-        }
-
         const privateImagePaths = await this.conn
             .select({
                 id: schema.tbl_image.id,
@@ -322,7 +314,9 @@ export class UserService {
             .from(schema.tbl_image)
             .where(
                 or(
-                    inArray(schema.tbl_image.id, userPurchasedImages),
+                    userPurchasedImages.length > 0 ?
+                        inArray(schema.tbl_image.id, userPurchasedImages) :
+                        undefined,
                     and(
                         eq(schema.tbl_image.user_id, userId),
                         eq(schema.tbl_image.is_paid, true)
@@ -345,11 +339,17 @@ export class UserService {
             }
         }))
 
-        this.redis.setRedisKey(getUserPurchasedImageDataCacheKey(userId), JSON.stringify(signedUrlsData), USER_PURCHASED_IMAGES_CACHE_TIME)
+
+        const crafteddata = {}
+
+        signedUrlsData.map((ele) => crafteddata[ele.id] = ele)
+
+
+        this.redis.setRedisKey(getUserPurchasedImageDataCacheKey(userId), JSON.stringify(crafteddata), USER_PURCHASED_IMAGES_CACHE_TIME)
         return APIResponse({
             statusCode: HttpStatus.OK,
             message: "",
-            data: signedUrlsData,
+            data: crafteddata,
             customHeaders: {
                 "x-redis-cache": "miss"
             }

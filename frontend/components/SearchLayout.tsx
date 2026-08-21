@@ -10,7 +10,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLikes } from '@/hooks/useLikes';
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function SearchLayout({ purchasedIds }: { purchasedIds?: PurchasedItem[] | string[] }) {
+    const { purchasedItems } = useAuth();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<WallpaperImage[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -18,12 +21,11 @@ export default function SearchLayout({ purchasedIds }: { purchasedIds?: Purchase
     const [selectedImage, setSelectedImage] = useState<WallpaperImage | null>(null);
     const [purchasedMap, setPurchasedMap] = useState<Map<string, PurchasedItem>>(() => {
         const map = new Map<string, PurchasedItem>();
-        if (purchasedIds) {
-            purchasedIds.forEach(p => {
-                const item = typeof p === 'string' ? { id: p } : p;
-                if (item.id) map.set(item.id, item);
-            });
-        }
+        const initialList = purchasedIds || purchasedItems || [];
+        initialList.forEach(p => {
+            const item = typeof p === 'string' ? { id: p } : p;
+            if (item.id) map.set(item.id, item);
+        });
         return map;
     });
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -41,10 +43,10 @@ export default function SearchLayout({ purchasedIds }: { purchasedIds?: Purchase
 
         if (purchasedIds) {
             updatePurchasedMap(purchasedIds);
-        } else {
-            getUserPurchases().then(updatePurchasedMap);
+        } else if (purchasedItems) {
+            updatePurchasedMap(purchasedItems);
         }
-    }, [purchasedIds]);
+    }, [purchasedIds, purchasedItems]);
 
     // Debounce API calls
     useEffect(() => {

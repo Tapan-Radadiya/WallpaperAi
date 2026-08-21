@@ -22,7 +22,7 @@ interface ImageDetailsProps {
 }
 
 export default function ImageDetails({ image, relatedImages = [], onLike, isLiked, onRelatedImageClick, onClose }: ImageDetailsProps) {
-    const { user, showLoginPrompt } = useAuth();
+    const { user, showLoginPrompt, isPurchased } = useAuth();
     const { showToast } = useToast();
     const [isFullSize, setIsFullSize] = useState(false);
     const [likesCount, setLikesCount] = useState<number>(0);
@@ -31,8 +31,16 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
     const [isPurchasing, setIsPurchasing] = useState(false);
     const [isDetailsLoading, setIsDetailsLoading] = useState(true);
 
+    const isPurchasedInContext = isPurchased(image.id) || !!image.purchased_image;
     // Purchase & detailed state
-    const [hasPurchased, setHasPurchased] = useState(false);
+    const [hasPurchased, setHasPurchased] = useState(isPurchasedInContext);
+
+    useEffect(() => {
+        if (isPurchasedInContext) {
+            setHasPurchased(true);
+        }
+    }, [isPurchasedInContext]);
+
     const [fetchedPrice, setFetchedPrice] = useState<number | null>(null);
     const isOwner = user?.id === image.userId;
     const isPremiumLocked = image.is_paid && !hasPurchased && !isOwner;
@@ -152,7 +160,7 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
                     if (typeof payload.imageLikes === 'number') setLikesCount(payload.imageLikes);
                     if (typeof payload.totalDownloads === 'number') setDownloadCount(payload.totalDownloads);
                     if (payload.price !== undefined) setFetchedPrice(payload.price);
-                    if (payload.purchased_image !== undefined) setHasPurchased(payload.purchased_image);
+                    if (payload.purchased_image !== undefined) setHasPurchased(payload.purchased_image || isPurchasedInContext);
                 }
             } catch (err: any) {
                 if (err.name !== 'CanceledError' && err.code !== "ERR_CANCELED") {
