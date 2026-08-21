@@ -34,11 +34,11 @@ export default function HeaderClient({ initialUser }: HeaderClientProps) {
 
     // Sync server-side user data with client context
     useEffect(() => {
-        if (initialUser) {
+        if (initialUser && contextUser?.id !== initialUser.id) {
             login(initialUser);
         }
         setIsSynced(true);
-    }, [initialUser, login]);
+    }, [initialUser, contextUser?.id, login]);
 
     // High-performance vanilla JS scroll listener
     useEffect(() => {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Tabs from '@/components/Tabs';
 import Modal from '@/components/Modal';
 import { useLikes } from '@/hooks/useLikes';
-import { WallpaperImage } from '@/lib/data';
+import { WallpaperImage, PurchasedItem } from '@/lib/data';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import LoginPrompt from '@/components/LoginPrompt';
@@ -32,21 +32,33 @@ const processImageUrl = (url?: string) => {
     return `${baseUrl}/${url.startsWith('/') ? url.slice(1) : url}`;
 };
 
-const mapToWallpaperImage = (img: any, defaultDesc = 'Wallpaper'): WallpaperImage => {
+const mapToWallpaperImage = (img: any, defaultDesc = 'Wallpaper', isUnlocked = false, purchasedInfo?: PurchasedItem): WallpaperImage => {
     const owner = img.ownerData || {};
     const userName = owner.userName || img.userName || 'Unknown';
     const rawAvatar = owner.userAvatar || owner.avatar || img.userProfileImage || img.userAvatar || '';
     const userAvatar = rawAvatar ? processImageUrl(rawAvatar) : '';
     const userId = owner.userId || owner.id || img.userId || '';
+    const imageId = img.image_id || img.id;
 
-    const preview_url = processImageUrl(img.preview_url || img.previewUrl || img.imageRawPath || img.raw_url || img.rawUrl);
+    const isPurchased = isUnlocked || !!purchasedInfo || img.purchased_image;
+
+    const rawPreview = (purchasedInfo && (purchasedInfo.preview_url || purchasedInfo.previewUrl))
+        ? (purchasedInfo.preview_url || purchasedInfo.previewUrl)
+        : (img.preview_url || img.previewUrl || img.imageRawPath || img.raw_url || img.rawUrl);
+
+    const rawThumbnail = (purchasedInfo && (purchasedInfo.thumbnail_url || purchasedInfo.thumbnailUrl))
+        ? (purchasedInfo.thumbnail_url || purchasedInfo.thumbnailUrl)
+        : (img.thumbnail_url || img.thumbnailUrl || rawPreview);
+
+    const preview_url = processImageUrl(rawPreview);
+    const thumbnailUrl = processImageUrl(rawThumbnail);
 
     return {
-        id: img.image_id || img.id,
+        id: imageId,
         width: Number(img.width) || 0,
         height: Number(img.height) || 0,
-        rawUrl: processImageUrl(img.imageRawPath || img.raw_url || img.rawUrl || img.preview_url),
-        thumbnailUrl: processImageUrl(img.thumbnail_url || img.thumbnailUrl),
+        rawUrl: processImageUrl(img.imageRawPath || img.raw_url || img.rawUrl || rawPreview),
+        thumbnailUrl,
         preview_url,
         description: img.description || defaultDesc,
         userName,
@@ -58,11 +70,12 @@ const mapToWallpaperImage = (img: any, defaultDesc = 'Wallpaper'): WallpaperImag
             userId,
         },
         title: img.title,
-        is_paid: img.is_paid,
+        is_paid: isPurchased ? false : img.is_paid,
+        purchased_image: isPurchased,
         price: img.price,
         publishedOn: img.publishedOn,
-        waterMarked_preview_url: processImageUrl(img.waterMarked_preview_url || img.waterMarked_url),
-        waterMarked_url: processImageUrl(img.waterMarked_preview_url || img.waterMarked_url)
+        waterMarked_preview_url: isPurchased ? undefined : processImageUrl(img.waterMarked_preview_url || img.waterMarked_url),
+        waterMarked_url: isPurchased ? undefined : processImageUrl(img.waterMarked_preview_url || img.waterMarked_url)
     };
 };
 
@@ -77,19 +90,26 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
     const [activeTab, setActiveTab] = useState('uploads');
     const [selectedImage, setSelectedImage] = useState<WallpaperImage | null>(null);
     const [profileData, setProfileData] = useState<APIResponseData | null>(initialProfileData);
-    const { user, login, logout, isLoading: authLoading } = useAuth();
+    const { user, login, logout, isLoading: authLoading, purchasedItems, fetchPurchases, isPurchased, getPurchasedItem } = useAuth();
 
     // Determine if we are viewing our own profile
     const isOwnProfile = !viewedUserId || (!!user && user.id === viewedUserId);
 
-    // If viewing another user, we don't rely on `user` object for loading state of profile data
-    // But we still wait for auth to check if it's our own profile or not? 
-    // Actually if initialProfileData is present, we are good.
+    // Ensure purchases are fetched if direct landing on profile
+    useEffect(() => {
+        if (user && purchasedItems === null) {
+            fetchPurchases();
+        }
+    }, [user, purchasedItems, fetchPurchases]);
+
     const [loading, setLoading] = useState(!initialProfileData);
 
     const [uploadedImages, setUploadedImages] = useState<WallpaperImage[]>(() => {
         if (!initialUploadedImagesRaw) return [];
-        return initialUploadedImagesRaw.map((img: any) => mapToWallpaperImage(img));
+        return initialUploadedImagesRaw.map((img: any) => {
+            const pInfo = getPurchasedItem(img.image_id || img.id);
+            return mapToWallpaperImage(img, 'Wallpaper', isOwnProfile || !!pInfo, pInfo);
+        });
     });
     const [isUploadsLoading, setIsUploadsLoading] = useState(false);
     const [hasFetchedUploads, setHasFetchedUploads] = useState(!!initialUploadedImagesRaw);
@@ -157,10 +177,13 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
     }, [user, authLoading, initialProfileData]);
 
 
-    // Reset uploads fetch state when switching users
+    // Reset uploads fetch state when switching users or when purchased items load
     useEffect(() => {
         if (initialUploadedImagesRaw) {
-            setUploadedImages(initialUploadedImagesRaw.map((img: any) => mapToWallpaperImage(img)));
+            setUploadedImages(initialUploadedImagesRaw.map((img: any) => {
+                const pInfo = getPurchasedItem(img.image_id || img.id);
+                return mapToWallpaperImage(img, 'Wallpaper', isOwnProfile || !!pInfo, pInfo);
+            }));
             setHasFetchedUploads(true);
         } else {
             setHasFetchedUploads(false);
@@ -168,7 +191,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
         }
         setHasFetchedPurchased(false);
         setPurchasedImages([]);
-    }, [viewedUserId, initialUploadedImagesRaw]);
+    }, [viewedUserId, initialUploadedImagesRaw, isOwnProfile, getPurchasedItem, purchasedItems]);
 
     // Fetch Uploaded Images
     useEffect(() => {
@@ -181,11 +204,12 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                         ? `/user/uploaded-images?userId=${viewedUserId}`
                         : '/user/uploaded-images';
 
-                    console.log("DEBUG: Fetching uploaded images from:", url);
-
                     const response = await api.get(url);
                     if (response.data && response.data.data) {
-                        const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => mapToWallpaperImage(img));
+                        const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => {
+                            const pInfo = getPurchasedItem(img.image_id || img.id);
+                            return mapToWallpaperImage(img, 'Wallpaper', isOwnProfile || !!pInfo, pInfo);
+                        });
                         setUploadedImages(mappedImages);
                     }
                     setHasFetchedUploads(true);
@@ -198,7 +222,7 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
         };
 
         fetchUploadedImages();
-    }, [activeTab, hasFetchedUploads, user]);
+    }, [activeTab, hasFetchedUploads, user, isOwnProfile, getPurchasedItem, viewedUserId, purchasedItems]);
 
     // Fetch Purchased Images
     useEffect(() => {
@@ -208,7 +232,10 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
                 try {
                     const response = await api.get('/user/purchased-images');
                     if (response.data && response.data.data) {
-                        const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => mapToWallpaperImage(img, 'Purchased Image'));
+                        const mappedImages: WallpaperImage[] = response.data.data.map((img: any) => {
+                            const pInfo = getPurchasedItem(img.image_id || img.id);
+                            return mapToWallpaperImage(img, 'Purchased Image', true, pInfo);
+                        });
                         setPurchasedImages(mappedImages);
                     }
                     setHasFetchedPurchased(true);
@@ -221,11 +248,15 @@ export default function ProfileContent({ initialProfileData, viewedUserId, initi
         };
 
         fetchPurchasedImages();
-    }, [activeTab, hasFetchedPurchased, user, isOwnProfile]);
+    }, [activeTab, hasFetchedPurchased, user, isOwnProfile, getPurchasedItem, purchasedItems]);
 
     const likedImages: WallpaperImage[] = useMemo(() => {
-        return profileData?.likedImages?.map((img) => mapToWallpaperImage(img)) || [];
-    }, [profileData]);
+        return profileData?.likedImages?.map((img: any) => {
+            const pInfo = getPurchasedItem(img.image_id || img.id);
+            const isUnlocked = !!pInfo || isPurchased(img.image_id || img.id) || (!!user && (img.userId === user.id || img.ownerData?.userId === user.id || img.ownerData?.id === user.id));
+            return mapToWallpaperImage(img, 'Liked Image', isUnlocked, pInfo);
+        }) || [];
+    }, [profileData, isPurchased, getPurchasedItem, user, purchasedItems]);
 
     const displayImages = activeTab === 'uploads' ? uploadedImages :
         activeTab === 'purchased' ? purchasedImages :

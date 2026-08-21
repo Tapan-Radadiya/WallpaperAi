@@ -53,23 +53,44 @@ export async function getUserPurchases(): Promise<PurchasedItem[]> {
             headers['Cookie'] = cookieHeader;
         }
         const response = await api.get('/user/get-user-purchases', { headers });
-        if (response.data && Array.isArray(response.data.data)) {
-            return response.data.data.map((item: any) => {
-                if (typeof item === 'string') {
-                    return { id: item };
+        const rawData = response.data?.data ?? response.data;
+
+        if (!rawData) return [];
+
+        let itemsArray: any[] = [];
+        if (Array.isArray(rawData)) {
+            itemsArray = rawData;
+        } else if (typeof rawData === 'object' && rawData !== null) {
+            itemsArray = Object.entries(rawData).map(([key, value]: [string, any]) => {
+                if (typeof value === 'object' && value !== null) {
+                    return {
+                        id: value.id || key,
+                        preview_url: value.preview_url || value.previewUrl,
+                        thumbnail_url: value.thumbnail_url || value.thumbnailUrl,
+                    };
                 }
-                return {
-                    id: item.id || item.image_id || item.imageId || '',
-                    preview_url: item.preview_url || item.previewUrl,
-                    thumbnail_url: item.thumbnail_url || item.thumbnailUrl,
-                };
+                if (typeof value === 'string') {
+                    return { id: key, preview_url: value };
+                }
+                return { id: key };
             });
         }
-        return [];
+
+        return itemsArray.map((item: any) => {
+            if (typeof item === 'string') {
+                return { id: item };
+            }
+            return {
+                id: item.id || item.image_id || item.imageId || '',
+                preview_url: item.preview_url || item.previewUrl,
+                thumbnail_url: item.thumbnail_url || item.thumbnailUrl,
+            };
+        });
     } catch (error) {
         return [];
     }
 }
+
 
 export async function getImages(page: number = 0, purchasedInput?: PurchasedItem[] | string[]): Promise<WallpaperImage[]> {
     try {
