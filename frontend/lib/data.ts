@@ -32,11 +32,13 @@ export interface WallpaperImage {
 
 const CLOUDFRONT_URL = process.env.NEXT_PUBLIC_AWS_CLOUDFRONT || '';
 
-export const formatImageUrl = (url?: string): string => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+export const formatImageUrl = (url?: any): string => {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (!trimmed || trimmed === '{}' || trimmed === '[object Object]') return '';
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
     const baseUrl = CLOUDFRONT_URL.endsWith('/') ? CLOUDFRONT_URL.slice(0, -1) : CLOUDFRONT_URL;
-    return `${baseUrl}/${url.startsWith('/') ? url.slice(1) : url}`;
+    return `${baseUrl}/${trimmed.startsWith('/') ? trimmed.slice(1) : trimmed}`;
 };
 
 export async function getUserPurchases(): Promise<PurchasedItem[]> {

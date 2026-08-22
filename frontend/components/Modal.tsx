@@ -57,7 +57,7 @@ export default function Modal({ isOpen, onClose, children, downloadUrl, download
 
     return createPortal(
         <div
-            className={`fixed inset-0 ${zIndexClass || 'z-50'} flex flex-col lg:items-center lg:justify-center bg-black/90 backdrop-blur-sm p-0 md:p-4 transition-opacity duration-300 overflow-y-auto lg:overflow-hidden overscroll-contain`}
+            className={`fixed inset-0 ${zIndexClass || 'z-[100]'} flex flex-col lg:items-center lg:justify-center bg-black/90 backdrop-blur-sm p-0 md:p-4 transition-opacity duration-300 overflow-y-auto lg:overflow-hidden overscroll-contain`}
             onClick={onClose}
             style={{ touchAction: 'pan-y' }} // Re-enable touch scrolling for the modal itself
         >
