@@ -73,6 +73,9 @@ export class ImageUploadDTO {
 
     @IsOptional()
     price?: number
+
+    @IsOptional()
+    small_image_url?: string
 }
 
 export class LikeImageDTO {
