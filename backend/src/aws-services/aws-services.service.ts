@@ -47,7 +47,7 @@ export class AwsServicesService {
                 ContentType,
                 CacheControl: 'public, max-age=31536000, immutable'
             }))
-        console.log('uploadedFile-->', uploadedFile);
+
         if (uploadedFile.$metadata.httpStatusCode === HttpStatus.OK) {
             return fileName
         } else {

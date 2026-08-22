@@ -106,7 +106,8 @@ export function getImagepaths({ is_paid, userId, imageUuid, format }: { is_paid:
     waterMarkedImagePath?: string,
     waterMarkedPreviewPath?: string
     waterMarkedThumbnailPath?: string,
-    temp_path: string
+    temp_path: string,
+    small_url: string
 } {
 
     const PREFIX_PATH = `${process.env.S3_PREFIX}/${userId}/${imageUuid}`
@@ -118,7 +119,8 @@ export function getImagepaths({ is_paid, userId, imageUuid, format }: { is_paid:
             waterMarkedImagePath: `${PREFIX_PATH}/waterMarkedImage.webp`,
             waterMarkedPreviewPath: `${PREFIX_PATH}/waterMarkedPreview.webp`,
             waterMarkedThumbnailPath: `${PREFIX_PATH}/waterMarkedThumbnail.webp`,
-            temp_path: `${PREFIX_PATH}/temp/raw.${format}`
+            temp_path: `${PREFIX_PATH}/temp/raw.${format}`,
+            small_url: `${PREFIX_PATH}/small.webp`
         }
     } else {
         return {
@@ -126,7 +128,8 @@ export function getImagepaths({ is_paid, userId, imageUuid, format }: { is_paid:
             imageRawPath: `${PREFIX_PATH}/raw.${format}`,
             imageThumbnailPath: `${PREFIX_PATH}/thumbnail.webp`,
             waterMarkedImagePath: '',
-            temp_path: `${PREFIX_PATH}/temp/raw.${format}`
+            temp_path: `${PREFIX_PATH}/temp/raw.${format}`,
+            small_url: `${PREFIX_PATH}/small.webp`
         }
     }
 }

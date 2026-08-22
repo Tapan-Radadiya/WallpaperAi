@@ -31,7 +31,7 @@ export class ImageSearchService {
             const similarity = sql<number>`1 - (${cosineDistance(schema.tbl_image_embeddings.image_metadata, embeddings)})`
             const similarData = await this.conn
                 .select({
-                    imageSource: schema.tbl_image.raw_url,
+                    imageSource: schema.tbl_image.small_image_url,
                     userName: schema.tbl_user.user_name,
                     userId: schema.tbl_user.id,
                     imageDescription: schema.tbl_image.description,

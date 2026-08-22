@@ -87,7 +87,8 @@ export class ImageService {
             imageThumbnailPath,
             waterMarkedThumbnailPath,
             waterMarkedPreviewPath,
-            temp_path
+            temp_path,
+            small_url
         } = getImagepaths({ is_paid: reqBody.is_paid, imageUuid, userId, format: imageMetaData.format })
 
         const imageData: ImageUploadDTO = {
@@ -104,6 +105,7 @@ export class ImageService {
             preview_url: imagePreviewPath,
             waterMarked_preview_url: waterMarkedPreviewPath,
             waterMarked_thumbnail_url: waterMarkedThumbnailPath,
+            small_image_url: small_url,
             title: reqBody.title,
             price: reqBody.price
         }
