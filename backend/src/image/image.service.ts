@@ -181,25 +181,42 @@ export class ImageService {
     }
 
     async getImageDetails(imageId: string, userId: string | null): Promise<APIResponseInterface> {
-        await this.awsServices.getSignedUrl('https://djrp6t1rc7td.cloudfront.net/dev/images/43f82621-722b-4c47-a241-fa0b760de45d/738ec1f2-7096-4f51-90e2-34bd322d80df/premium/raw.png')
         try {
-            const isImageExists = await this.conn.query.tbl_image.findFirst({
-                where: (
-                    eq(
-                        schema.tbl_image.id, imageId
-                    )
-                )
+            const isImageExists = await this.conn.select({
+                id: schema.tbl_image.id,
+                title: schema.tbl_image.title,
+                is_paid: schema.tbl_image.is_paid,
+                width: schema.tbl_image.width,
+                height: schema.tbl_image.height,
+                hashTags: schema.tbl_image.hashTags,
+                description: schema.tbl_image.description,
+                raw_url: schema.tbl_image.raw_url,
+                preview_url: schema.tbl_image.waterMarked_preview_url,
+                waterMarked_preview_url: schema.tbl_image.waterMarked_preview_url,
+                waterMarked_thumbnail_url: schema.tbl_image.waterMarked_thumbnail_url,
+                price: schema.tbl_image.price,
+                created_at: schema.tbl_image.created_at,
+                updated_at: schema.tbl_image.updated_at,
+                ownerData: {
+                    userName: schema.tbl_user.user_name,
+                    userAvatar: schema.tbl_user.avatar,
+                    userId: schema.tbl_user.id,
+                }
             })
+                .from(schema.tbl_image)
+                .leftJoin(
+                    schema.tbl_user,
+                    eq(schema.tbl_user.id, schema.tbl_image.user_id)
+                )
+                .where(
+                    eq(schema.tbl_image.id, imageId)
+                )
 
 
-            if (!isImageExists) {
+
+            if (isImageExists.length > 0) {
                 return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "Unable to find the image" })
             }
-            if (userId) {
-                const userPurchasedImage = await this.stripeService.isUserAlreadyPurached(userId, imageId)
-                isImageExists["purchased_image"] = userPurchasedImage
-            }
-
 
             const totalLikedImage = await this.conn
                 .select({
@@ -218,9 +235,9 @@ export class ImageService {
                 .where(eq(schema.tbl_image_downloads.image_id, imageId))
 
             const imageData = {
-                ...isImageExists,
-                price: isImageExists.price,
-                publishedOn: isImageExists.created_at,
+                ...isImageExists[0],
+                price: isImageExists?.[0].price,
+                publishedOn: isImageExists?.[0].created_at,
                 imageLikes: totalLikedImage?.[0]?.totalLike,
                 totalDownloads: totalDownlaods?.[0]?.totalDownload ?? 0
             }
