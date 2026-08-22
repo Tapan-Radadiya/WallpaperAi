@@ -49,6 +49,10 @@ export default function ImageDetailsMobile({
     const isOwner = user?.id === image.userId;
     const isPremiumLocked = image.is_paid && !hasPurchased && !isOwner;
 
+    const displaySrc = isPremiumLocked
+        ? (image.waterMarked_preview_url || image.waterMarked_url || image.preview_url || image.rawUrl || image.thumbnailUrl || '')
+        : (image.preview_url || image.rawUrl || image.waterMarked_preview_url || image.waterMarked_url || image.thumbnailUrl || '');
+
     const handleDownload = async (url: string, filename: string) => {
         // Fire and forget download count update
         api.patch(`/image/update-download-count/${image.id}`).catch(e => console.error("Error updating download count", e));
@@ -178,14 +182,19 @@ export default function ImageDetailsMobile({
             </div>
 
             {/* Main Image Section */}
-            {/* Main Image Section */}
-            <div className="relative w-full bg-black/5 flex justify-center">
-                <div className="relative w-full max-h-[75vh]">
-                    <img
-                        src={isPremiumLocked ? (image.waterMarked_preview_url || image.waterMarked_url || image.preview_url || image.rawUrl || image.thumbnailUrl) : (image.preview_url || image.rawUrl || image.thumbnailUrl)}
-                        alt={image.description || 'Wallpaper'}
-                        className="w-full h-auto max-h-[75vh] object-contain mx-auto"
-                    />
+            <div className="relative w-full bg-black/5 flex justify-center py-2">
+                <div className="relative w-full max-h-[75vh] flex items-center justify-center">
+                    {displaySrc ? (
+                        <img
+                            src={displaySrc}
+                            alt={image.title || image.description || 'Wallpaper'}
+                            className="w-full h-auto max-h-[75vh] object-contain mx-auto"
+                        />
+                    ) : (
+                        <div className="w-48 h-48 flex items-center justify-center bg-[var(--muted)]/10 text-[var(--muted)] rounded-lg my-8">
+                            No Image Preview
+                        </div>
+                    )}
 
                     {/* Floating Actions Overlay */}
                     <div className="absolute bottom-4 right-4 flex flex-col gap-3">
@@ -212,8 +221,8 @@ export default function ImageDetailsMobile({
                     <div className="flex items-center gap-3">
                         <div className="relative w-12 h-12 rounded-full overflow-hidden border border-[var(--muted)]/20">
                             <Image
-                                src={image.userAvatar || '/placeholder-avatar.png'}
-                                alt={image.userName}
+                                src={(typeof image.userAvatar === 'string' && image.userAvatar) ? image.userAvatar : '/placeholder-avatar.png'}
+                                alt={image.userName || 'User'}
                                 fill
                                 className="object-cover"
                             />
