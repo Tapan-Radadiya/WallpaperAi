@@ -96,6 +96,7 @@ export class SqsConsumerService implements OnModuleInit {
                 imageThumbnailPath,
                 waterMarkedPreviewPath,
                 waterMarkedThumbnailPath,
+                small_url
             } = getImagepaths({
                 format: imageSharpMetaData.format,
                 imageUuid: ImageMetaData.id,
@@ -106,7 +107,10 @@ export class SqsConsumerService implements OnModuleInit {
             this.logger.log(`Image variant Creating Starting For Image Id: ${ImageMetaData.id}`)
             const thumbnailbuffer = await this.convertImageToThumbnail(fileData, { width: imageSharpMetaData.width, height: imageSharpMetaData.height })
             const previewImageBuffer = await this.convertImageToPreview(fileData)
-
+            const smallImagePreview = await this.createSmallImage(fileData, {
+                width: imageSharpMetaData.width,
+                height: imageSharpMetaData.height
+            })
             if (ImageMetaData.is_paid) {
 
                 const thumbNailMetaData = await this.getImageMetadataFromBuffer(thumbnailbuffer)
@@ -119,24 +123,26 @@ export class SqsConsumerService implements OnModuleInit {
 
                 const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbnailFileData, thumbNailMetaData)
                 const previewWaterMarkedImage = await this.getWatermarkedImage(previewFileData, previewImageMetaData)
+
                 // If User uploaded image is premium then create a watermarked image 
                 // const thumbNailWaterMarkedImage = await this.getWatermarkedImage(thumbNailMetaData, thumbnailbuffer)
                 const data = await Promise.allSettled([
                     this.awsService.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
                     this.awsService.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
                     this.awsService.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype),
-
-                    // TODO: Change Image Buffer TO particular Image E.g. Create buffer for watermarked thumbnail Image
                     this.awsService.uploadFile(waterMarkedThumbnailPath!, thumbNailWaterMarkedImage, fileData.mimetype),
-                    this.awsService.uploadFile(waterMarkedPreviewPath!, previewWaterMarkedImage, fileData.mimetype)
+                    this.awsService.uploadFile(waterMarkedPreviewPath!, previewWaterMarkedImage, fileData.mimetype),
+                    this.awsService.uploadFile(small_url, smallImagePreview, fileData.mimetype)
                 ])
 
             }
             else {
+
                 const data = await Promise.allSettled([
                     this.awsService.uploadFile(imageRawPath, fileData.buffer, fileData.mimetype),
                     this.awsService.uploadFile(imageThumbnailPath, thumbnailbuffer, fileData.mimetype),
-                    this.awsService.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype)
+                    this.awsService.uploadFile(imagePreviewPath, previewImageBuffer, fileData.mimetype),
+                    this.awsService.uploadFile(small_url, smallImagePreview, fileData.mimetype)
                 ])
             }
 
@@ -168,6 +174,12 @@ export class SqsConsumerService implements OnModuleInit {
 
     private async convertImageToThumbnail(imageData: Express.Multer.File, orgImage: { width: number, height: number }): Promise<Buffer> {
         const thumbnailImageWidth = Math.round((orgImage.height / orgImage.width) * 600)
+        const thumbNailImage = await sharp(imageData.buffer).resize({ width: thumbnailImageWidth }).toBuffer()
+        return thumbNailImage
+    }
+
+    private async createSmallImage(imageData: Express.Multer.File, orgImage: { width: number, height: number }): Promise<Buffer> {
+        const thumbnailImageWidth = Math.round((orgImage.height / orgImage.width) * 100)
         const thumbNailImage = await sharp(imageData.buffer).resize({ width: thumbnailImageWidth }).toBuffer()
         return thumbNailImage
     }
