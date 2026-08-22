@@ -35,7 +35,8 @@ export class ImageSearchService {
                     userName: schema.tbl_user.user_name,
                     userId: schema.tbl_user.id,
                     imageDescription: schema.tbl_image.description,
-                    imageTitle: schema.tbl_image.title
+                    imageTitle: schema.tbl_image.title,
+                    id: schema.tbl_image.id
                 })
                 .from(schema.tbl_image_embeddings)
                 .leftJoin(
