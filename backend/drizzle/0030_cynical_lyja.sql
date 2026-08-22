@@ -1,0 +1,1 @@
+ALTER TABLE "tbl_image" ADD COLUMN "small_image_url" varchar DEFAULT '';
