@@ -46,7 +46,7 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
         >
             <div className="relative w-full">
                 <Image
-                    src={image.is_paid ? (image.waterMarked_preview_url || image.waterMarked_url || image.preview_url || image.rawUrl || image.thumbnailUrl) : (image.preview_url || image.rawUrl || image.thumbnailUrl)}
+                    src={(image.is_paid ? (image.waterMarked_preview_url || image.waterMarked_url || image.preview_url || image.rawUrl || image.thumbnailUrl) : (image.preview_url || image.rawUrl || image.thumbnailUrl)) || '/placeholder-wallpaper.png'}
                     alt={image.description || 'Wallpaper'}
                     width={image.width}
                     height={image.height}
@@ -103,7 +103,7 @@ export default function ImageCard({ image, onClick, isLiked, onToggleLike }: Ima
                     {image.title || image.description || 'Untitled'}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                    {image.userAvatar && (
+                    {typeof image.userAvatar === 'string' && image.userAvatar && (
                         <div className="relative w-4 h-4 rounded-full overflow-hidden">
                             {/* Optimized avatar could be here if needed, simple img for now or next/image */}
                             <img src={image.userAvatar} alt={image.userName} className="w-full h-full object-cover" />

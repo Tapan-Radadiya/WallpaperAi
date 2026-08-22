@@ -23,6 +23,7 @@ export const tbl_image = pgTable('tbl_image', {
     preview_url: varchar('preview_url').notNull().default(''),
     waterMarked_preview_url: varchar('waterMarked_preview_url').default(''),
     waterMarked_thumbnail_url: varchar('waterMarked_thumbnail_url').default(''),
+    small_image_url: varchar('small_image_url').default(''),
     image_processed: boolean('image_processed').default(false).notNull(),
     price: integer('price').default(0),
     created_at: timestamp('created_at').defaultNow(),
