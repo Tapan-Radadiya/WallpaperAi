@@ -63,46 +63,73 @@ export default function SearchLayout({ purchasedIds }: { purchasedIds?: Purchase
                 // Adjust endpoint based on user's exact path: /image-search?text=...
                 const response = await api.get(`/image-search?text=${encodeURIComponent(trimmedQuery)}`);
 
-                // Assuming response.data.data or response.data contains the array
-                // Depending on axios/backend structure, it might be response.data
-                const dataArray = response.data?.data || response.data || [];
+                const rawData = response.data?.data ?? response.data;
+                let dataArray: any[] = [];
+                if (Array.isArray(rawData)) {
+                    dataArray = rawData;
+                } else if (rawData && typeof rawData === 'object') {
+                    if (Array.isArray(rawData.images)) dataArray = rawData.images;
+                    else if (Array.isArray(rawData.wallpapers)) dataArray = rawData.wallpapers;
+                    else if (Array.isArray(rawData.results)) dataArray = rawData.results;
+                    else if (Array.isArray(rawData.data)) dataArray = rawData.data;
+                }
 
                 // Map API data to WallpaperImage interface
                 const mappedResults: WallpaperImage[] = dataArray.map((img: any) => {
-                    const id = img.id || img.image_id || img.imageSource || Math.random().toString(36).substring(7);
+                    const id = img.id || img.image_id || img._id || img.imageId || '';
                     const purchasedInfo = purchasedMap.get(id);
                     const isPurchased = !!purchasedInfo;
 
                     const rawPreview = (isPurchased && purchasedInfo?.preview_url)
                         ? purchasedInfo.preview_url
-                        : img.preview_url;
+                        : img.preview_url || img.previewUrl || img.url || img.image_url || img.rawUrl || img.raw_url || img.waterMarked_preview_url || img.waterMarked_url || img.imageSource;
 
                     const rawThumbnail = (isPurchased && purchasedInfo?.thumbnail_url)
                         ? purchasedInfo.thumbnail_url
-                        : img.thumbnailUrl || img.thumbnail_url || img.imageSource;
+                        : img.thumbnailUrl || img.thumbnail_url || img.imageSource || img.preview_url || img.previewUrl || img.url || img.image_url;
 
-                    const rawUrl = formatImageUrl(rawPreview || img.imageSource || img.rawUrl || '');
+                    const rawFull = (isPurchased && purchasedInfo?.preview_url)
+                        ? purchasedInfo.preview_url
+                        : img.rawUrl || img.raw_url || rawPreview || img.url || '';
+
+                    const rawUrl = formatImageUrl(rawFull);
                     const preview_url = formatImageUrl(rawPreview);
                     const thumbnailUrl = formatImageUrl(rawThumbnail);
-                    const waterMarked_preview_url = isPurchased ? undefined : formatImageUrl(img.waterMarked_preview_url || img.waterMarked_url);
+                    const waterMarked_preview_url = isPurchased ? undefined : formatImageUrl(img.waterMarked_preview_url || img.waterMarked_url || rawPreview);
+
+                    const owner = img.ownerData || img.owner || {};
+                    const userName = img.userName || owner.userName || owner.name || owner.username || 'Unknown User';
+                    const rawAvatar = img.userAvatar || owner.userAvatar || owner.avatar || img.avatar || owner.profile_picture || '';
+                    const userAvatar = formatImageUrl(rawAvatar);
+                    const userId = img.userId || owner.userId || owner.id || owner._id || 'unknown';
+
+                    const finalPreview = preview_url || rawUrl || thumbnailUrl;
+                    const finalThumb = thumbnailUrl || preview_url || rawUrl;
+                    const finalRaw = rawUrl || preview_url || thumbnailUrl;
 
                     return {
                         id,
                         width: img.width || 800,
                         height: img.height || 600,
-                        rawUrl,
-                        thumbnailUrl,
-                        preview_url,
-                        description: img.imageDescription || img.description || '',
-                        userName: img.userName || 'Unknown User',
-                        userAvatar: formatImageUrl(img.userAvatar),
-                        userId: img.userId || 'unknown',
-                        title: img.imageTitle || img.title || img.imageDescription || 'Untitled',
-                        publishedOn: img.publishedOn,
-                        is_paid: isPurchased ? false : img.is_paid,
+                        rawUrl: finalRaw,
+                        thumbnailUrl: finalThumb,
+                        preview_url: finalPreview,
+                        description: img.imageDescription || img.description || img.alt_text || '',
+                        userName,
+                        userAvatar,
+                        userId,
+                        ownerData: {
+                            userName,
+                            userAvatar,
+                            userId,
+                        },
+                        title: img.imageTitle || img.title || img.description || img.alt_text || 'Untitled Wallpaper',
+                        publishedOn: img.publishedOn || img.created_at,
+                        is_paid: isPurchased ? false : (img.is_paid ?? false),
                         purchased_image: isPurchased || img.purchased_image,
-                        waterMarked_preview_url,
-                        waterMarked_url: waterMarked_preview_url
+                        price: img.price,
+                        waterMarked_preview_url: waterMarked_preview_url || finalPreview,
+                        waterMarked_url: waterMarked_preview_url || finalPreview
                     };
                 });
 
@@ -113,7 +140,7 @@ export default function SearchLayout({ purchasedIds }: { purchasedIds?: Purchase
             } finally {
                 setIsSearching(false);
             }
-        }, 1000); // 500ms debounce
+        }, 500); // 500ms debounce
 
         return () => clearTimeout(timeoutId);
     }, [query]);
@@ -182,7 +209,7 @@ export default function SearchLayout({ purchasedIds }: { purchasedIds?: Purchase
                                 >
                                     <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-muted/20">
                                         <Image
-                                            src={image.thumbnailUrl || image.rawUrl}
+                                            src={image.thumbnailUrl || image.rawUrl || image.preview_url || '/placeholder-wallpaper.png'}
                                             alt={image.title || 'Thumbnail'}
                                             fill
                                             className="object-cover"
@@ -222,11 +249,11 @@ export default function SearchLayout({ purchasedIds }: { purchasedIds?: Purchase
             >
                 {selectedImage && (
                     <ImageDetails
-                        key={selectedImage.id}
+                        key={selectedImage.id || 'selected-modal-img'}
                         image={selectedImage}
-                        relatedImages={results.filter(img => img.id !== selectedImage.id).slice(0, 10)}
-                        isLiked={isLiked(selectedImage.id)}
-                        onLike={() => toggleLike(selectedImage.id)}
+                        relatedImages={results.filter(img => img && img.id !== selectedImage.id).slice(0, 10)}
+                        isLiked={isLiked(selectedImage.id || '')}
+                        onLike={() => toggleLike(selectedImage.id || '')}
                         onRelatedImageClick={setSelectedImage}
                         onClose={() => setSelectedImage(null)}
                     />
