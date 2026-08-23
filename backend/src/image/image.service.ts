@@ -213,8 +213,7 @@ export class ImageService {
                 )
 
 
-
-            if (isImageExists.length > 0) {
+            if (isImageExists.length === 0) {
                 return APIResponse({ statusCode: HttpStatus.NOT_FOUND, message: "Unable to find the image" })
             }
 
