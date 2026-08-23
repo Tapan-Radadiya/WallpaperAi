@@ -168,6 +168,12 @@ export default function ImageDetails({ image, relatedImages = [], onLike, isLike
             return;
         }
 
+        if (fetchedIdRef.current === targetId) {
+            if (isMounted) setIsDetailsLoading(false);
+            return;
+        }
+        fetchedIdRef.current = targetId;
+
         const fetchImageDetails = async () => {
             if (isMounted) setIsDetailsLoading(true);
             try {
