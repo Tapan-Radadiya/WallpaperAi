@@ -175,6 +175,8 @@ export class StripeService {
                     statusCode: HttpStatus.BAD_REQUEST
                 })
             }
+
+            // * If for this payment id status is SUCCESS(Payment is already done)
             if (paymentData.status === 'SUCCESS') {
                 return APIResponse({
                     message: "Invalid Payload",
